@@ -4,8 +4,7 @@
  */
 package com.microsoft.azure.sdk.iot.deps.ws;
 
-public interface WebSocketHeader
-{
+public interface WebSocketHeader {
     //  RFC6455
     //  +---------------------------------------------------------------+
     //  0                   1                   2                   3   |

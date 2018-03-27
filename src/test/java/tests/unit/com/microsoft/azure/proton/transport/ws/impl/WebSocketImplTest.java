@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 package com.microsoft.azure.sdk.iot.deps.ws.impl;
 
 import com.microsoft.azure.sdk.iot.deps.ws.WebSocket;
@@ -46,8 +46,7 @@ import java.util.Random;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class WebSocketImplTest
-{
+public class WebSocketImplTest {
     private int _allocatedWebSocketBufferSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private String _hostName = "host_XXX";
     private String _webSocketPath = "path1/path2";
@@ -57,16 +56,14 @@ public class WebSocketImplTest
 
     private int _lengthOfUpgradeRequest = 311;
 
-    private void init()
-    {
+    private void init() {
         _additionalHeaders.put("header1", "content1");
         _additionalHeaders.put("header2", "content2");
         _additionalHeaders.put("header3", "content3");
     }
 
     @Test
-    public void testConstructor()
-    {
+    public void testConstructor() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -87,8 +84,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testConfigure_handler_null()
-    {
+    public void testConfigure_handler_null() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -100,8 +96,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testConfigure_handler_not_null()
-    {
+    public void testConfigure_handler_not_null() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -114,8 +109,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWriteUpgradeRequest()
-    {
+    public void testWriteUpgradeRequest() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -134,8 +128,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWritePong()
-    {
+    public void testWritePong() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -153,8 +146,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWriteClose()
-    {
+    public void testWriteClose() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -177,8 +169,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWrap_creates_sniffer()
-    {
+    public void testWrap_creates_sniffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -194,8 +185,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWrapBuffer_enabled()
-    {
+    public void testWrapBuffer_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -216,8 +206,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testWrapBuffer_not_enabled()
-    {
+    public void testWrapBuffer_not_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -243,8 +232,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_enabled()
-    {
+    public void testUnwrapBuffer_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -263,8 +251,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_not_enabled()
-    {
+    public void testUnwrapBuffer_not_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -285,8 +272,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_notStarted()
-    {
+    public void testPending_state_notStarted() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -306,8 +292,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_notStarted__output_not_empty()
-    {
+    public void testPending_state_notStarted__output_not_empty() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -330,8 +315,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_notStarted__head_closed()
-    {
+    public void testPending_state_notStarted__head_closed() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -354,8 +338,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_connecting()
-    {
+    public void testPending_state_connecting() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -382,8 +365,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_connecting_head_closed_empty_buffer()
-    {
+    public void testPending_state_connecting_head_closed_empty_buffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -408,8 +390,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_flow_empty_output()
-    {
+    public void testPending_state_flow_empty_output() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -442,8 +423,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_flow_output_not_empty()
-    {
+    public void testPending_state_flow_output_not_empty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -480,8 +460,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_pong_changes_to_flow()
-    {
+    public void testPending_state_pong_changes_to_flow() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -524,8 +503,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_closing_changes_to_closed()
-    {
+    public void testPending_state_closing_changes_to_closed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -568,8 +546,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPending_state_closing_head_closed()
-    {
+    public void testPending_state_closing_head_closed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -616,8 +593,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testProcess_state_not_started()
-    {
+    public void testProcess_state_not_started() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -637,8 +613,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testProcess_state_changes_from_connecting_to_flow_on_valid_reply()
-    {
+    public void testProcess_state_changes_from_connecting_to_flow_on_valid_reply() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -696,8 +671,7 @@ public class WebSocketImplTest
 //    }
 
     @Test
-    public void testProcess_state_flow_calls_underlying_amqp()
-    {
+    public void testProcess_state_flow_calls_underlying_amqp() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -899,8 +873,7 @@ public class WebSocketImplTest
 //    }
 //
     @Test
-    public void testProcess_state_flow_changes_to_pong_after_ping_and_copies_the_buffer()
-    {
+    public void testProcess_state_flow_changes_to_pong_after_ping_and_copies_the_buffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -940,8 +913,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testProcess_state_flow_changes_to_closing_after_close_and_copies_the_buffer()
-    {
+    public void testProcess_state_flow_changes_to_closing_after_close_and_copies_the_buffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -981,8 +953,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testProcess_state_pong_changes_to_flow_head_closed()
-    {
+    public void testProcess_state_pong_changes_to_flow_head_closed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1029,8 +1000,7 @@ public class WebSocketImplTest
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_FAILED);
     }
 
-    private byte[] createMessage(int size)
-    {
+    private byte[] createMessage(int size) {
         byte[] data = new byte[size];
 
         Random random = new SecureRandom();
@@ -1039,7 +1009,7 @@ public class WebSocketImplTest
         byte finbit = (byte) (WebSocketHeader.FINBIT_MASK & 0xFF);
         byte opcode = (byte) WebSocketHeader.OPCODE_MASK & 0x2;
         byte firstbyte = (byte) (finbit | opcode);
-        byte secondbyte = (byte) (size-2);
+        byte secondbyte = (byte) (size - 2);
 
         data[0] = firstbyte;
         data[1] = secondbyte;
@@ -1047,14 +1017,12 @@ public class WebSocketImplTest
         return data;
     }
 
-    private byte[] getChunk(byte[] source, int chunkSize, int startPosition)
-    {
-        return Arrays.copyOfRange(source, startPosition, Math.min(source.length, startPosition+chunkSize));
+    private byte[] getChunk(byte[] source, int chunkSize, int startPosition) {
+        return Arrays.copyOfRange(source, startPosition, Math.min(source.length, startPosition + chunkSize));
     }
 
     @Test
-    public void testProcess_multiple_WS_requests_chunks()
-    {
+    public void testProcess_multiple_WS_requests_chunks() {
         byte[] message1 = createMessage(100);
         byte[] message2 = createMessage(100);
         byte[] message3 = createMessage(100);
@@ -1065,14 +1033,14 @@ public class WebSocketImplTest
 
         System.arraycopy(message1, 0, concatenatedArray, 0, message1.length);
         System.arraycopy(message2, 0, concatenatedArray, message1.length, message2.length);
-        System.arraycopy(message3, 0, concatenatedArray, message1.length+message2.length, message3.length);
+        System.arraycopy(message3, 0, concatenatedArray, message1.length + message2.length, message3.length);
 
-        System.arraycopy(message1, 2, expectedFinalArray, 0, message1.length-2);
-        System.arraycopy(message2, 2, expectedFinalArray, message1.length-2, message2.length-2);
-        System.arraycopy(message3, 2, expectedFinalArray, message1.length+message2.length-4, message3.length-2);
+        System.arraycopy(message1, 2, expectedFinalArray, 0, message1.length - 2);
+        System.arraycopy(message2, 2, expectedFinalArray, message1.length - 2, message2.length - 2);
+        System.arraycopy(message3, 2, expectedFinalArray, message1.length + message2.length - 4, message3.length - 2);
 
         int chunkCount = 10;
-        int bytesPerChunk = concatenatedArray.length/chunkCount;
+        int bytesPerChunk = concatenatedArray.length / chunkCount;
 
         init();
 
@@ -1117,11 +1085,11 @@ public class WebSocketImplTest
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
         when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>(){
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>() {
             @Override
             public WebSocketHandler.WebsocketTuple answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                ByteBuffer bb = (ByteBuffer)arguments[0];
+                ByteBuffer bb = (ByteBuffer) arguments[0];
                 bb.position(2);
                 return new WebSocketHandler.WebsocketTuple(98, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_AMQP);
             }
@@ -1136,9 +1104,8 @@ public class WebSocketImplTest
         ByteBuffer inputBuffer = webSocketImpl.getInputBuffer();
         ByteBuffer wsInputBuffer = webSocketImpl.getWsInputBuffer();
 
-        for (int i = 0; i < chunkCount; i++)
-        {
-            byte[] message = getChunk(concatenatedArray, bytesPerChunk, i*bytesPerChunk);
+        for (int i = 0; i < chunkCount; i++) {
+            byte[] message = getChunk(concatenatedArray, bytesPerChunk, i * bytesPerChunk);
             inputBuffer.clear();
             inputBuffer.put(message);
             transportWrapper.process();
@@ -1155,8 +1122,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testProcess_small_chunks_one_byte_payload_no_mask()
-    {
+    public void testProcess_small_chunks_one_byte_payload_no_mask() {
         final int payloadLength = 125;
         int chunkSize = 10;
         int chunkCount = 1 + payloadLength / chunkSize;
@@ -1202,11 +1168,11 @@ public class WebSocketImplTest
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
         when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>(){
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>() {
             @Override
             public WebSocketHandler.WebsocketTuple answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                ByteBuffer bb = (ByteBuffer)arguments[0];
+                ByteBuffer bb = (ByteBuffer) arguments[0];
                 bb.position(2);
                 return new WebSocketHandler.WebsocketTuple(payloadLength, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_AMQP);
             }
@@ -1232,27 +1198,20 @@ public class WebSocketImplTest
         message[1] = secondbyte;
 
         int currentLength = 0;
-        for (int i = 0; i < chunkCount + 1; i++)
-        {
-            if (i == 0)
-            {
+        for (int i = 0; i < chunkCount + 1; i++) {
+            if (i == 0) {
                 inputBuffer.clear();
                 inputBuffer.put(firstbyte);
                 currentLength += 1;
                 transportWrapper.process();
-            }
-            else if (i == 1)
-            {
+            } else if (i == 1) {
                 inputBuffer.clear();
                 inputBuffer.put(secondbyte);
                 currentLength += 1;
                 transportWrapper.process();
-            }
-            else
-            {
-                char c = (char) (65+i & 0xFF);
-                for (int j = 0; j < chunkSize; j++)
-                {
+            } else {
+                char c = (char) (65 + i & 0xFF);
+                for (int j = 0; j < chunkSize; j++) {
                     message[j] += c;
                 }
                 inputBuffer.clear();
@@ -1276,12 +1235,11 @@ public class WebSocketImplTest
         }
 
         //Subtract 1 because the first 2 bytes are used as the header which come in 2 separate chunks
-        verify(mockTransportInput, times(chunkCount-1)).process();
+        verify(mockTransportInput, times(chunkCount - 1)).process();
     }
 
     @Test
-    public void testHead_websocket_not_enabled()
-    {
+    public void testHead_websocket_not_enabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1298,8 +1256,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testHead_state_not_started()
-    {
+    public void testHead_state_not_started() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1316,8 +1273,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testHead_state_connecting()
-    {
+    public void testHead_state_connecting() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1348,8 +1304,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testHead_state_flow_underlying_head_empty()
-    {
+    public void testHead_state_flow_underlying_head_empty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1383,8 +1338,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testHead_state_flow_underlying_head_not_empty()
-    {
+    public void testHead_state_flow_underlying_head_not_empty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1421,8 +1375,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testHead_state_pong()
-    {
+    public void testHead_state_pong() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1469,8 +1422,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_websocket_not_enabled()
-    {
+    public void testPop_websocket_not_enabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1493,8 +1445,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_websocket_not_started()
-    {
+    public void testPop_websocket_not_started() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1517,8 +1468,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_websocket_connecting()
-    {
+    public void testPop_websocket_connecting() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1554,8 +1504,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_state_connected_flow()
-    {
+    public void testPop_state_connected_flow() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1598,8 +1547,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_state_connected_pong()
-    {
+    public void testPop_state_connected_pong() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1650,8 +1598,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_websocket_connecting_outbut_buffer_is_not_empty()
-    {
+    public void testPop_websocket_connecting_outbut_buffer_is_not_empty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1685,8 +1632,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPop_state_connected_flow_outbut_buffer_is_not_empty()
-    {
+    public void testPop_state_connected_flow_outbut_buffer_is_not_empty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1724,8 +1670,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testCapacity_enabled()
-    {
+    public void testCapacity_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1754,8 +1699,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testCapacity_enabled_tail_closed()
-    {
+    public void testCapacity_enabled_tail_closed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1785,8 +1729,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testCapacity_not_enabled()
-    {
+    public void testCapacity_not_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1813,8 +1756,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPosition_enabled()
-    {
+    public void testPosition_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1842,8 +1784,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPosition_enabled_tail_closed()
-    {
+    public void testPosition_enabled_tail_closed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1872,8 +1813,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testPosition_not_enabled()
-    {
+    public void testPosition_not_enabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1899,8 +1839,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testTail()
-    {
+    public void testTail() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1927,8 +1866,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testTail_websocket_not_enabled()
-    {
+    public void testTail_websocket_not_enabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1945,8 +1883,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testToString()
-    {
+    public void testToString() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
@@ -1973,8 +1910,7 @@ public class WebSocketImplTest
     }
 
     @Test
-    public void testToString_no_additional_headers()
-    {
+    public void testToString_no_additional_headers() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();

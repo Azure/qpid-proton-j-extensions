@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 package com.microsoft.azure.sdk.iot.deps.ws.impl;
 
@@ -26,6 +26,7 @@ import com.microsoft.azure.sdk.iot.deps.ws.WebSocketHeader;
 import org.junit.Test;
 
 import com.microsoft.azure.sdk.iot.deps.util.Base64;
+
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.*;
@@ -33,11 +34,9 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class WebSocketHandlerImplTest
-{
+public class WebSocketHandlerImplTest {
     @Test
-    public void testCreateUpgradeRequest()
-    {
+    public void testCreateUpgradeRequest() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -68,73 +67,59 @@ public class WebSocketHandlerImplTest
         Scanner scanner = new Scanner(actual);
 
         int lineCount = 0;
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             lineCount++;
 
             String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1"))
-            {
+            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
                 isStatusLineOk = true;
                 continue;
             }
-            if (line.equals("Connection: Upgrade,Keep-Alive"))
-            {
+            if (line.equals("Connection: Upgrade,Keep-Alive")) {
                 isConnectionHeaderOk = true;
                 continue;
             }
-            if (line.equals("Upgrade: websocket"))
-            {
+            if (line.equals("Upgrade: websocket")) {
                 isUpgradeHeaderOk = true;
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Version: 13"))
-            {
+            if (line.equals("Sec-WebSocket-Version: 13")) {
                 isWebSocketVersionHeaderOk = true;
                 continue;
             }
-            if (line.startsWith("Sec-WebSocket-Key: "))
-            {
+            if (line.startsWith("Sec-WebSocket-Key: ")) {
                 String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24)
-                {
+                if (keyBase64.length() == 24) {
                     byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
 
-                    if (decoded.length == 16)
-                    {
+                    if (decoded.length == 16) {
                         isWebSocketKeyHeaderOk = true;
                     }
                 }
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol))
-            {
+            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
                 isWebSocketProtocolHeaderOk = true;
                 continue;
             }
-            if (line.equals("Host: host_XXX"))
-            {
+            if (line.equals("Host: host_XXX")) {
                 isHostHeaderOk = true;
                 continue;
             }
-            if (line.equals("header1: content1"))
-            {
+            if (line.equals("header1: content1")) {
                 isAdditonalHeader1Ok = true;
                 continue;
             }
-            if (line.equals("header2: content2"))
-            {
+            if (line.equals("header2: content2")) {
                 isAdditonalHeader2Ok = true;
                 continue;
             }
-            if (line.equals("header3: content3"))
-            {
+            if (line.equals("header3: content3")) {
                 isAdditonalHeader3Ok = true;
                 continue;
             }
         }
-        if (lineCount == 11)
-        {
+        if (lineCount == 11) {
             isLineCountOk = true;
         }
 
@@ -152,8 +137,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCreateUpgradeRequest_verify_subsequent_call()
-    {
+    public void testCreateUpgradeRequest_verify_subsequent_call() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -175,8 +159,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCreatePong()
-    {
+    public void testCreatePong() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         ByteBuffer ping = ByteBuffer.allocate(10);
@@ -195,8 +178,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreatePong_ping_null()
-    {
+    public void testCreatePong_ping_null() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         ByteBuffer pong = ByteBuffer.allocate(10);
@@ -205,8 +187,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreatePong_pong_null()
-    {
+    public void testCreatePong_pong_null() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         ByteBuffer ping = ByteBuffer.allocate(10);
@@ -215,8 +196,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreatePong_pong_capacity_insufficient()
-    {
+    public void testCreatePong_pong_capacity_insufficient() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         ByteBuffer ping = ByteBuffer.allocate(10);
@@ -226,8 +206,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCreatePong_ping_no_remaining()
-    {
+    public void testCreatePong_ping_no_remaining() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         ByteBuffer ping = ByteBuffer.allocate(10);
@@ -242,8 +221,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testValidateUpgradeReply()
-    {
+    public void testValidateUpgradeReply() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -271,8 +249,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testValidateUpgradeReply_no_remaining()
-    {
+    public void testValidateUpgradeReply_no_remaining() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -300,8 +277,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testValidateUpgradeReply_websocketupgrade_null()
-    {
+    public void testValidateUpgradeReply_websocketupgrade_null() {
         ByteBuffer buffer = ByteBuffer.allocate(10);
         byte[] data = new byte[buffer.remaining()];
 
@@ -315,8 +291,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_short_payload()
-    {
+    public void testWrapBuffer_short_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -343,8 +318,7 @@ public class WebSocketHandlerImplTest
         expected[4] = maskingKey[2];
         expected[5] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MIN_HEADER_LENGTH_MASKED] = nextByte;
@@ -372,8 +346,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_short_payload_min()
-    {
+    public void testWrapBuffer_short_payload_min() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -400,8 +373,7 @@ public class WebSocketHandlerImplTest
         expected[4] = maskingKey[2];
         expected[5] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MIN_HEADER_LENGTH_MASKED] = nextByte;
@@ -429,8 +401,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_short_payload_max()
-    {
+    public void testWrapBuffer_short_payload_max() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -457,8 +428,7 @@ public class WebSocketHandlerImplTest
         expected[4] = maskingKey[2];
         expected[5] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MIN_HEADER_LENGTH_MASKED] = nextByte;
@@ -486,8 +456,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_medium_payload()
-    {
+    public void testWrapBuffer_medium_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -518,8 +487,7 @@ public class WebSocketHandlerImplTest
         expected[6] = maskingKey[2];
         expected[7] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MED_HEADER_LENGTH_MASKED] = nextByte;
@@ -550,8 +518,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_medium_payload_min()
-    {
+    public void testWrapBuffer_medium_payload_min() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -582,8 +549,7 @@ public class WebSocketHandlerImplTest
         expected[6] = maskingKey[2];
         expected[7] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MED_HEADER_LENGTH_MASKED] = nextByte;
@@ -614,8 +580,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_medium_payload_max()
-    {
+    public void testWrapBuffer_medium_payload_max() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -646,8 +611,7 @@ public class WebSocketHandlerImplTest
         expected[6] = maskingKey[2];
         expected[7] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MED_HEADER_LENGTH_MASKED] = nextByte;
@@ -678,8 +642,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_large_payload()
-    {
+    public void testWrapBuffer_large_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -716,8 +679,7 @@ public class WebSocketHandlerImplTest
         expected[12] = maskingKey[2];
         expected[13] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MAX_HEADER_LENGTH_MASKED] = nextByte;
@@ -754,8 +716,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_large_payload_min()
-    {
+    public void testWrapBuffer_large_payload_min() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -792,8 +753,7 @@ public class WebSocketHandlerImplTest
         expected[12] = maskingKey[2];
         expected[13] = maskingKey[3];
 
-        for (int i = 0; i < srcBuffer.limit(); i++)
-        {
+        for (int i = 0; i < srcBuffer.limit(); i++) {
             byte nextByte = srcBuffer.get();
             nextByte ^= maskingKey[i % 4];
             expected[i + WebSocketHeader.MAX_HEADER_LENGTH_MASKED] = nextByte;
@@ -906,8 +866,7 @@ public class WebSocketHandlerImplTest
 //    }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testWrapBuffer_src_buffer_null()
-    {
+    public void testWrapBuffer_src_buffer_null() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -919,8 +878,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testWrapBuffer_dst_buffer_null()
-    {
+    public void testWrapBuffer_dst_buffer_null() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -932,8 +890,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = OutOfMemoryError.class)
-    public void testWrapBuffer_dst_buffer_small()
-    {
+    public void testWrapBuffer_dst_buffer_small() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -946,8 +903,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testWrapBuffer_src_buffer_empty()
-    {
+    public void testWrapBuffer_src_buffer_empty() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -961,8 +917,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_opcode_ping()
-    {
+    public void testUnwrapBuffer_opcode_ping() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -989,8 +944,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_opcode_close()
-    {
+    public void testUnwrapBuffer_opcode_close() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1017,8 +971,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_short_message()
-    {
+    public void testUnwrapBuffer_short_message() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1045,8 +998,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_short_message_min()
-    {
+    public void testUnwrapBuffer_short_message_min() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1073,8 +1025,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_short_message_max()
-    {
+    public void testUnwrapBuffer_short_message_max() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1101,8 +1052,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_medium_message()
-    {
+    public void testUnwrapBuffer_medium_message() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1131,8 +1081,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_medium_message_min()
-    {
+    public void testUnwrapBuffer_medium_message_min() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1161,8 +1110,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_medium_message_max()
-    {
+    public void testUnwrapBuffer_medium_message_max() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1191,8 +1139,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_large_message()
-    {
+    public void testUnwrapBuffer_large_message() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1227,8 +1174,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_invalid_opcode()
-    {
+    public void testUnwrapBuffer_invalid_opcode() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1251,8 +1197,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_src_buffer_empty()
-    {
+    public void testUnwrapBuffer_src_buffer_empty() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1264,8 +1209,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_src_buffer_medium_invalid_length()
-    {
+    public void testUnwrapBuffer_src_buffer_medium_invalid_length() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1287,8 +1231,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testUnwrapBuffer_src_buffer_large_invalid_length()
-    {
+    public void testUnwrapBuffer_src_buffer_large_invalid_length() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1310,8 +1253,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testUnwrapBuffer_src_buffer_null()
-    {
+    public void testUnwrapBuffer_src_buffer_null() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
@@ -1321,15 +1263,13 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCalculateHeaderSize_zero_payload()
-    {
+    public void testCalculateHeaderSize_zero_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(0), 0);
     }
 
     @Test
-    public void testCalculateHeaderSize_small_payload()
-    {
+    public void testCalculateHeaderSize_small_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
                 WebSocketHeader.PAYLOAD_SHORT_MAX),
@@ -1337,8 +1277,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCalculateHeaderSize_medium_payload()
-    {
+    public void testCalculateHeaderSize_medium_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
                 WebSocketHeader.PAYLOAD_MEDIUM_MAX),
@@ -1346,8 +1285,7 @@ public class WebSocketHandlerImplTest
     }
 
     @Test
-    public void testCalculateHeaderSize_large_payload()
-    {
+    public void testCalculateHeaderSize_large_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
                 WebSocketHeader.PAYLOAD_LARGE_MAX),

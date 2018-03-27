@@ -7,10 +7,8 @@ package com.microsoft.azure.sdk.iot.deps.ws;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-public interface WebSocketHandler
-{
-    public enum WebSocketMessageType
-    {
+public interface WebSocketHandler {
+    public enum WebSocketMessageType {
         WEB_SOCKET_MESSAGE_TYPE_UNKNOWN,
         WEB_SOCKET_MESSAGE_TYPE_CHUNK,
         WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK,
@@ -31,28 +29,29 @@ public interface WebSocketHandler
 
     int calculateHeaderSize(int payloadSize);
 
-    public class WebsocketTuple{
+    public class WebsocketTuple {
 
         private long length;
         private WebSocketMessageType type;
 
-        public WebsocketTuple(long length, WebSocketMessageType type){
+        public WebsocketTuple(long length, WebSocketMessageType type) {
             this.length = length;
             this.type = type;
         }
 
-        public void setLength(long length){
+        public void setLength(long length) {
             this.length = length;
         }
 
-        public void setType(WebSocketMessageType type){
+        public void setType(WebSocketMessageType type) {
             this.type = type;
         }
 
-        public long getLength(){
+        public long getLength() {
             return this.length;
         }
-        public WebSocketMessageType getType(){
+
+        public WebSocketMessageType getType() {
             return this.type;
         }
     }

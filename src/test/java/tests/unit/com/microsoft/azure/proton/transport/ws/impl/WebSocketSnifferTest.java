@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 package com.microsoft.azure.sdk.iot.deps.ws.impl;
 
 import com.microsoft.azure.sdk.iot.deps.ws.WebSocketHeader;
@@ -28,11 +28,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public class WebSocketSnifferTest
-{
+public class WebSocketSnifferTest {
     @Test
-    public void testMakeDetermination_wrapper1()
-    {
+    public void testMakeDetermination_wrapper1() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 
@@ -48,8 +46,7 @@ public class WebSocketSnifferTest
     }
 
     @Test
-    public void testMakeDetermination_wrapper2()
-    {
+    public void testMakeDetermination_wrapper2() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 
@@ -65,8 +62,7 @@ public class WebSocketSnifferTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMakeDetermination_insufficient_bytes()
-    {
+    public void testMakeDetermination_insufficient_bytes() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 

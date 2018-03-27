@@ -8,34 +8,27 @@ import com.microsoft.azure.sdk.iot.deps.ws.WebSocketHeader;
 import org.apache.qpid.proton.engine.impl.HandshakeSniffingTransportWrapper;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
-public class WebSocketSniffer extends HandshakeSniffingTransportWrapper<TransportWrapper, TransportWrapper>
-{
-    public WebSocketSniffer(TransportWrapper webSocket, TransportWrapper other)
-    {
+public class WebSocketSniffer extends HandshakeSniffingTransportWrapper<TransportWrapper, TransportWrapper> {
+    public WebSocketSniffer(TransportWrapper webSocket, TransportWrapper other) {
         super(webSocket, other);
     }
 
-    protected TransportWrapper getSelectedTransportWrapper()
-    {
+    protected TransportWrapper getSelectedTransportWrapper() {
         return _selectedTransportWrapper;
     }
 
     @Override
-    protected int bufferSize()
-    {
+    protected int bufferSize() {
         return WebSocketHeader.MIN_HEADER_LENGTH_MASKED;
     }
 
     @Override
-    protected void makeDetermination(byte[] bytes)
-    {
-        if (bytes.length < bufferSize())
-        {
+    protected void makeDetermination(byte[] bytes) {
+        if (bytes.length < bufferSize()) {
             throw new IllegalArgumentException("insufficient bytes");
         }
 
-        if (bytes[0] != WebSocketHeader.FINAL_OPCODE_BINARY)
-        {
+        if (bytes[0] != WebSocketHeader.FINAL_OPCODE_BINARY) {
             _selectedTransportWrapper = _wrapper2;
             return;
         }

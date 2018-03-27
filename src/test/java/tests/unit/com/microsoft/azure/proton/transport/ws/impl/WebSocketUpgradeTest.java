@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 package tests.unit.com.microsoft.azure.sdk.iot.deps.ws.impl;
 
@@ -25,6 +25,7 @@ import com.microsoft.azure.sdk.iot.deps.ws.impl.WebSocketUpgrade;
 import org.junit.Test;
 
 import com.microsoft.azure.sdk.iot.deps.util.Base64;
+
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -34,13 +35,11 @@ import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
-public class WebSocketUpgradeTest
-{
+public class WebSocketUpgradeTest {
     final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     @Test
-    public void testCreateUpgradeRequest_all_param()
-    {
+    public void testCreateUpgradeRequest_all_param() {
 
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
@@ -72,73 +71,59 @@ public class WebSocketUpgradeTest
         Scanner scanner = new Scanner(actual);
 
         int lineCount = 0;
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             lineCount++;
 
             String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1"))
-            {
+            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
                 isStatusLineOk = true;
                 continue;
             }
-            if (line.equals("Connection: Upgrade,Keep-Alive"))
-            {
+            if (line.equals("Connection: Upgrade,Keep-Alive")) {
                 isConnectionHeaderOk = true;
                 continue;
             }
-            if (line.equals("Upgrade: websocket"))
-            {
+            if (line.equals("Upgrade: websocket")) {
                 isUpgradeHeaderOk = true;
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Version: 13"))
-            {
+            if (line.equals("Sec-WebSocket-Version: 13")) {
                 isWebSocketVersionHeaderOk = true;
                 continue;
             }
-            if (line.startsWith("Sec-WebSocket-Key: "))
-            {
+            if (line.startsWith("Sec-WebSocket-Key: ")) {
                 String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24)
-                {
+                if (keyBase64.length() == 24) {
                     byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
-                    if (decoded.length == 16)
-                    {
+                    if (decoded.length == 16) {
                         isWebSocketKeyHeaderOk = true;
                     }
                 }
 
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol))
-            {
+            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
                 isWebSocketProtocolHeaderOk = true;
                 continue;
             }
-            if (line.equals("Host: host_XXX"))
-            {
+            if (line.equals("Host: host_XXX")) {
                 isHostHeaderOk = true;
                 continue;
             }
-            if (line.equals("header1: content1"))
-            {
+            if (line.equals("header1: content1")) {
                 isAdditonalHeader1Ok = true;
                 continue;
             }
-            if (line.equals("header2: content2"))
-            {
+            if (line.equals("header2: content2")) {
                 isAdditonalHeader2Ok = true;
                 continue;
             }
-            if (line.equals("header3: content3"))
-            {
+            if (line.equals("header3: content3")) {
                 isAdditonalHeader3Ok = true;
                 continue;
             }
         }
-        if (lineCount == 11)
-        {
+        if (lineCount == 11) {
             isLineCountOk = true;
         }
 
@@ -156,8 +141,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testCreateUpgradeRequest_no_additonal_headers()
-    {
+    public void testCreateUpgradeRequest_no_additonal_headers() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -181,57 +165,46 @@ public class WebSocketUpgradeTest
         Scanner scanner = new Scanner(actual);
 
         int lineCount = 0;
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             lineCount++;
 
             String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1"))
-            {
+            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
                 isStatusLineOk = true;
                 continue;
             }
-            if (line.equals("Connection: Upgrade,Keep-Alive"))
-            {
+            if (line.equals("Connection: Upgrade,Keep-Alive")) {
                 isConnectionHeaderOk = true;
                 continue;
             }
-            if (line.equals("Upgrade: websocket"))
-            {
+            if (line.equals("Upgrade: websocket")) {
                 isUpgradeHeaderOk = true;
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Version: 13"))
-            {
+            if (line.equals("Sec-WebSocket-Version: 13")) {
                 isWebSocketVersionHeaderOk = true;
                 continue;
             }
-            if (line.startsWith("Sec-WebSocket-Key: "))
-            {
+            if (line.startsWith("Sec-WebSocket-Key: ")) {
                 String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24)
-                {
+                if (keyBase64.length() == 24) {
                     byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
-                    if (decoded.length == 16)
-                    {
+                    if (decoded.length == 16) {
                         isWebSocketKeyHeaderOk = true;
                     }
                 }
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol))
-            {
+            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
                 isWebSocketProtocolHeaderOk = true;
                 continue;
             }
-            if (line.equals("Host: host_XXX"))
-            {
+            if (line.equals("Host: host_XXX")) {
                 isHostHeaderOk = true;
                 continue;
             }
         }
-        if (lineCount == 8)
-        {
+        if (lineCount == 8) {
             isLineCountOk = true;
         }
 
@@ -246,8 +219,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testCreateUpgradeRequest_path_start_with_slash()
-    {
+    public void testCreateUpgradeRequest_path_start_with_slash() {
         String hostName = "host_XXX";
         String webSocketPath = "/path1/path2";
         int webSocketPort = 1234567890;
@@ -271,57 +243,46 @@ public class WebSocketUpgradeTest
         Scanner scanner = new Scanner(actual);
 
         int lineCount = 0;
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             lineCount++;
 
             String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + webSocketPath + queryKey + queryValue + " HTTP/1.1"))
-            {
+            if (line.equals("GET https://" + hostName + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
                 isStatusLineOk = true;
                 continue;
             }
-            if (line.equals("Connection: Upgrade,Keep-Alive"))
-            {
+            if (line.equals("Connection: Upgrade,Keep-Alive")) {
                 isConnectionHeaderOk = true;
                 continue;
             }
-            if (line.equals("Upgrade: websocket"))
-            {
+            if (line.equals("Upgrade: websocket")) {
                 isUpgradeHeaderOk = true;
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Version: 13"))
-            {
+            if (line.equals("Sec-WebSocket-Version: 13")) {
                 isWebSocketVersionHeaderOk = true;
                 continue;
             }
-            if (line.startsWith("Sec-WebSocket-Key: "))
-            {
+            if (line.startsWith("Sec-WebSocket-Key: ")) {
                 String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24)
-                {
+                if (keyBase64.length() == 24) {
                     byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
-                    if (decoded.length == 16)
-                    {
+                    if (decoded.length == 16) {
                         isWebSocketKeyHeaderOk = true;
                     }
                 }
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol))
-            {
+            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
                 isWebSocketProtocolHeaderOk = true;
                 continue;
             }
-            if (line.equals("Host: host_XXX"))
-            {
+            if (line.equals("Host: host_XXX")) {
                 isHostHeaderOk = true;
                 continue;
             }
         }
-        if (lineCount == 8)
-        {
+        if (lineCount == 8) {
             isLineCountOk = true;
         }
 
@@ -336,8 +297,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testCreateUpgradeRequest_clear_additonal_headers()
-    {
+    public void testCreateUpgradeRequest_clear_additonal_headers() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -366,57 +326,46 @@ public class WebSocketUpgradeTest
         Scanner scanner = new Scanner(actual);
 
         int lineCount = 0;
-        while (scanner.hasNextLine())
-        {
+        while (scanner.hasNextLine()) {
             lineCount++;
 
             String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey +  queryValue + " HTTP/1.1"))
-            {
+            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
                 isStatusLineOk = true;
                 continue;
             }
-            if (line.equals("Connection: Upgrade,Keep-Alive"))
-            {
+            if (line.equals("Connection: Upgrade,Keep-Alive")) {
                 isConnectionHeaderOk = true;
                 continue;
             }
-            if (line.equals("Upgrade: websocket"))
-            {
+            if (line.equals("Upgrade: websocket")) {
                 isUpgradeHeaderOk = true;
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Version: 13"))
-            {
+            if (line.equals("Sec-WebSocket-Version: 13")) {
                 isWebSocketVersionHeaderOk = true;
                 continue;
             }
-            if (line.startsWith("Sec-WebSocket-Key: "))
-            {
+            if (line.startsWith("Sec-WebSocket-Key: ")) {
                 String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24)
-                {
+                if (keyBase64.length() == 24) {
                     byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
-                    if (decoded.length == 16)
-                    {
+                    if (decoded.length == 16) {
                         isWebSocketKeyHeaderOk = true;
                     }
                 }
                 continue;
             }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol))
-            {
+            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
                 isWebSocketProtocolHeaderOk = true;
                 continue;
             }
-            if (line.equals("Host: host_XXX"))
-            {
+            if (line.equals("Host: host_XXX")) {
                 isHostHeaderOk = true;
                 continue;
             }
         }
-        if (lineCount == 8)
-        {
+        if (lineCount == 8) {
             isLineCountOk = true;
         }
 
@@ -431,8 +380,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test(expected = InvalidParameterException.class)
-    public void testCreateUpgradeRequest_empty_host()
-    {
+    public void testCreateUpgradeRequest_empty_host() {
         String hostName = "";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -447,8 +395,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test(expected = InvalidParameterException.class)
-    public void testCreateUpgradeRequest_empty_protocol()
-    {
+    public void testCreateUpgradeRequest_empty_protocol() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -463,8 +410,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testvalidateUpgradeReply()
-    {
+    public void testvalidateUpgradeReply() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -474,8 +420,7 @@ public class WebSocketUpgradeTest
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -488,15 +433,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertTrue(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_invalid_key()
-    {
+    public void testvalidateUpgradeReply_invalid_key() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -508,8 +451,7 @@ public class WebSocketUpgradeTest
         // Generate new key
         webSocketUpgrade.createUpgradeRequest();
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -522,15 +464,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_plain_key()
-    {
+    public void testvalidateUpgradeReply_plain_key() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -551,8 +491,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_status_line()
-    {
+    public void testvalidateUpgradeReply_missing_status_line() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -562,8 +501,7 @@ public class WebSocketUpgradeTest
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -575,15 +513,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_upgrade_header()
-    {
+    public void testvalidateUpgradeReply_missing_upgrade_header() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -593,8 +529,7 @@ public class WebSocketUpgradeTest
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -606,15 +541,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_protocol_header()
-    {
+    public void testvalidateUpgradeReply_missing_protocol_header() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -624,8 +557,7 @@ public class WebSocketUpgradeTest
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -637,15 +569,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_connection_header()
-    {
+    public void testvalidateUpgradeReply_missing_connection_header() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -655,8 +585,7 @@ public class WebSocketUpgradeTest
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
-        try
-        {
+        try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
@@ -668,15 +597,13 @@ public class WebSocketUpgradeTest
                     "Date: Thu, 03 Mar 2016 22:46:15 GMT";
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
-        } catch (NoSuchAlgorithmException e)
-        {
+        } catch (NoSuchAlgorithmException e) {
             assertTrue(false);
         }
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_accept_header()
-    {
+    public void testvalidateUpgradeReply_missing_accept_header() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -696,8 +623,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testvalidateUpgradeReply_emptyResponse()
-    {
+    public void testvalidateUpgradeReply_emptyResponse() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -715,8 +641,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testToString()
-    {
+    public void testToString() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -745,8 +670,7 @@ public class WebSocketUpgradeTest
     }
 
     @Test
-    public void testToString_no_additional_headers()
-    {
+    public void testToString_no_additional_headers() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;

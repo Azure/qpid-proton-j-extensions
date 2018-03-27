@@ -14,56 +14,45 @@ import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Random;
 
-public class WebSocketHandlerImpl implements WebSocketHandler
-{
+public class WebSocketHandlerImpl implements WebSocketHandler {
     private WebSocketUpgrade _webSocketUpgrade = null;
 
     @Override
-    public String createUpgradeRequest(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders)
-    {
+    public String createUpgradeRequest(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders) {
         _webSocketUpgrade = createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
         return _webSocketUpgrade.createUpgradeRequest();
     }
 
     @Override
-    public void createPong(ByteBuffer ping, ByteBuffer pong)
-    {
-        if ((ping == null) || (pong == null))
-        {
+    public void createPong(ByteBuffer ping, ByteBuffer pong) {
+        if ((ping == null) || (pong == null)) {
             throw new IllegalArgumentException("input parameter cannot be null");
         }
 
-        if (ping.capacity() > pong.capacity())
-        {
+        if (ping.capacity() > pong.capacity()) {
             throw new IllegalArgumentException("insufficient output buffer size");
         }
 
-        if (ping.remaining() > 0)
-        {
+        if (ping.remaining() > 0) {
             byte[] buffer = ping.array();
             buffer[0] = WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_PONG;
 
             pong.clear();
             pong.put(buffer);
-        }
-        else
-        {
+        } else {
             pong.clear();
             pong.limit(0);
         }
     }
 
     @Override
-    public Boolean validateUpgradeReply(ByteBuffer buffer)
-    {
+    public Boolean validateUpgradeReply(ByteBuffer buffer) {
         Boolean retVal = false;
 
-        if (_webSocketUpgrade != null)
-        {
+        if (_webSocketUpgrade != null) {
             int size = buffer.remaining();
 
-            if (size > 0)
-            {
+            if (size > 0) {
                 byte[] data = new byte[buffer.remaining()];
                 buffer.get(data);
 
@@ -76,15 +65,12 @@ public class WebSocketHandlerImpl implements WebSocketHandler
     }
 
     @Override
-    public void wrapBuffer(ByteBuffer srcBuffer, ByteBuffer dstBuffer)
-    {
-        if ((srcBuffer == null) || (dstBuffer == null))
-        {
+    public void wrapBuffer(ByteBuffer srcBuffer, ByteBuffer dstBuffer) {
+        if ((srcBuffer == null) || (dstBuffer == null)) {
             throw new IllegalArgumentException("input parameter is null");
         }
 
-        if (srcBuffer.remaining() > 0)
-        {
+        if (srcBuffer.remaining() > 0) {
             // We always send masked data
             // RFC: "client MUST mask all frames that it sends to the server"
             final byte[] MASKING_KEY = createRandomMaskingKey();
@@ -106,14 +92,12 @@ public class WebSocketHandlerImpl implements WebSocketHandler
             byte secondByte = WebSocketHeader.MASKBIT_MASK;
 
             // RFC: The length of the "Payload data", in bytes: if 0-125, that is the payload length.
-            if (DATA_LENGTH <= WebSocketHeader.PAYLOAD_SHORT_MAX)
-            {
+            if (DATA_LENGTH <= WebSocketHeader.PAYLOAD_SHORT_MAX) {
                 secondByte = (byte) (secondByte | DATA_LENGTH);
                 webSocketFrame.write(secondByte);
             }
             // RFC: If 126, the following 2 bytes interpreted as a 16-bit unsigned integer are the payload length
-            else if (DATA_LENGTH <= WebSocketHeader.PAYLOAD_MEDIUM_MAX)
-            {
+            else if (DATA_LENGTH <= WebSocketHeader.PAYLOAD_MEDIUM_MAX) {
                 // Create payload byte
                 secondByte = (byte) (secondByte | WebSocketHeader.PAYLOAD_EXTENDED_16);
                 webSocketFrame.write(secondByte);
@@ -124,8 +108,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler
             }
             // RFC: If 127, the following 8 bytes interpreted as a 64-bit unsigned integer (the most significant bit MUST be 0) are the payload length.
             // No need for "else if" because if it is longer than what 8 byte length can hold... all bets are off anyway
-            else
-            {
+            else {
                 secondByte = (byte) (secondByte | WebSocketHeader.PAYLOAD_EXTENDED_64);
                 webSocketFrame.write(secondByte);
 
@@ -146,8 +129,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler
             webSocketFrame.write(MASKING_KEY[3]);
 
             // Write masked data
-            for (int i = 0; i < DATA_LENGTH; i++)
-            {
+            for (int i = 0; i < DATA_LENGTH; i++) {
                 byte nextByte = srcBuffer.get();
                 nextByte ^= MASKING_KEY[i % 4];
                 webSocketFrame.write(nextByte);
@@ -155,35 +137,27 @@ public class WebSocketHandlerImpl implements WebSocketHandler
 
             // Copy frame to destination buffer
             dstBuffer.clear();
-            if (dstBuffer.capacity() >= webSocketFrame.size())
-            {
+            if (dstBuffer.capacity() >= webSocketFrame.size()) {
                 dstBuffer.put(webSocketFrame.toByteArray());
-            }
-            else
-            {
+            } else {
                 throw new OutOfMemoryError("insufficient output buffer size");
             }
-        }
-        else
-        {
+        } else {
             dstBuffer.clear();
         }
     }
 
     @Override
-    public WebsocketTuple unwrapBuffer(ByteBuffer srcBuffer)
-    {
+    public WebsocketTuple unwrapBuffer(ByteBuffer srcBuffer) {
         WebsocketTuple result = new WebsocketTuple(0, WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
 
-        if (srcBuffer == null)
-        {
+        if (srcBuffer == null) {
             throw new IllegalArgumentException("input parameter is null");
         }
 
         WebSocketMessageType retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
 
-        if (srcBuffer.remaining() > WebSocketHeader.MIN_HEADER_LENGTH)
-        {
+        if (srcBuffer.remaining() > WebSocketHeader.MIN_HEADER_LENGTH) {
             // Read the first byte
             byte firstByte = srcBuffer.get();
 
@@ -197,56 +171,35 @@ public class WebSocketHandlerImpl implements WebSocketHandler
 
             long finalPayloadLength = -1;
 
-            if (payloadLength <= WebSocketHeader.PAYLOAD_SHORT_MAX)
-            {
+            if (payloadLength <= WebSocketHeader.PAYLOAD_SHORT_MAX) {
                 finalPayloadLength = payloadLength;
-            }
-            else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_16)
-            {
+            } else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_16) {
                 // Check if we have enough bytes to read
-                try
-                {
+                try {
                     //Apply mask to turn into unsigned value
                     finalPayloadLength = srcBuffer.getShort() & 0xFFFF;
-                }
-                catch (BufferUnderflowException e)
-                {
+                } catch (BufferUnderflowException e) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
                 }
-            }
-            else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_64)
-            {
+            } else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_64) {
                 //Check if we have enough bytes to read
-                try
-                {
+                try {
                     finalPayloadLength = srcBuffer.getLong();
-                }
-                catch (BufferUnderflowException e)
-                {
+                } catch (BufferUnderflowException e) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
                 }
             }
 
-            if (retVal == WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN)
-            {
-                if (opcode == WebSocketHeader.OPCODE_BINARY)
-                {
+            if (retVal == WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN) {
+                if (opcode == WebSocketHeader.OPCODE_BINARY) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_AMQP;
-                }
-                else if (opcode == WebSocketHeader.OPCODE_PING)
-                {
+                } else if (opcode == WebSocketHeader.OPCODE_PING) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING;
-                }
-                else if (opcode == WebSocketHeader.OPCODE_CLOSE)
-                {
+                } else if (opcode == WebSocketHeader.OPCODE_CLOSE) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE;
-                }
-                else if(opcode == WebSocketHeader.OPCODE_CONTINUATION)
-                {
+                } else if (opcode == WebSocketHeader.OPCODE_CONTINUATION) {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CHUNK;
-                }
-                else
-                {
+                } else {
                     retVal = WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
                 }
             }
@@ -258,13 +211,11 @@ public class WebSocketHandlerImpl implements WebSocketHandler
         return result;
     }
 
-    protected WebSocketUpgrade createWebSocketUpgrade(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders)
-    {
+    protected WebSocketUpgrade createWebSocketUpgrade(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders) {
         return new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
     }
 
-    protected byte[] createRandomMaskingKey()
-    {
+    protected byte[] createRandomMaskingKey() {
         final byte[] maskingKey = new byte[4];
         Random random = new SecureRandom();
         random.nextBytes(maskingKey);
@@ -272,21 +223,14 @@ public class WebSocketHandlerImpl implements WebSocketHandler
         return maskingKey;
     }
 
-    public int calculateHeaderSize(int payloadSize)
-    {
+    public int calculateHeaderSize(int payloadSize) {
         int retVal = 0;
-        if (payloadSize > 0)
-        {
-            if (payloadSize <= WebSocketHeader.PAYLOAD_SHORT_MAX)
-            {
+        if (payloadSize > 0) {
+            if (payloadSize <= WebSocketHeader.PAYLOAD_SHORT_MAX) {
                 retVal = WebSocketHeader.MIN_HEADER_LENGTH_MASKED;
-            }
-            else if (payloadSize <= WebSocketHeader.PAYLOAD_MEDIUM_MAX)
-            {
+            } else if (payloadSize <= WebSocketHeader.PAYLOAD_MEDIUM_MAX) {
                 retVal = WebSocketHeader.MED_HEADER_LENGTH_MASKED;
-            }
-            else
-            {
+            } else {
                 retVal = WebSocketHeader.MAX_HEADER_LENGTH_MASKED;
             }
         }

@@ -10,10 +10,8 @@ import java.util.Map;
 /*
  * Provides interface for WebSocket
  */
-public interface WebSocket
-{
-    public enum WebSocketState
-    {
+public interface WebSocket {
+    public enum WebSocketState {
         /**
          * WebSocket
          */
@@ -44,8 +42,7 @@ public interface WebSocket
         PN_WS_FAILED
     }
 
-    public enum WebSocketFrameReadState
-    {
+    public enum WebSocketFrameReadState {
         /**
          * The initial read
          */
@@ -74,12 +71,13 @@ public interface WebSocket
 
     /**
      * Configure WebSocket connection
-     * @param host the hots name
-     * @param path the resource path
-     * @param port the port
-     * @param protocol the base protocol
+     *
+     * @param host              the hots name
+     * @param path              the resource path
+     * @param port              the port
+     * @param protocol          the base protocol
      * @param additionalHeaders the Map of additional headers
-     * @param webSocketHandler the web socket handler
+     * @param webSocketHandler  the web socket handler
      */
     void configure(String host, String path, int port, String protocol, Map<String, String> additionalHeaders, WebSocketHandler webSocketHandler);
 
