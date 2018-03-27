@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package tests.unit.com.microsoft.azure.sdk.iot.deps.util;
+package com.microsoft.azure.proton.transport.ws.impl;
 
-import com.microsoft.azure.sdk.iot.deps.util.Base64;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
