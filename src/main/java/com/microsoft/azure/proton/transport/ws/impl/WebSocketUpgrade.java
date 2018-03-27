@@ -4,8 +4,6 @@
  */
 package com.microsoft.azure.proton.transport.ws.impl;
 
-import com.microsoft.azure.sdk.iot.deps.util.Base64;
-
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;

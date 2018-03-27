@@ -18,7 +18,7 @@
  * under the License.
  *
  */
-package tests.unit.com.microsoft.azure.proton.transport.ws.impl;
+package com.microsoft.azure.proton.transport.ws.impl;
 
 import com.microsoft.azure.proton.transport.ws.WebSocket;
 import com.microsoft.azure.proton.transport.ws.WebSocketHandler;

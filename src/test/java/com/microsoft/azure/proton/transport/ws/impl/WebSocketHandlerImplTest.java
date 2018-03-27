@@ -19,12 +19,10 @@
  *
  */
 
-package tests.unit.com.microsoft.azure.proton.transport.ws.impl;
+package com.microsoft.azure.proton.transport.ws.impl;
 
 import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
-import com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl;
-import com.microsoft.azure.proton.transport.ws.impl.WebSocketUpgrade;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
