@@ -19,13 +19,13 @@
  *
  */
 
-package tests.unit.com.microsoft.azure.sdk.iot.deps.ws.impl;
+package tests.unit.com.microsoft.azure.proton.transport.ws.impl;
 
 import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
+import com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl;
+import com.microsoft.azure.proton.transport.ws.impl.WebSocketUpgrade;
 import org.junit.Test;
-
-import com.microsoft.azure.sdk.iot.deps.util.Base64;
 
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;

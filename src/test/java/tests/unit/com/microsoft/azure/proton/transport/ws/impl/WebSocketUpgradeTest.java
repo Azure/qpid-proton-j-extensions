@@ -19,12 +19,11 @@
  *
  */
 
-package tests.unit.com.microsoft.azure.sdk.iot.deps.ws.impl;
+package tests.unit.com.microsoft.azure.proton.transport.ws.impl;
 
-import com.microsoft.azure.sdk.iot.deps.ws.impl.WebSocketUpgrade;
+import com.microsoft.azure.proton.transport.ws.impl.WebSocketUpgrade;
 import org.junit.Test;
 
-import com.microsoft.azure.sdk.iot.deps.util.Base64;
 
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
