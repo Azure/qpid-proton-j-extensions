@@ -2,11 +2,11 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
-package com.microsoft.azure.sdk.iot.deps.ws.impl;
+package com.microsoft.azure.proton.transport.ws.impl;
 
-import com.microsoft.azure.sdk.iot.deps.ws.WebSocket;
-import com.microsoft.azure.sdk.iot.deps.ws.WebSocketHandler;
-import com.microsoft.azure.sdk.iot.deps.ws.WebSocketHeader;
+import com.microsoft.azure.proton.transport.ws.WebSocket;
+import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
+import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.*;
@@ -14,8 +14,8 @@ import org.apache.qpid.proton.engine.impl.*;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import static com.microsoft.azure.sdk.iot.deps.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
-import static com.microsoft.azure.sdk.iot.deps.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
+import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
+import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
 
