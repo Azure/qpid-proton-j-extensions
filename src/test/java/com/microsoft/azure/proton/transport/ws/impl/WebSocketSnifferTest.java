@@ -18,6 +18,7 @@
  * under the License.
  *
  */
+
 package com.microsoft.azure.proton.transport.ws.impl;
 
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;

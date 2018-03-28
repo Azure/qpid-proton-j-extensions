@@ -18,13 +18,12 @@
  * under the License.
  *
  */
+
 package com.microsoft.azure.proton.transport.ws.impl;
 
 import com.microsoft.azure.proton.transport.ws.WebSocket;
 import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
-import com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl;
-import com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.ByteBufferUtils;
@@ -199,7 +198,7 @@ public class WebSocketImplTest {
 
         ByteBuffer dstBuffer = ByteBuffer.allocate(50);
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
         webSocketImpl.wrapBuffer(srcBuffer, dstBuffer);
 
         verify(mockWebSocketHandler, times(1)).wrapBuffer(srcBuffer, dstBuffer);
@@ -223,7 +222,7 @@ public class WebSocketImplTest {
         ByteBuffer dstBuffer = ByteBuffer.allocate(25);
         dstBuffer.put("1234567890".getBytes());
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
         webSocketImpl.wrapBuffer(srcBuffer, dstBuffer);
 
         dstBuffer.flip();
@@ -244,7 +243,7 @@ public class WebSocketImplTest {
         ByteBuffer srcBuffer = ByteBuffer.allocate(50);
         srcBuffer.clear();
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
         webSocketImpl.unwrapBuffer(srcBuffer);
 
         verify(mockWebSocketHandler, times(1)).unwrapBuffer(srcBuffer);
@@ -265,7 +264,7 @@ public class WebSocketImplTest {
         srcBuffer.put("abcdefghijklmnopqrstvwxyz".getBytes());
         srcBuffer.flip();
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
 
         assertTrue(webSocketImpl.unwrapBuffer(srcBuffer).getType() == WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
         verify(mockWebSocketHandler, times(0)).wrapBuffer((ByteBuffer) any(), (ByteBuffer) any());
@@ -1249,7 +1248,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
 
         transportWrapper.head();
         verify(mockTransportOutput, times(1)).head();
@@ -1266,7 +1265,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         transportWrapper.head();
         verify(mockTransportOutput, times(1)).head();
@@ -1432,7 +1431,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
 
         String message = "Message";
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
@@ -1455,7 +1454,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         String message = "Message";
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
@@ -1690,7 +1689,7 @@ public class WebSocketImplTest {
         inputBuffer.put(message.getBytes());
         inputBuffer.flip();
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         int actual = transportWrapper.capacity();
 
@@ -1719,7 +1718,7 @@ public class WebSocketImplTest {
         inputBuffer.put(message.getBytes());
         inputBuffer.flip();
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
         transportWrapper.close_tail();
 
         int actual = transportWrapper.capacity();
@@ -1749,7 +1748,7 @@ public class WebSocketImplTest {
         inputBuffer.put(message.getBytes());
         inputBuffer.flip();
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
         transportWrapper.capacity();
 
         verify(mockTransportInput, times(1)).capacity();
@@ -1775,7 +1774,7 @@ public class WebSocketImplTest {
         inputBuffer.clear();
         inputBuffer.put(message.getBytes());
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         int actual = transportWrapper.position();
 
@@ -1803,7 +1802,7 @@ public class WebSocketImplTest {
         inputBuffer.clear();
         inputBuffer.put(message.getBytes());
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
         transportWrapper.close_tail();
 
         int actual = transportWrapper.position();
@@ -1832,7 +1831,7 @@ public class WebSocketImplTest {
         inputBuffer.clear();
         inputBuffer.put(message.getBytes());
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
         transportWrapper.position();
 
         verify(mockTransportInput, times(1)).position();
@@ -1849,7 +1848,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         String message = "Message";
         ByteBuffer inputBuffer = webSocketImpl.getInputBuffer();
@@ -1876,7 +1875,7 @@ public class WebSocketImplTest {
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
-        webSocketImpl._isWebSocketEnabled = false;
+        webSocketImpl.isWebSocketEnabled = false;
 
         transportWrapper.tail();
         verify(mockTransportInput, times(1)).tail();
@@ -1891,7 +1890,7 @@ public class WebSocketImplTest {
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
         webSocketImpl.configure(_hostName, _webSocketPath, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         String actual = webSocketImpl.toString();
 
@@ -1918,7 +1917,7 @@ public class WebSocketImplTest {
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
         webSocketImpl.configure(_hostName, _webSocketPath, _webSocketPort, _webSocketProtocol, null, mockWebSocketHandler);
-        webSocketImpl._isWebSocketEnabled = true;
+        webSocketImpl.isWebSocketEnabled = true;
 
         String actual = webSocketImpl.toString();
 

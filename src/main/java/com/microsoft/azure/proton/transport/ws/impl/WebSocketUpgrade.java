@@ -2,6 +2,7 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
+
 package com.microsoft.azure.proton.transport.ws.impl;
 
 import java.nio.charset.StandardCharsets;
@@ -11,20 +12,28 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Scanner;
 
-
 public class WebSocketUpgrade {
     public static final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private final char _colon = ':';
-    private final char _slash = '/';
-    private String _host = "";
-    private String _path = "";
-    private String _port = "";
-    private String _protocol = "";
-    private String _webSocketKey = "";
-    private Map<String, String> _additionalHeaders = null;
-    private boolean _certAvailability = false;
+    private final char slash = '/';
+    private String host = "";
+    private String path = "";
+    private String port = "";
+    private String protocol = "";
+    private String webSocketKey = "";
+    private Map<String, String> additionalHeaders = null;
+    private boolean certAvailability = false;
 
-    public WebSocketUpgrade(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders) {
+    /**
+     * Create {@link WebSocketUpgrade} instance, which can be used for websocket upgrade hand-shake with http server
+     * as per RFC https://tools.ietf.org/html/rfc6455.
+     * @param hostName host name to send the request to
+     * @param webSocketPath path on the request url where WebSocketUpgrade will be sent to
+     * @param webSocketPort port on the request url where WebSocketUpgrade will be sent to
+     * @param webSocketProtocol value for Sec-WebSocket-Protocol header on the WebSocketUpgrade request
+     * @param additionalHeaders any additional headers to be part of the WebSocketUpgrade request
+     */
+    public WebSocketUpgrade(
+            String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders) {
         setHost(hostName);
         setPath(webSocketPath);
         setPort(webSocketPort);
@@ -33,76 +42,76 @@ public class WebSocketUpgrade {
     }
 
     /**
-     * Set host value in host header
+     * Set host value in host header.
      *
      * @param host The host header field value.
      */
     public void setHost(String host) {
-        this._host = host;
+        this.host = host;
     }
 
     /**
-     * Set port value in host header
+     * Set port value in host header.
      *
      * @param port The port header field value.
      */
     public void setPort(int port) {
-        this._port = "";
+        this.port = "";
 
         if (port != 0) {
-            this._port = String.valueOf(port);
+            this.port = String.valueOf(port);
         }
     }
 
     /**
-     * Set path value in handshake
+     * Set path value in handshake.
      *
      * @param path The path field value.
      */
     public void setPath(String path) {
-        this._path = path;
+        this.path = path;
 
-        if (!this._path.isEmpty()) {
-            if (this._path.charAt(0) != this._slash) {
-                this._path = this._slash + this._path;
+        if (!this.path.isEmpty()) {
+            if (this.path.charAt(0) != this.slash) {
+                this.path = this.slash + this.path;
             }
         }
     }
 
     /**
-     * Set protocol value in protocol header
+     * Set protocol value in protocol header.
      *
      * @param protocol The protocol header field value.
      */
     public void setProtocol(String protocol) {
-        this._protocol = protocol;
+        this.protocol = protocol;
     }
 
     /**
-     * Add field-value pairs to HTTP header
+     * Add field-value pairs to HTTP header.
      *
      * @param additionalHeaders The Map containing the additional headers.
      */
     public void setAdditionalHeaders(Map<String, String> additionalHeaders) {
-        _additionalHeaders = additionalHeaders;
+        this.additionalHeaders = additionalHeaders;
     }
 
     /**
-     * Utility function to clear all additional headers
+     * Utility function to clear all additional headers.
      */
     public void clearAdditionalHeaders() {
-        _additionalHeaders.clear();
+        additionalHeaders.clear();
     }
 
     /**
-     * Set protocol value in protocol header
+     * Set protocol value in protocol header.
      */
     public void setClientCertAvailable() {
-        _certAvailability = true;
+        certAvailability = true;
     }
 
     /**
-     * Utility function to create random, Base64 encoded key
+     * Utility function to create random, Base64 encoded key.
      */
     private String createWebSocketKey() {
         byte[] key = new byte[16];
@@ -114,39 +123,48 @@ public class WebSocketUpgrade {
         return Base64.encodeBase64StringLocal(key).trim();
     }
 
+    /**
+     * Create the Upgrade to websocket request as per the RFC https://tools.ietf.org/html/rfc6455.
+     * @return http request to upgrade to websockets.
+     */
     public String createUpgradeRequest() {
-        if (this._host.isEmpty()) {
+        if (this.host.isEmpty()) {
             throw new InvalidParameterException("host header has no value");
         }
 
-        if (this._protocol.isEmpty()) {
+        if (this.protocol.isEmpty()) {
             throw new InvalidParameterException("protocol header has no value");
         }
 
-        this._webSocketKey = createWebSocketKey();
+        this.webSocketKey = createWebSocketKey();
 
-        String _endOfLine = "\r\n";
-        StringBuilder stringBuilder = new StringBuilder().append("GET https://").append(this._host).append(this._path)
-                .append("?").append("iothub-no-client-cert=").append(!this._certAvailability)
-                .append(" HTTP/1.1").append(_endOfLine)
-                .append("Connection: Upgrade,Keep-Alive").append(_endOfLine)
-                .append("Upgrade: websocket").append(_endOfLine)
-                .append("Sec-WebSocket-Version: 13").append(_endOfLine)
-                .append("Sec-WebSocket-Key: ").append(this._webSocketKey).append(_endOfLine)
-                .append("Sec-WebSocket-Protocol: ").append(this._protocol).append(_endOfLine)
-                .append("Host: ").append(this._host).append(_endOfLine);
+        String endOfLine = "\r\n";
+        StringBuilder stringBuilder = new StringBuilder().append("GET https://").append(this.host).append(this.path)
+                .append("?").append("iothub-no-client-cert=").append(!this.certAvailability)
+                .append(" HTTP/1.1").append(endOfLine)
+                .append("Connection: Upgrade,Keep-Alive").append(endOfLine)
+                .append("Upgrade: websocket").append(endOfLine)
+                .append("Sec-WebSocket-Version: 13").append(endOfLine)
+                .append("Sec-WebSocket-Key: ").append(this.webSocketKey).append(endOfLine)
+                .append("Sec-WebSocket-Protocol: ").append(this.protocol).append(endOfLine)
+                .append("Host: ").append(this.host).append(endOfLine);
 
-        if (_additionalHeaders != null) {
-            for (Map.Entry<String, String> entry : _additionalHeaders.entrySet()) {
-                stringBuilder.append(entry.getKey() + ": " + entry.getValue()).append(_endOfLine);
+        if (additionalHeaders != null) {
+            for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+                stringBuilder.append(entry.getKey() + ": " + entry.getValue()).append(endOfLine);
             }
         }
 
-        stringBuilder.append(_endOfLine);
+        stringBuilder.append(endOfLine);
 
         return stringBuilder.toString();
     }
 
+    /**
+     * Validate the response received for 'upgrade to websockets' request from http server.
+     * @param responseBytes bytes received from http server
+     * @return value indicating if the websockets upgrade succeeded
+     */
     public Boolean validateUpgradeReply(byte[] responseBytes) {
         String httpString = new String(responseBytes, StandardCharsets.UTF_8);
 
@@ -161,9 +179,9 @@ public class WebSocketUpgrade {
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
 
-            if ((line.toLowerCase().contains("http/1.1")) &&
-                    (line.contains("101")) &&
-                    (line.toLowerCase().contains("switching protocols"))) {
+            if ((line.toLowerCase().contains("http/1.1"))
+                    && (line.contains("101"))
+                    && (line.toLowerCase().contains("switching protocols"))) {
                 isStatusLineOk = true;
 
                 continue;
@@ -181,7 +199,7 @@ public class WebSocketUpgrade {
                 continue;
             }
 
-            if (line.toLowerCase().contains("sec-websocket-protocol") && (line.toLowerCase().contains(this._protocol.toLowerCase()))) {
+            if (line.toLowerCase().contains("sec-websocket-protocol") && (line.toLowerCase().contains(this.protocol.toLowerCase()))) {
                 isProtocolHeaderOk = true;
 
                 continue;
@@ -197,7 +215,7 @@ public class WebSocketUpgrade {
                     break;
                 }
 
-                String expectedKey = Base64.encodeBase64StringLocal(messageDigest.digest((this._webSocketKey + RFC_GUID).getBytes())).trim();
+                String expectedKey = Base64.encodeBase64StringLocal(messageDigest.digest((this.webSocketKey + RFC_GUID).getBytes())).trim();
 
                 if (line.contains(expectedKey)) {
                     isAcceptHeaderOk = true;
@@ -219,12 +237,21 @@ public class WebSocketUpgrade {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("WebSocketUpgrade [host=").append(_host).append(", path=").append(_path).append(", port=").append(_port).append(", protocol=").append(_protocol).append(", webSocketKey=").append(_webSocketKey);
+        builder.append("WebSocketUpgrade [host=")
+                .append(host)
+                .append(", path=")
+                .append(path)
+                .append(", port=")
+                .append(port)
+                .append(", protocol=")
+                .append(protocol)
+                .append(", webSocketKey=")
+                .append(webSocketKey);
 
-        if ((_additionalHeaders != null) && (!_additionalHeaders.isEmpty())) {
+        if ((additionalHeaders != null) && (!additionalHeaders.isEmpty())) {
             builder.append(", additionalHeaders=");
 
-            for (Map.Entry<String, String> entry : _additionalHeaders.entrySet()) {
+            for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
                 builder.append(entry.getKey() + ":" + entry.getValue()).append(", ");
             }
 
