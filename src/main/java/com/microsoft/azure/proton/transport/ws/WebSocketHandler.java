@@ -2,6 +2,7 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
+
 package com.microsoft.azure.proton.transport.ws;
 
 import java.nio.ByteBuffer;
@@ -17,7 +18,8 @@ public interface WebSocketHandler {
         WEB_SOCKET_MESSAGE_TYPE_CLOSE,
     }
 
-    String createUpgradeRequest(String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders);
+    String createUpgradeRequest(
+            String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders);
 
     Boolean validateUpgradeReply(ByteBuffer buffer);
 

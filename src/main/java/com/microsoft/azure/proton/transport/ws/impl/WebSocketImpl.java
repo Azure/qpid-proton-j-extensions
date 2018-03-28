@@ -2,64 +2,77 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
+
 package com.microsoft.azure.proton.transport.ws.impl;
-
-import com.microsoft.azure.proton.transport.ws.WebSocket;
-import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
-import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
-import org.apache.qpid.proton.engine.Transport;
-import org.apache.qpid.proton.engine.TransportException;
-import org.apache.qpid.proton.engine.impl.*;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
 
 import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
 import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
 
+import com.microsoft.azure.proton.transport.ws.WebSocket;
+import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
+import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
+
+import org.apache.qpid.proton.engine.Transport;
+import org.apache.qpid.proton.engine.TransportException;
+import org.apache.qpid.proton.engine.impl.ByteBufferUtils;
+import org.apache.qpid.proton.engine.impl.PlainTransportWrapper;
+import org.apache.qpid.proton.engine.impl.TransportInput;
+import org.apache.qpid.proton.engine.impl.TransportLayer;
+import org.apache.qpid.proton.engine.impl.TransportOutput;
+import org.apache.qpid.proton.engine.impl.TransportWrapper;
+
 public class WebSocketImpl implements WebSocket, TransportLayer {
-    private int _maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
-    private boolean _tail_closed = false;
-    private final ByteBuffer _inputBuffer;
-    private boolean _head_closed = false;
-    private final ByteBuffer _outputBuffer;
-    private ByteBuffer _pingBuffer;
-    private ByteBuffer _wsInputBuffer;
-    private ByteBuffer _temp;
+    private int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private boolean tailClosed = false;
+    private final ByteBuffer inputBuffer;
+    private boolean headClosed = false;
+    private final ByteBuffer outputBuffer;
+    private ByteBuffer pingBuffer;
+    private ByteBuffer wsInputBuffer;
+    private ByteBuffer tempBuffer;
 
-    private int _underlyingOutputSize = 0;
-    private int _webSocketHeaderSize = 0;
+    private int underlyingOutputSize = 0;
+    private int webSocketHeaderSize = 0;
 
-    private WebSocketHandler _webSocketHandler;
-    private WebSocketState _state = WebSocketState.PN_WS_NOT_STARTED;
+    private WebSocketHandler webSocketHandler;
+    private WebSocketState webSocketState = WebSocketState.PN_WS_NOT_STARTED;
 
-    private String _host = "";
-    private String _path = "";
-    private int _port = 0;
-    private String _protocol = "";
-    private Map<String, String> _additionalHeaders = null;
+    private String host = "";
+    private String path = "";
+    private int port = 0;
+    private String protocol = "";
+    private Map<String, String> additionalHeaders = null;
 
-    protected Boolean _isWebSocketEnabled = false;
+    protected Boolean isWebSocketEnabled;
 
-    private WebSocketHandler.WebSocketMessageType _lastType;
-    private long _lastLength;
-    private long _bytesRead = 0;
-    private int _dataStart = 0;
-    private WebSocketFrameReadState _frameReadState = WebSocketFrameReadState.INIT_READ;
+    private WebSocketHandler.WebSocketMessageType lastType;
+    private long lastLength;
+    private long bytesRead = 0;
+    private WebSocketFrameReadState frameReadState = WebSocketFrameReadState.INIT_READ;
 
+    /**
+     * Create WebSocket transport layer - which, after configuring using
+     * the {@link #configure(String, String, int, String, Map, WebSocketHandler)} API
+     * is ready for layering in qpid-proton-j transport layers, using
+     * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     */
     public WebSocketImpl() {
-        _inputBuffer = newWriteableBuffer(_maxFrameSize);
-        _outputBuffer = newWriteableBuffer(_maxFrameSize);
-        _pingBuffer = newWriteableBuffer(_maxFrameSize);
-        _wsInputBuffer = newWriteableBuffer(_maxFrameSize);
-        _temp = newWriteableBuffer(_maxFrameSize);
-        _lastType = WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
-        _lastLength = 0;
-        _isWebSocketEnabled = false;
+        inputBuffer = newWriteableBuffer(maxFrameSize);
+        outputBuffer = newWriteableBuffer(maxFrameSize);
+        pingBuffer = newWriteableBuffer(maxFrameSize);
+        wsInputBuffer = newWriteableBuffer(maxFrameSize);
+        tempBuffer = newWriteableBuffer(maxFrameSize);
+        lastType = WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
+        lastLength = 0;
+        isWebSocketEnabled = false;
     }
 
+    @Override
     public TransportWrapper wrap(final TransportInput input, final TransportOutput output) {
         return new WebSocketSniffer(new WebSocketTransportWrapper(input, output), new PlainTransportWrapper(output, input)) {
             protected boolean isDeterminationMade() {
@@ -70,26 +83,32 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
     }
 
     @Override
-    public void configure(String host, String path, int port, String protocol, Map<String, String> additionalHeaders, WebSocketHandler webSocketHandler) {
-        _host = host;
-        _path = path;
-        _port = port;
-        _protocol = protocol;
-        _additionalHeaders = additionalHeaders;
+    public void configure(
+            String host,
+            String path,
+            int port,
+            String protocol,
+            Map<String, String> additionalHeaders,
+            WebSocketHandler webSocketHandler) {
+        this.host = host;
+        this.path = path;
+        this.port = port;
+        this.protocol = protocol;
+        this.additionalHeaders = additionalHeaders;
 
         if (webSocketHandler != null) {
-            _webSocketHandler = webSocketHandler;
+            this.webSocketHandler = webSocketHandler;
         } else {
-            _webSocketHandler = new WebSocketHandlerImpl();
+            this.webSocketHandler = new WebSocketHandlerImpl();
         }
 
-        _isWebSocketEnabled = true;
+        isWebSocketEnabled = true;
     }
 
     @Override
     public void wrapBuffer(ByteBuffer srcBuffer, ByteBuffer dstBuffer) {
-        if (_isWebSocketEnabled) {
-            _webSocketHandler.wrapBuffer(srcBuffer, dstBuffer);
+        if (isWebSocketEnabled) {
+            webSocketHandler.wrapBuffer(srcBuffer, dstBuffer);
         } else {
             dstBuffer.clear();
             dstBuffer.put(srcBuffer);
@@ -98,8 +117,8 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     @Override
     public WebSocketHandler.WebsocketTuple unwrapBuffer(ByteBuffer buffer) {
-        if (_isWebSocketEnabled) {
-            return _webSocketHandler.unwrapBuffer(buffer);
+        if (isWebSocketEnabled) {
+            return webSocketHandler.unwrapBuffer(buffer);
         } else {
             return new WebSocketHandler.WebsocketTuple(0, WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
         }
@@ -107,54 +126,54 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     @Override
     public WebSocketState getState() {
-        return _state;
+        return webSocketState;
     }
 
     @Override
     public ByteBuffer getOutputBuffer() {
-        return _outputBuffer;
+        return outputBuffer;
     }
 
     @Override
     public ByteBuffer getInputBuffer() {
-        return _inputBuffer;
+        return inputBuffer;
     }
 
     @Override
     public ByteBuffer getPingBuffer() {
-        return _pingBuffer;
+        return pingBuffer;
     }
 
     @Override
     public ByteBuffer getWsInputBuffer() {
-        return _wsInputBuffer;
+        return wsInputBuffer;
     }
 
     @Override
     public Boolean getEnabled() {
-        return _isWebSocketEnabled;
+        return isWebSocketEnabled;
     }
 
     @Override
     public WebSocketHandler getWebSocketHandler() {
-        return _webSocketHandler;
+        return webSocketHandler;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(
-                "WebSocketImpl [isWebSocketEnabled=").append(_isWebSocketEnabled)
-                .append(", state=").append(_state)
-                .append(", protocol=").append(_protocol)
-                .append(", host=").append(_host)
-                .append(", path=").append(_path)
-                .append(", port=").append(_port);
+                "WebSocketImpl [isWebSocketEnabled=").append(isWebSocketEnabled)
+                .append(", state=").append(webSocketState)
+                .append(", protocol=").append(protocol)
+                .append(", host=").append(host)
+                .append(", path=").append(path)
+                .append(", port=").append(port);
 
-        if ((_additionalHeaders != null) && (!_additionalHeaders.isEmpty())) {
+        if ((additionalHeaders != null) && (!additionalHeaders.isEmpty())) {
             builder.append(", additionalHeaders=");
 
-            for (Map.Entry<String, String> entry : _additionalHeaders.entrySet()) {
+            for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
                 builder.append(entry.getKey() + ":" + entry.getValue()).append(", ");
             }
 
@@ -168,109 +187,113 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
     }
 
     protected void writeUpgradeRequest() {
-        _outputBuffer.clear();
-        String request = _webSocketHandler.createUpgradeRequest(_host, _path, _port, _protocol, _additionalHeaders);
-        _outputBuffer.put(request.getBytes());
+        outputBuffer.clear();
+        String request = webSocketHandler.createUpgradeRequest(host, path, port, protocol, additionalHeaders);
+        outputBuffer.put(request.getBytes());
     }
 
     protected void writePong() {
-        _webSocketHandler.createPong(_pingBuffer, _outputBuffer);
+        webSocketHandler.createPong(pingBuffer, outputBuffer);
     }
 
     protected void writeClose() {
-        _outputBuffer.clear();
-        _pingBuffer.flip();
-        _outputBuffer.put(_pingBuffer);
+        outputBuffer.clear();
+        pingBuffer.flip();
+        outputBuffer.put(pingBuffer);
     }
 
     private class WebSocketTransportWrapper implements TransportWrapper {
-        private final TransportInput _underlyingInput;
-        private final TransportOutput _underlyingOutput;
-        private final ByteBuffer _head;
+        private final TransportInput underlyingInput;
+        private final TransportOutput underlyingOutput;
+        private final ByteBuffer head;
 
         private WebSocketTransportWrapper(TransportInput input, TransportOutput output) {
-            _underlyingInput = input;
-            _underlyingOutput = output;
-            _head = _outputBuffer.asReadOnlyBuffer();
-            _head.limit(0);
+            underlyingInput = input;
+            underlyingOutput = output;
+            head = outputBuffer.asReadOnlyBuffer();
+            head.limit(0);
         }
 
         private void readInputBuffer() {
-            ByteBufferUtils.pour(_inputBuffer, _temp);
+            ByteBufferUtils.pour(inputBuffer, tempBuffer);
         }
 
         private boolean sendToUnderlyingInput() {
-            boolean _readComplete = false;
-            switch (_lastType) {
+            boolean readComplete = false;
+            switch (lastType) {
                 case WEB_SOCKET_MESSAGE_TYPE_UNKNOWN:
-                    _wsInputBuffer.position(_wsInputBuffer.limit());
-                    _wsInputBuffer.limit(_wsInputBuffer.capacity());
+                    wsInputBuffer.position(wsInputBuffer.limit());
+                    wsInputBuffer.limit(wsInputBuffer.capacity());
                     break;
                 case WEB_SOCKET_MESSAGE_TYPE_CHUNK:
-                    _wsInputBuffer.position(_wsInputBuffer.limit());
-                    _wsInputBuffer.limit(_wsInputBuffer.capacity());
+                    wsInputBuffer.position(wsInputBuffer.limit());
+                    wsInputBuffer.limit(wsInputBuffer.capacity());
                     break;
                 case WEB_SOCKET_MESSAGE_TYPE_AMQP:
-                    _wsInputBuffer.flip();
+                    wsInputBuffer.flip();
 
-                    int bytes2 = pourAll(_wsInputBuffer, _underlyingInput);
+                    int bytes2 = pourAll(wsInputBuffer, underlyingInput);
                     if (bytes2 == Transport.END_OF_STREAM) {
-                        _tail_closed = true;
+                        tailClosed = true;
                     }
-                    //_underlyingInput.process();
+                    //underlyingInput.process();
 
-                    _wsInputBuffer.compact();
-                    _wsInputBuffer.flip();
-                    _readComplete = true;
+                    wsInputBuffer.compact();
+                    wsInputBuffer.flip();
+                    readComplete = true;
                     break;
                 case WEB_SOCKET_MESSAGE_TYPE_CLOSE:
-                    _wsInputBuffer.flip();
-                    _pingBuffer.put(_wsInputBuffer);
-                    _state = WebSocketState.PN_WS_CONNECTED_CLOSING;
+                    wsInputBuffer.flip();
+                    pingBuffer.put(wsInputBuffer);
+                    webSocketState = WebSocketState.PN_WS_CONNECTED_CLOSING;
 
-                    _wsInputBuffer.compact();
-                    _wsInputBuffer.flip();
-                    _readComplete = true;
+                    wsInputBuffer.compact();
+                    wsInputBuffer.flip();
+                    readComplete = true;
                     break;
                 case WEB_SOCKET_MESSAGE_TYPE_PING:
-                    _wsInputBuffer.flip();
-                    _pingBuffer.put(_wsInputBuffer);
-                    _state = WebSocketState.PN_WS_CONNECTED_PONG;
+                    wsInputBuffer.flip();
+                    pingBuffer.put(wsInputBuffer);
+                    webSocketState = WebSocketState.PN_WS_CONNECTED_PONG;
 
-                    _wsInputBuffer.compact();
-                    _wsInputBuffer.flip();
-                    _readComplete = true;
+                    wsInputBuffer.compact();
+                    wsInputBuffer.flip();
+                    readComplete = true;
                     break;
+                default:
+                    assert false : String.format("unexpected value for WebSocketFrameReadState: %s", lastType);
             }
-            _wsInputBuffer.position(_wsInputBuffer.limit());
-            _wsInputBuffer.limit(_wsInputBuffer.capacity());
-            return _readComplete;
+            wsInputBuffer.position(wsInputBuffer.limit());
+            wsInputBuffer.limit(wsInputBuffer.capacity());
+            return readComplete;
         }
 
         private void processInput() throws TransportException {
-            switch (_state) {
+            switch (webSocketState) {
                 case PN_WS_CONNECTING:
-                    if (_webSocketHandler.validateUpgradeReply(_inputBuffer)) {
-                        _state = WebSocketState.PN_WS_CONNECTED_FLOW;
+                    if (webSocketHandler.validateUpgradeReply(inputBuffer)) {
+                        webSocketState = WebSocketState.PN_WS_CONNECTED_FLOW;
                     }
-                    _inputBuffer.compact();
+                    inputBuffer.compact();
                     break;
                 case PN_WS_CONNECTED_FLOW:
                 case PN_WS_CONNECTED_PONG:
 
-                    if (_inputBuffer.remaining() > 0) {
-                        boolean _readComplete = false;
-                        while (!_readComplete) {
-                            switch (_frameReadState) {
+                    if (inputBuffer.remaining() > 0) {
+                        boolean readComplete = false;
+                        while (!readComplete) {
+                            switch (frameReadState) {
                                 //State 1: Init_Read
                                 case INIT_READ:
                                     //Reset the bytes read count
-                                    _bytesRead = 0;
+                                    bytesRead = 0;
                                     //Determine how much to grab from the input buffer and only take that
                                     readInputBuffer();
 
-                                    _frameReadState = _temp.position() < 2 ? WebSocketFrameReadState.CHUNK_READ : WebSocketFrameReadState.HEADER_READ;
-                                    _readComplete = _frameReadState == WebSocketFrameReadState.CHUNK_READ;
+                                    frameReadState = tempBuffer.position() < 2
+                                            ? WebSocketFrameReadState.CHUNK_READ
+                                            : WebSocketFrameReadState.HEADER_READ;
+                                    readComplete = frameReadState == WebSocketFrameReadState.CHUNK_READ;
                                     break;
 
                                 //State 2: Chunk_Read
@@ -278,8 +301,8 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
                                     //Determine how much to grab from the input buffer and only take that
                                     readInputBuffer();
 
-                                    _frameReadState = _temp.position() < 2 ? _frameReadState : WebSocketFrameReadState.HEADER_READ;
-                                    _readComplete = _frameReadState == WebSocketFrameReadState.CHUNK_READ;
+                                    frameReadState = tempBuffer.position() < 2 ? frameReadState : WebSocketFrameReadState.HEADER_READ;
+                                    readComplete = frameReadState == WebSocketFrameReadState.CHUNK_READ;
                                     break;
 
                                 //State 3: Header_Read
@@ -287,60 +310,67 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
                                     //Determine how much to grab from the input buffer and only take that
                                     readInputBuffer();
 
-                                    _temp.flip();
-                                    WebSocketHandler.WebsocketTuple unwrapResult = unwrapBuffer(_temp);
-                                    _lastType = unwrapResult.getType();
-                                    _lastLength = unwrapResult.getLength();
+                                    tempBuffer.flip();
+                                    WebSocketHandler.WebsocketTuple unwrapResult = unwrapBuffer(tempBuffer);
+                                    lastType = unwrapResult.getType();
+                                    lastLength = unwrapResult.getLength();
 
-                                    _frameReadState = _lastType == WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK ? WebSocketFrameReadState.CHUNK_READ : WebSocketFrameReadState.CONTINUED_FRAME_READ;
-                                    _readComplete = _frameReadState == WebSocketFrameReadState.CHUNK_READ || _temp.position() == _temp.limit();
+                                    frameReadState = lastType == WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK
+                                            ? WebSocketFrameReadState.CHUNK_READ
+                                            : WebSocketFrameReadState.CONTINUED_FRAME_READ;
+                                    readComplete = frameReadState == WebSocketFrameReadState.CHUNK_READ
+                                            || tempBuffer.position() == tempBuffer.limit();
 
-                                    if (_frameReadState == WebSocketFrameReadState.CONTINUED_FRAME_READ) {
-                                        _temp.compact();
+                                    if (frameReadState == WebSocketFrameReadState.CONTINUED_FRAME_READ) {
+                                        tempBuffer.compact();
                                     } else {
                                         //Unflip the buffer to continue writing to it
-                                        _temp.position(_temp.limit());
-                                        _temp.limit(_temp.capacity());
+                                        tempBuffer.position(tempBuffer.limit());
+                                        tempBuffer.limit(tempBuffer.capacity());
                                     }
 
                                     break;
 
-                                //State 4: Continued_Frame_Read (Similar to Chunk_Read but reading until we've read the number of bytes specified when unwrapping the buffer)
+                                //State 4: Continued_Frame_Read (Similar to Chunk_Read but reading until
+                                // we've read the number of bytes specified when unwrapping the buffer)
                                 case CONTINUED_FRAME_READ:
                                     //Determine how much to grab from the input buffer and only take that
                                     readInputBuffer();
-                                    _temp.flip();
+                                    tempBuffer.flip();
 
                                     final byte[] data;
-                                    if (_temp.remaining() >= _lastLength - _bytesRead) {
-                                        data = new byte[(int) (_lastLength - _bytesRead)];
-                                        _temp.get(data, 0, (int) (_lastLength - _bytesRead));
-                                        _wsInputBuffer.put(data);
-                                        _bytesRead += _lastLength - _bytesRead;
-                                    }
-                                    //Otherwise the remaining bytes is < the rest that we need
-                                    else {
-                                        data = new byte[_temp.remaining()];
-                                        _temp.get(data);
-                                        _wsInputBuffer.put(data);
-                                        _bytesRead += data.length;
+                                    if (tempBuffer.remaining() >= lastLength - bytesRead) {
+                                        data = new byte[(int) (lastLength - bytesRead)];
+                                        tempBuffer.get(data, 0, (int) (lastLength - bytesRead));
+                                        wsInputBuffer.put(data);
+                                        bytesRead += lastLength - bytesRead;
+                                    } else {
+                                        //Otherwise the remaining bytes is < the rest that we need
+                                        data = new byte[tempBuffer.remaining()];
+                                        tempBuffer.get(data);
+                                        wsInputBuffer.put(data);
+                                        bytesRead += data.length;
                                     }
 
                                     //Send whatever we have
                                     sendToUnderlyingInput();
 
-                                    _frameReadState = _bytesRead == _lastLength ? WebSocketFrameReadState.INIT_READ : WebSocketFrameReadState.CONTINUED_FRAME_READ;
-                                    _readComplete = _temp.remaining() == 0;
-                                    _temp.compact();
+                                    frameReadState = bytesRead
+                                            == lastLength ? WebSocketFrameReadState.INIT_READ : WebSocketFrameReadState.CONTINUED_FRAME_READ;
+                                    readComplete = tempBuffer.remaining() == 0;
+                                    tempBuffer.compact();
                                     break;
 
                                 //State 5: Read_Error
                                 case READ_ERROR:
                                     break;
+
+                                default:
+                                    assert false : String.format("unexpected value for WebSocketFrameReadState: %s", frameReadState);
                             }
                         }
                     }
-                    _inputBuffer.compact();
+                    inputBuffer.compact();
                     break;
                 case PN_WS_NOT_STARTED:
                 case PN_WS_CLOSED:
@@ -352,45 +382,45 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
         @Override
         public int capacity() {
-            if (_isWebSocketEnabled) {
-                if (_tail_closed) {
+            if (isWebSocketEnabled) {
+                if (tailClosed) {
                     return Transport.END_OF_STREAM;
                 } else {
-                    return _inputBuffer.remaining();
+                    return inputBuffer.remaining();
                 }
             } else {
-                return _underlyingInput.capacity();
+                return underlyingInput.capacity();
             }
         }
 
         @Override
         public int position() {
-            if (_isWebSocketEnabled) {
-                if (_tail_closed) {
+            if (isWebSocketEnabled) {
+                if (tailClosed) {
                     return Transport.END_OF_STREAM;
                 } else {
-                    return _inputBuffer.position();
+                    return inputBuffer.position();
                 }
             } else {
-                return _underlyingInput.position();
+                return underlyingInput.position();
             }
         }
 
         @Override
         public ByteBuffer tail() {
-            if (_isWebSocketEnabled) {
-                return _inputBuffer;
+            if (isWebSocketEnabled) {
+                return inputBuffer;
             } else {
-                return _underlyingInput.tail();
+                return underlyingInput.tail();
             }
         }
 
         @Override
         public void process() throws TransportException {
-            if (_isWebSocketEnabled) {
-                _inputBuffer.flip();
+            if (isWebSocketEnabled) {
+                inputBuffer.flip();
 
-                switch (_state) {
+                switch (webSocketState) {
                     case PN_WS_CONNECTING:
                     case PN_WS_CONNECTED_FLOW:
                         processInput();
@@ -398,178 +428,180 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
                     case PN_WS_NOT_STARTED:
                     case PN_WS_FAILED:
                     default:
-                        _underlyingInput.process();
+                        underlyingInput.process();
                 }
             } else {
-                _underlyingInput.process();
+                underlyingInput.process();
             }
         }
 
         @Override
         public void close_tail() {
-            _tail_closed = true;
-            if (_isWebSocketEnabled) {
-                _head_closed = true;
-                _underlyingInput.close_tail();
+            tailClosed = true;
+            if (isWebSocketEnabled) {
+                headClosed = true;
+                underlyingInput.close_tail();
             } else {
-                _underlyingInput.close_tail();
+                underlyingInput.close_tail();
             }
         }
 
         @Override
         public int pending() {
-            if (_isWebSocketEnabled) {
-                switch (_state) {
+            if (isWebSocketEnabled) {
+                switch (webSocketState) {
                     case PN_WS_NOT_STARTED:
-                        if (_outputBuffer.position() == 0) {
-                            _state = WebSocketState.PN_WS_CONNECTING;
+                        if (outputBuffer.position() == 0) {
+                            webSocketState = WebSocketState.PN_WS_CONNECTING;
 
                             writeUpgradeRequest();
 
-                            _head.limit(_outputBuffer.position());
+                            head.limit(outputBuffer.position());
 
-                            if (_head_closed) {
-                                _state = WebSocketState.PN_WS_FAILED;
+                            if (headClosed) {
+                                webSocketState = WebSocketState.PN_WS_FAILED;
                                 return Transport.END_OF_STREAM;
                             } else {
-                                return _outputBuffer.position();
+                                return outputBuffer.position();
                             }
                         } else {
-                            return _outputBuffer.position();
+                            return outputBuffer.position();
                         }
                     case PN_WS_CONNECTING:
 
-                        if (_head_closed && (_outputBuffer.position() == 0)) {
-                            _state = WebSocketState.PN_WS_FAILED;
+                        if (headClosed && (outputBuffer.position() == 0)) {
+                            webSocketState = WebSocketState.PN_WS_FAILED;
                             return Transport.END_OF_STREAM;
                         } else {
-                            return _outputBuffer.position();
+                            return outputBuffer.position();
                         }
                     case PN_WS_CONNECTED_FLOW:
-                        _underlyingOutputSize = _underlyingOutput.pending();
+                        underlyingOutputSize = underlyingOutput.pending();
 
-                        if (_underlyingOutputSize > 0) {
-                            _webSocketHeaderSize = _webSocketHandler.calculateHeaderSize(_underlyingOutputSize);
-                            return _underlyingOutputSize + _webSocketHeaderSize;
+                        if (underlyingOutputSize > 0) {
+                            webSocketHeaderSize = webSocketHandler.calculateHeaderSize(underlyingOutputSize);
+                            return underlyingOutputSize + webSocketHeaderSize;
                         } else {
-                            return _underlyingOutputSize;
+                            return underlyingOutputSize;
                         }
                     case PN_WS_CONNECTED_PONG:
-                        _state = WebSocketState.PN_WS_CONNECTED_FLOW;
+                        webSocketState = WebSocketState.PN_WS_CONNECTED_FLOW;
 
                         writePong();
 
-                        _head.limit(_outputBuffer.position());
+                        head.limit(outputBuffer.position());
 
-                        if (_head_closed) {
-                            _state = WebSocketState.PN_WS_FAILED;
+                        if (headClosed) {
+                            webSocketState = WebSocketState.PN_WS_FAILED;
                             return Transport.END_OF_STREAM;
                         } else {
-                            return _outputBuffer.position();
+                            return outputBuffer.position();
                         }
                     case PN_WS_CONNECTED_CLOSING:
-                        _state = WebSocketState.PN_WS_CLOSED;
+                        webSocketState = WebSocketState.PN_WS_CLOSED;
 
                         writeClose();
 
-                        _head.limit(_outputBuffer.position());
+                        head.limit(outputBuffer.position());
 
-                        if (_head_closed) {
-                            _state = WebSocketState.PN_WS_FAILED;
+                        if (headClosed) {
+                            webSocketState = WebSocketState.PN_WS_FAILED;
                             return Transport.END_OF_STREAM;
                         } else {
-                            return _outputBuffer.position();
+                            return outputBuffer.position();
                         }
                     case PN_WS_FAILED:
                     default:
                         return Transport.END_OF_STREAM;
                 }
             } else {
-                return _underlyingOutput.pending();
+                return underlyingOutput.pending();
             }
         }
 
         @Override
         public ByteBuffer head() {
-            if (_isWebSocketEnabled) {
-                switch (_state) {
+            if (isWebSocketEnabled) {
+                switch (webSocketState) {
                     case PN_WS_CONNECTING:
                     case PN_WS_CONNECTED_PONG:
                     case PN_WS_CONNECTED_CLOSING:
-                        return _head;
+                        return head;
                     case PN_WS_CONNECTED_FLOW:
-                        _underlyingOutputSize = _underlyingOutput.pending();
+                        underlyingOutputSize = underlyingOutput.pending();
 
-                        if (_underlyingOutputSize > 0) {
-                            wrapBuffer(_underlyingOutput.head(), _outputBuffer);
+                        if (underlyingOutputSize > 0) {
+                            wrapBuffer(underlyingOutput.head(), outputBuffer);
 
-                            _webSocketHeaderSize = _outputBuffer.position() - _underlyingOutputSize;
+                            webSocketHeaderSize = outputBuffer.position() - underlyingOutputSize;
 
-                            _head.limit(_outputBuffer.position());
+                            head.limit(outputBuffer.position());
                         }
 
-                        return _head;
+                        return head;
                     case PN_WS_NOT_STARTED:
                     case PN_WS_CLOSED:
                     case PN_WS_FAILED:
                     default:
-                        return _underlyingOutput.head();
+                        return underlyingOutput.head();
                 }
 
             } else {
-                return _underlyingOutput.head();
+                return underlyingOutput.head();
             }
         }
 
         @Override
         public void pop(int bytes) {
-            if (_isWebSocketEnabled) {
-                switch (_state) {
+            if (isWebSocketEnabled) {
+                switch (webSocketState) {
                     case PN_WS_CONNECTING:
-                        if (_outputBuffer.position() != 0) {
-                            _outputBuffer.flip();
-                            _outputBuffer.position(bytes);
-                            _outputBuffer.compact();
-                            _head.position(0);
-                            _head.limit(_outputBuffer.position());
+                        if (outputBuffer.position() != 0) {
+                            outputBuffer.flip();
+                            outputBuffer.position(bytes);
+                            outputBuffer.compact();
+                            head.position(0);
+                            head.limit(outputBuffer.position());
                         } else {
-                            _underlyingOutput.pop(bytes);
+                            underlyingOutput.pop(bytes);
                         }
                         break;
                     case PN_WS_CONNECTED_FLOW:
                     case PN_WS_CONNECTED_PONG:
                     case PN_WS_CONNECTED_CLOSING:
-                        if ((bytes >= _webSocketHeaderSize) && (_outputBuffer.position() != 0)) {
-                            _outputBuffer.flip();
-                            _outputBuffer.position(bytes);
-                            _outputBuffer.compact();
-                            _head.position(0);
-                            _head.limit(_outputBuffer.position());
-                            _underlyingOutput.pop(bytes - _webSocketHeaderSize);
-                            _webSocketHeaderSize = 0;
-                        } else if ((bytes > 0) && (bytes < _webSocketHeaderSize)) {
-                            _webSocketHeaderSize -= bytes;
+                        if ((bytes >= webSocketHeaderSize) && (outputBuffer.position() != 0)) {
+                            outputBuffer.flip();
+                            outputBuffer.position(bytes);
+                            outputBuffer.compact();
+                            head.position(0);
+                            head.limit(outputBuffer.position());
+                            underlyingOutput.pop(bytes - webSocketHeaderSize);
+                            webSocketHeaderSize = 0;
+                        } else if ((bytes > 0) && (bytes < webSocketHeaderSize)) {
+                            webSocketHeaderSize -= bytes;
                         } else {
-                            _underlyingOutput.pop(bytes);
+                            underlyingOutput.pop(bytes);
                         }
                         break;
                     case PN_WS_NOT_STARTED:
                     case PN_WS_CLOSED:
                     case PN_WS_FAILED:
-                        _underlyingOutput.pop(bytes);
+                        underlyingOutput.pop(bytes);
                         break;
+                    default:
+                        assert false : String.format("unexpected value for WebSocketFrameReadState: %s", webSocketState);
                 }
             } else {
-                _underlyingOutput.pop(bytes);
+                underlyingOutput.pop(bytes);
             }
         }
 
         @Override
         public void close_head() {
-            _underlyingOutput.close_head();
+            underlyingOutput.close_head();
         }
 
-        public final char[] HEX_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        public final char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
         private String convertToHex(byte[] bb) {
             final int lgt = bb.length;
@@ -578,8 +610,8 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
             for (int i = 0, j = 0; i < lgt; i++) {
                 out[j++] = '0';
                 out[j++] = 'x';
-                out[j++] = HEX_DIGITS[(0xF0 & bb[i]) >>> 4];
-                out[j++] = HEX_DIGITS[0x0F & bb[i]];
+                out[j++] = hexDigits[(0xF0 & bb[i]) >>> 4];
+                out[j++] = hexDigits[0x0F & bb[i]];
                 out[j++] = '|';
             }
             return new String(out);

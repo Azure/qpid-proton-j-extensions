@@ -2,75 +2,76 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
+
 package com.microsoft.azure.proton.transport.ws;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
 
 /*
- * Provides interface for WebSocket
+ * Provides interface for WebSocket.
  */
 public interface WebSocket {
     public enum WebSocketState {
         /**
-         * WebSocket
+         * WebSocket.
          */
         PN_WS_NOT_STARTED,
         /**
-         * Pending connection
+         * Pending connection.
          */
         PN_WS_CONNECTING,
         /**
-         * Connected and messages flow
+         * Connected and messages flow.
          */
         PN_WS_CONNECTED_FLOW,
         /**
-         * Connected and ping-pong
+         * Connected and ping-pong.
          */
         PN_WS_CONNECTED_PONG,
         /**
-         * Connected and received a close
+         * Connected and received a close.
          */
         PN_WS_CONNECTED_CLOSING,
         /**
-         * Connection closed
+         * Connection closed.
          */
         PN_WS_CLOSED,
         /**
-         * Connection failed
+         * Connection failed.
          */
         PN_WS_FAILED
     }
 
     public enum WebSocketFrameReadState {
         /**
-         * The initial read
+         * The initial read.
          */
         INIT_READ,
 
         /**
-         * Reading chunks of bytes until a full header is read
+         * Reading chunks of bytes until a full header is read.
          */
         CHUNK_READ,
 
         /**
-         * Continue reading bytes until correct number of bytes are read
+         * Continue reading bytes until correct number of bytes are read.
          */
         CONTINUED_FRAME_READ,
 
         /**
-         * Full header has been read
+         * Full header has been read.
          */
         HEADER_READ,
 
         /**
-         * An error reading
+         * An error reading.
          */
         READ_ERROR
     }
 
     /**
-     * Configure WebSocket connection
+     * Configure WebSocket connection.
      *
      * @param host              the hots name
      * @param path              the resource path
@@ -82,7 +83,7 @@ public interface WebSocket {
     void configure(String host, String path, int port, String protocol, Map<String, String> additionalHeaders, WebSocketHandler webSocketHandler);
 
     /**
-     * Add WebSocket frame to send the given buffer
+     * Add WebSocket frame to send the given buffer.
      *
      * @param srcBuffer the source buffer
      * @param dstBuffer the destination buffer
@@ -90,7 +91,7 @@ public interface WebSocket {
     void wrapBuffer(ByteBuffer srcBuffer, ByteBuffer dstBuffer);
 
     /**
-     * Remove WebSocket frame from the given buffer
+     * Remove WebSocket frame from the given buffer.
      *
      * @param buffer the buffer to unwrap
      * @return The payload of the given WebSocket frame.
