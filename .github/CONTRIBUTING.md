@@ -30,7 +30,7 @@ questions/concerns/comments, feel free to file an issue [here](https://github.co
 When filing a pull request, the following must be true:
 
 - Tests have been added (if needed) to validate changes
-- Zero CheckStyle violations
+- Zero CheckStyle violations - `mvn checkstyle:check` runs clean 
 - `mvn clean test` runs clean!  
 
 ### General Guidelines
