@@ -75,12 +75,20 @@ public interface WebSocket {
      *
      * @param host              the hots name
      * @param path              the resource path
+     * @param query             the query
      * @param port              the port
      * @param protocol          the base protocol
      * @param additionalHeaders the Map of additional headers
      * @param webSocketHandler  the web socket handler
      */
-    void configure(String host, String path, int port, String protocol, Map<String, String> additionalHeaders, WebSocketHandler webSocketHandler);
+    void configure(
+            String host,
+            String path,
+            String query,
+            int port,
+            String protocol,
+            Map<String, String> additionalHeaders,
+            WebSocketHandler webSocketHandler);
 
     /**
      * Add WebSocket frame to send the given buffer.

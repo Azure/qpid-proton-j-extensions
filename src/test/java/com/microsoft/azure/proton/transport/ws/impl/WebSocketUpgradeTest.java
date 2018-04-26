@@ -50,7 +50,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, additionalHeaders);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -147,7 +147,7 @@ public class WebSocketUpgradeTest {
         String queryKey = "?iothub-no-client-cert=";
         String queryValue = "true";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, null);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -225,7 +225,7 @@ public class WebSocketUpgradeTest {
         String queryKey = "?iothub-no-client-cert=";
         String queryValue = "true";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath,queryKey + queryValue, webSocketPort, webSocketProtocol, null);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -294,89 +294,6 @@ public class WebSocketUpgradeTest {
         assertTrue(isHostHeaderOk);
     }
 
-    @Test
-    public void testCreateUpgradeRequest_clear_additonal_headers() {
-        String hostName = "host_XXX";
-        String webSocketPath = "path1/path2";
-        int webSocketPort = 1234567890;
-        String webSocketProtocol = "subprotocol_name";
-        String queryKey = "?iothub-no-client-cert=";
-        String queryValue = "true";
-        Map<String, String> additionalHeaders = new HashMap<String, String>();
-        additionalHeaders.put("header1", "content1");
-        additionalHeaders.put("header2", "content2");
-        additionalHeaders.put("header3", "content3");
-
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
-
-        webSocketUpgrade.clearAdditionalHeaders();
-        String actual = webSocketUpgrade.createUpgradeRequest();
-
-        Boolean isLineCountOk = false;
-        Boolean isStatusLineOk = false;
-        Boolean isUpgradeHeaderOk = false;
-        Boolean isConnectionHeaderOk = false;
-        Boolean isWebSocketVersionHeaderOk = false;
-        Boolean isWebSocketKeyHeaderOk = false;
-        Boolean isWebSocketProtocolHeaderOk = false;
-        Boolean isHostHeaderOk = false;
-
-        Scanner scanner = new Scanner(actual);
-
-        int lineCount = 0;
-        while (scanner.hasNextLine()) {
-            lineCount++;
-
-            String line = scanner.nextLine();
-            if (line.equals("GET https://" + hostName + "/" + webSocketPath + queryKey + queryValue + " HTTP/1.1")) {
-                isStatusLineOk = true;
-                continue;
-            }
-            if (line.equals("Connection: Upgrade,Keep-Alive")) {
-                isConnectionHeaderOk = true;
-                continue;
-            }
-            if (line.equals("Upgrade: websocket")) {
-                isUpgradeHeaderOk = true;
-                continue;
-            }
-            if (line.equals("Sec-WebSocket-Version: 13")) {
-                isWebSocketVersionHeaderOk = true;
-                continue;
-            }
-            if (line.startsWith("Sec-WebSocket-Key: ")) {
-                String keyBase64 = line.substring(19);
-                if (keyBase64.length() == 24) {
-                    byte[] decoded = Base64.decodeBase64Local(keyBase64.getBytes());
-                    if (decoded.length == 16) {
-                        isWebSocketKeyHeaderOk = true;
-                    }
-                }
-                continue;
-            }
-            if (line.equals("Sec-WebSocket-Protocol: " + webSocketProtocol)) {
-                isWebSocketProtocolHeaderOk = true;
-                continue;
-            }
-            if (line.equals("Host: host_XXX")) {
-                isHostHeaderOk = true;
-                continue;
-            }
-        }
-        if (lineCount == 8) {
-            isLineCountOk = true;
-        }
-
-        assertTrue(isLineCountOk);
-        assertTrue(isStatusLineOk);
-        assertTrue(isUpgradeHeaderOk);
-        assertTrue(isConnectionHeaderOk);
-        assertTrue(isWebSocketVersionHeaderOk);
-        assertTrue(isWebSocketKeyHeaderOk);
-        assertTrue(isWebSocketProtocolHeaderOk);
-        assertTrue(isHostHeaderOk);
-    }
-
     @Test(expected = InvalidParameterException.class)
     public void testCreateUpgradeRequest_empty_host() {
         String hostName = "";
@@ -388,7 +305,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath,"", webSocketPort, webSocketProtocol, additionalHeaders);
         webSocketUpgrade.createUpgradeRequest();
     }
 
@@ -403,7 +320,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         webSocketUpgrade.createUpgradeRequest();
     }
 
@@ -414,7 +331,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
@@ -443,7 +360,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
         // Generate new key
@@ -474,7 +391,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String serverKey = "ABCDEFGHIJKLM123";
 
         String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
@@ -495,7 +412,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
@@ -523,7 +440,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
@@ -551,7 +468,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
@@ -579,7 +496,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
         String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
@@ -607,7 +524,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
 
         String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
@@ -631,7 +548,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
 
         String responseStr = "";
 
@@ -649,7 +566,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         webSocketUpgrade.createUpgradeRequest();
 
         String actual = webSocketUpgrade.toString();
@@ -674,7 +591,7 @@ public class WebSocketUpgradeTest {
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
 
         String expexted = "WebSocketUpgrade [host=" + hostName +
                 ", path=/" + webSocketPath +

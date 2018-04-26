@@ -44,6 +44,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     private String host = "";
     private String path = "";
+    private String query = "";
     private int port = 0;
     private String protocol = "";
     private Map<String, String> additionalHeaders = null;
@@ -57,7 +58,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     /**
      * Create WebSocket transport layer - which, after configuring using
-     * the {@link #configure(String, String, int, String, Map, WebSocketHandler)} API
+     * the {@link #configure(String, String, String, int, String, Map, WebSocketHandler)} API
      * is ready for layering in qpid-proton-j transport layers, using
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
      */
@@ -86,6 +87,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
     public void configure(
             String host,
             String path,
+            String query,
             int port,
             String protocol,
             Map<String, String> additionalHeaders,
@@ -168,6 +170,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
                 .append(", protocol=").append(protocol)
                 .append(", host=").append(host)
                 .append(", path=").append(path)
+                .append(", query=").append(query)
                 .append(", port=").append(port);
 
         if ((additionalHeaders != null) && (!additionalHeaders.isEmpty())) {
@@ -188,7 +191,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     protected void writeUpgradeRequest() {
         outputBuffer.clear();
-        String request = webSocketHandler.createUpgradeRequest(host, path, port, protocol, additionalHeaders);
+        String request = webSocketHandler.createUpgradeRequest(host, path, query, port, protocol, additionalHeaders);
         outputBuffer.put(request.getBytes());
     }
 
