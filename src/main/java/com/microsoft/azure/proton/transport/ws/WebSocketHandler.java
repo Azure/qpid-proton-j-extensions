@@ -19,7 +19,12 @@ public interface WebSocketHandler {
     }
 
     String createUpgradeRequest(
-            String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders);
+            String hostName,
+            String webSocketPath,
+            String webSocketQuery,
+            int webSocketPort,
+            String webSocketProtocol,
+            Map<String, String> additionalHeaders);
 
     Boolean validateUpgradeReply(ByteBuffer buffer);
 

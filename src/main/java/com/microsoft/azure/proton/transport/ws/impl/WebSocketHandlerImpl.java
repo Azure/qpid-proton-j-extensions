@@ -22,10 +22,11 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     public String createUpgradeRequest(
             String hostName,
             String webSocketPath,
+            String webSocketQuery,
             int webSocketPort,
             String webSocketProtocol,
             Map<String, String> additionalHeaders) {
-        webSocketUpgrade = createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        webSocketUpgrade = createWebSocketUpgrade(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders);
         return webSocketUpgrade.createUpgradeRequest();
     }
 
@@ -217,8 +218,13 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     }
 
     protected WebSocketUpgrade createWebSocketUpgrade(
-            String hostName, String webSocketPath, int webSocketPort, String webSocketProtocol, Map<String, String> additionalHeaders) {
-        return new WebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+            String hostName,
+            String webSocketPath,
+            String webSocketQuery,
+            int webSocketPort,
+            String webSocketProtocol,
+            Map<String, String> additionalHeaders) {
+        return new WebSocketUpgrade(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders);
     }
 
     protected byte[] createRandomMaskingKey() {

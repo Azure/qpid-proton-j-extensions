@@ -48,7 +48,7 @@ public class WebSocketHandlerImplTest {
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
-        String actual = webSocketHandler.createUpgradeRequest(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        String actual = webSocketHandler.createUpgradeRequest(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, additionalHeaders);
 
         Boolean isLineCountOk = false;
         Boolean isStatusLineOk = false;
@@ -150,9 +150,9 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
-        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
-        verify(spyWebSocketHandler, times(1)).createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        verify(spyWebSocketHandler, times(1)).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         verify(mockWebSocketUpgrade, times(1)).createUpgradeRequest();
     }
 
@@ -224,7 +224,7 @@ public class WebSocketHandlerImplTest {
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
         String webSocketProtocol = "subprotocol_name";
-        Map<String, String> additionalHeaders = new HashMap<String, String>();
+        final Map<String, String> additionalHeaders = new HashMap<String, String>();
         additionalHeaders.put("header1", "content1");
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
@@ -237,10 +237,10 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         doReturn(true).when(mockWebSocketUpgrade).validateUpgradeReply(data);
 
-        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         assertTrue(spyWebSocketHandler.validateUpgradeReply(buffer));
         assertFalse(mockWebSocketUpgrade == null);
         verify(mockWebSocketUpgrade, times(1)).validateUpgradeReply(data);
@@ -266,10 +266,10 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         doReturn(true).when(mockWebSocketUpgrade).validateUpgradeReply(data);
 
-        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, webSocketPort, webSocketProtocol, additionalHeaders);
+        spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         assertFalse(spyWebSocketHandler.validateUpgradeReply(buffer));
         verify(mockWebSocketUpgrade, times(0)).validateUpgradeReply(data);
     }
