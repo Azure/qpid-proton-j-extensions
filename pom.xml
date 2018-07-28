@@ -6,10 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.microsoft.azure</groupId>
-    <artifactId>qpid-protonj-extensions</artifactId>
+    <artifactId>qpid-proton-j-extensions</artifactId>
     <version>1.0.0</version>
 
-    <url>https://github.com/Azure/qpid-protonj-extensions</url>
+    <url>https://github.com/Azure/qpid-proton-j-extensions</url>
 
     <properties>
         <proton-j-version>0.26.0</proton-j-version>
