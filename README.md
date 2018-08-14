@@ -15,7 +15,9 @@
 
 The Advanced Message Queuing Protocol (AMQP) is an open internet protocol for messaging. Several messaging platforms hosted on Azure like Azure Service Bus, Azure Event Hubs and Azure IOT Hub supports AMQP. To know more about AMQP refer the [complete protocol specification here](http://docs.oasis-open.org/amqp/core/v1.0/amqp-core-complete-v1.0.pdf). In our java client libraries we use [qpid-proton-j library](https://github.com/apache/qpid-proton-j), an open source implementation of AMQP. Extensions built atop [qpid-proton-j library](https://github.com/apache/qpid-proton-j) are hosted here.
 
-## THIS PROJECT IS UNDER ACTIVE DEVELOPMENT - HENCE ISSUES TAB IS DISABLED, WE WILL ENABLE THIS VERY SOON!
+## ISSUES
+
+Currently, this library is used only in conjunction with [IOT SDK](https://github.com/Azure/azure-iot-sdk-java) or [EventHubs SDK](https://github.com/Azure/azure-event-hubs-java). File the issues directly on the respective projects.
 
 ## Contributing
 
