@@ -5,10 +5,11 @@
 package com.microsoft.azure.proton.transport.proxy;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 
 public interface ProxyHandler {
 
-    String createProxyRequest(String hostName);
+    String createProxyRequest(String hostName, Map<String, String> additionalHeaders);
 
     Boolean validateProxyReply(ByteBuffer buffer);
 

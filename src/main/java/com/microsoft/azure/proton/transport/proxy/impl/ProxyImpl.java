@@ -7,6 +7,7 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
+
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.TransportInput;
@@ -67,6 +68,12 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     && (proxyState != ProxyState.PN_PROXY_CONNECTED || proxyState != ProxyState.PN_PROXY_FAILED);
         }
 
+        protected void writeProxyRequest() {
+            outputBuffer.clear();
+            String request = proxyHandler.createProxyRequest(host, null);
+            outputBuffer.put(request.getBytes());
+        }
+
         @Override
         public int capacity() {
             if (isProxyNegotiationMode()) {
@@ -104,7 +111,22 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public void process() throws TransportException {
+            if (isProxyNegotiationMode()) {
+                inputBuffer.flip();
 
+                switch (proxyState) {
+                    case PN_PROXY_CONNECTING:
+                        if (proxyHandler.validateProxyReply(inputBuffer)) {
+                            proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        }
+                        inputBuffer.compact();
+                        break;
+                    default:
+                        underlyingInput.process();
+                }
+            } else {
+                underlyingInput.process();
+            }
         }
 
         @Override
@@ -119,18 +141,74 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public int pending() {
-            // TODO: Write PROXY REQUEST
-            return 0;
+            if (isProxyNegotiationMode()) {
+                switch (proxyState) {
+                    case PN_PROXY_NOT_STARTED:
+                        if (outputBuffer.position() == 0) {
+                            proxyState = ProxyState.PN_PROXY_CONNECTING;
+                            writeProxyRequest();
+
+                            head.limit(outputBuffer.position());
+                            if (headClosed) {
+                                proxyState = ProxyState.PN_PROXY_FAILED;
+                                return Transport.END_OF_STREAM;
+                            } else {
+                                return outputBuffer.position();
+                            }
+                        } else {
+                            return outputBuffer.position();
+                        }
+
+                    case PN_PROXY_CONNECTING:
+                        if (headClosed && (outputBuffer.position() == 0)) {
+                            proxyState = ProxyState.PN_PROXY_FAILED;
+                            return Transport.END_OF_STREAM;
+                        } else {
+                            return outputBuffer.position();
+                        }
+
+                    default:
+                        return Transport.END_OF_STREAM;
+                }
+            } else {
+                return underlyingOutput.pending();
+            }
         }
 
         @Override
         public ByteBuffer head() {
-            return null;
+            if (isProxyNegotiationMode()) {
+                switch (proxyState) {
+                    case PN_PROXY_CONNECTING:
+                        return head;
+                    default:
+                        return underlyingOutput.head();
+                }
+            } else {
+                return underlyingOutput.head();
+            }
         }
 
         @Override
         public void pop(int bytes) {
-
+            if (isProxyNegotiationMode()) {
+                switch (proxyState) {
+                    case PN_PROXY_CONNECTING:
+                        if (outputBuffer.position() != 0) {
+                            outputBuffer.flip();
+                            outputBuffer.position(bytes);
+                            outputBuffer.compact();
+                            head.position(0);
+                            head.limit(outputBuffer.position());
+                        } else {
+                            underlyingOutput.pop(bytes);
+                        }
+                    default:
+                        underlyingOutput.pop(bytes);
+                }
+            } else {
+                underlyingOutput.pop(bytes);
+            }
         }
 
         @Override
