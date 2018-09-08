@@ -30,6 +30,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
 
     private ProxyHandler proxyHandler;
+    private int proxyFrameSize = 0;
 
     public ProxyImpl() {
         isProxyConfigured = false;
@@ -42,9 +43,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     @Override
     public void configure(String host, Map<String, String> headers, ProxyHandler proxyHandler) {
-        host = host;
-        headers = headers;
-        proxyHandler = proxyHandler;
+        this.host = host;
+        this.headers = headers;
+        this.proxyHandler = proxyHandler;
         isProxyConfigured = true;
     }
 
@@ -203,6 +204,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         } else {
                             underlyingOutput.pop(bytes);
                         }
+                    case PN_PROXY_CONNECTED:
                     default:
                         underlyingOutput.pop(bytes);
                 }
