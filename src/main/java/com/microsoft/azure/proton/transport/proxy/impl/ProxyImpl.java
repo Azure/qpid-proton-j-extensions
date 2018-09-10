@@ -131,7 +131,10 @@ public class ProxyImpl implements Proxy, TransportLayer {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
                         } else {
                             tailClosed = true;
-                            underlyingTransport.closed(new TransportException(responseResult.getError()));
+                            underlyingTransport.closed(
+                                    new TransportException(
+                                            "proxy connect request failed with error: " +
+                                            responseResult.getError()));
                         }
                         break;
                     default:
