@@ -66,7 +66,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         private boolean isProxyNegotiationMode() {
             return isProxyConfigured
-                    && (proxyState != ProxyState.PN_PROXY_CONNECTED || proxyState != ProxyState.PN_PROXY_FAILED);
+                    && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
         }
 
         protected void writeProxyRequest() {
@@ -195,6 +195,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
             if (isProxyNegotiationMode()) {
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
+                    case PN_PROXY_CONNECTED:
                         if (outputBuffer.position() != 0) {
                             outputBuffer.flip();
                             outputBuffer.position(bytes);
@@ -204,7 +205,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         } else {
                             underlyingOutput.pop(bytes);
                         }
-                    case PN_PROXY_CONNECTED:
+                        break;
                     default:
                         underlyingOutput.pop(bytes);
                 }
