@@ -8,6 +8,8 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
+import org.apache.qpid.proton.amqp.Symbol;
+import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.TransportInput;
@@ -27,6 +29,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private boolean isProxyConfigured;
     private String host = "";
     private Map<String, String> headers = null;
+    private Transport underlyingTransport;
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
 
     private ProxyHandler proxyHandler;
@@ -41,10 +44,15 @@ public class ProxyImpl implements Proxy, TransportLayer {
     }
 
     @Override
-    public void configure(String host, Map<String, String> headers, ProxyHandler proxyHandler) {
+    public void configure(
+            String host,
+            Map<String, String> headers,
+            ProxyHandler proxyHandler,
+            Transport underlyingTransport) {
         this.host = host;
         this.headers = headers;
         this.proxyHandler = proxyHandler;
+        this.underlyingTransport = underlyingTransport;
         isProxyConfigured = true;
     }
 
@@ -123,8 +131,10 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         if (responseResult.getIsSuccess()) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
                         } else {
-                            proxyState = ProxyState.PN_PROXY_FAILED;
-                            throw new TransportException(responseResult.getError());
+                            final ErrorCondition proxyError = new ErrorCondition();
+                            proxyError.setCondition(Symbol.getSymbol("proton:io"));
+                            proxyError.setDescription(responseResult.getError());
+                            underlyingTransport.setCondition(proxyError);
                         }
                         break;
                     default:

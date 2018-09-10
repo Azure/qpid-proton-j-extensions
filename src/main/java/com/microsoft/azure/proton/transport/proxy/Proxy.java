@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.proton.transport.proxy;
 
+import org.apache.qpid.proton.engine.Transport;
+
 import java.util.Map;
 
 public interface Proxy {
@@ -18,5 +20,6 @@ public interface Proxy {
     void configure(
             String host,
             Map<String, String> headers,
-            ProxyHandler proxyHandler);
+            ProxyHandler proxyHandler,
+            Transport underlyingTransport);
 }
