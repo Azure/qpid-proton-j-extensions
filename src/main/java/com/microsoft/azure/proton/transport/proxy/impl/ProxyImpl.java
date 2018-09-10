@@ -21,7 +21,7 @@ import java.util.Map;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int maxFrameSize = 4 * 1024; // buffers are used only for proxy-negotiation
+    private final int proxyHandshakeBufferSize = 4 * 1024; // buffers used only for proxy-handshake
     private boolean tailClosed = false;
     private boolean headClosed = false;
     private boolean isProxyConfigured;
@@ -58,8 +58,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
         ProxyTransportWrapper(TransportInput input, TransportOutput output) {
             underlyingInput = input;
             underlyingOutput = output;
-            inputBuffer = newWriteableBuffer(maxFrameSize);
-            outputBuffer = newWriteableBuffer(maxFrameSize);
+            inputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
+            outputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
             head = outputBuffer.asReadOnlyBuffer();
         }
 
