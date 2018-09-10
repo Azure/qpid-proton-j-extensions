@@ -60,23 +60,23 @@ public class ProxyImpl implements Proxy, TransportLayer {
         isProxyConfigured = true;
     }
 
-    public ByteBuffer getInputBuffer() {
+    protected ByteBuffer getInputBuffer() {
         return this.inputBuffer;
     }
 
-    public ByteBuffer getOutputBuffer() {
+    protected ByteBuffer getOutputBuffer() {
         return this.outputBuffer;
     }
 
-    public Boolean getIsProxyConfigured() {
+    protected Boolean getIsProxyConfigured() {
         return this.isProxyConfigured;
     }
 
-    public ProxyHandler getProxyHandler() {
+    protected ProxyHandler getProxyHandler() {
         return this.proxyHandler;
     }
 
-    public Transport getUnderlyingTransport() {
+    protected Transport getUnderlyingTransport() {
         return this.underlyingTransport;
     }
 
@@ -84,6 +84,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
         outputBuffer.clear();
         String request = proxyHandler.createProxyRequest(host, headers);
         outputBuffer.put(request.getBytes());
+    }
+
+    protected boolean getIsHandshakeInProgress() {
+        return isProxyConfigured
+                && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
     }
 
     public Map<String, String> getProxyRequestHeaders() {
@@ -101,14 +106,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
             head = outputBuffer.asReadOnlyBuffer();
         }
 
-        private boolean isProxyNegotiationMode() {
-            return isProxyConfigured
-                    && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
-        }
-
         @Override
         public int capacity() {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 if (tailClosed) {
                     return Transport.END_OF_STREAM;
                 } else {
@@ -121,7 +121,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public int position() {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 if (tailClosed) {
                     return Transport.END_OF_STREAM;
                 } else {
@@ -134,7 +134,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public ByteBuffer tail() throws TransportException {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 return inputBuffer;
             } else {
                 return underlyingInput.tail();
@@ -143,7 +143,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public void process() throws TransportException {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 inputBuffer.flip();
 
                 switch (proxyState) {
@@ -173,7 +173,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
         @Override
         public void close_tail() {
             tailClosed = true;
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 headClosed = true;
             }
 
@@ -182,7 +182,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public int pending() {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 switch (proxyState) {
                     case PN_PROXY_NOT_STARTED:
                         if (outputBuffer.position() == 0) {
@@ -218,7 +218,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public ByteBuffer head() {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
                         return head;
@@ -232,10 +232,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public void pop(int bytes) {
-            if (isProxyNegotiationMode()) {
+            if (getIsHandshakeInProgress()) {
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
-                    case PN_PROXY_CONNECTED:
                         if (outputBuffer.position() != 0) {
                             outputBuffer.flip();
                             outputBuffer.position(bytes);
