@@ -8,10 +8,9 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
-import org.apache.qpid.proton.amqp.Symbol;
-import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
+import org.apache.qpid.proton.engine.impl.TransportImpl;
 import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
@@ -29,7 +28,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private boolean isProxyConfigured;
     private String host = "";
     private Map<String, String> headers = null;
-    private Transport underlyingTransport;
+    private TransportImpl underlyingTransport;
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
 
     private ProxyHandler proxyHandler;
@@ -52,7 +51,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
         this.host = host;
         this.headers = headers;
         this.proxyHandler = proxyHandler;
-        this.underlyingTransport = underlyingTransport;
+        this.underlyingTransport = (TransportImpl) underlyingTransport;
         isProxyConfigured = true;
     }
 
@@ -131,10 +130,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         if (responseResult.getIsSuccess()) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
                         } else {
-                            final ErrorCondition proxyError = new ErrorCondition();
-                            proxyError.setCondition(Symbol.getSymbol("proton:io"));
-                            proxyError.setDescription(responseResult.getError());
-                            underlyingTransport.setCondition(proxyError);
+                            tailClosed = true;
+                            underlyingTransport.closed(new TransportException(responseResult.getError()));
                         }
                         break;
                     default:
