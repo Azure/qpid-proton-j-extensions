@@ -94,6 +94,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
             WebSocketHandler webSocketHandler) {
         this.host = host;
         this.path = path;
+        this.query = query;
         this.port = port;
         this.protocol = protocol;
         this.additionalHeaders = additionalHeaders;
