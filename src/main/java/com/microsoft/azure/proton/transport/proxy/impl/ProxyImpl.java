@@ -2,6 +2,7 @@
  * Copyright (c) Microsoft. All rights reserved.
  * Licensed under the MIT license. See LICENSE file in the project root for full license information.
  */
+
 package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.Proxy;
@@ -29,7 +30,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
 
     private ProxyHandler proxyHandler;
-    private int proxyFrameSize = 0;
 
     public ProxyImpl() {
         isProxyConfigured = false;
@@ -70,7 +70,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         protected void writeProxyRequest() {
             outputBuffer.clear();
-            String request = proxyHandler.createProxyRequest(host, null);
+            String request = proxyHandler.createProxyRequest(host, headers);
             outputBuffer.put(request.getBytes());
         }
 
