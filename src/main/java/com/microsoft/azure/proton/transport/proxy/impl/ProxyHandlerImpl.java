@@ -50,7 +50,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
                 if (firstLine.toLowerCase().contains("http/1.1")
                         && firstLine.contains("200")
                         && firstLine.toLowerCase().contains("connection established")) {
-                    return new ProxyResponseResult(true, response);
+                    return new ProxyResponseResult(true, null);
                 }
             }
         }
