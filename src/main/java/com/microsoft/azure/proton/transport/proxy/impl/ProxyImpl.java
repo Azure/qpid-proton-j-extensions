@@ -23,6 +23,9 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuf
 
 public class ProxyImpl implements Proxy, TransportLayer {
     private final int proxyHandshakeBufferSize = 4 * 1024; // buffers used only for proxy-handshake
+    private final ByteBuffer inputBuffer;
+    private final ByteBuffer outputBuffer;
+
     private boolean tailClosed = false;
     private boolean headClosed = false;
     private boolean isProxyConfigured;
@@ -34,6 +37,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private ProxyHandler proxyHandler;
 
     public ProxyImpl() {
+        inputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
+        outputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
         isProxyConfigured = false;
     }
 
@@ -55,30 +60,50 @@ public class ProxyImpl implements Proxy, TransportLayer {
         isProxyConfigured = true;
     }
 
+    public ByteBuffer getInputBuffer() {
+        return this.inputBuffer;
+    }
+
+    public ByteBuffer getOutputBuffer() {
+        return this.outputBuffer;
+    }
+
+    public Boolean getIsProxyConfigured() {
+        return this.isProxyConfigured;
+    }
+
+    public ProxyHandler getProxyHandler() {
+        return this.proxyHandler;
+    }
+
+    public Transport getUnderlyingTransport() {
+        return this.underlyingTransport;
+    }
+
+    protected void writeProxyRequest() {
+        outputBuffer.clear();
+        String request = proxyHandler.createProxyRequest(host, headers);
+        outputBuffer.put(request.getBytes());
+    }
+
+    public Map<String, String> getProxyRequestHeaders() {
+        return this.headers;
+    }
+
     private class ProxyTransportWrapper implements TransportWrapper {
         private final TransportInput underlyingInput;
         private final TransportOutput underlyingOutput;
-        private final ByteBuffer inputBuffer;
-        private final ByteBuffer outputBuffer;
         private final ByteBuffer head;
 
         ProxyTransportWrapper(TransportInput input, TransportOutput output) {
             underlyingInput = input;
             underlyingOutput = output;
-            inputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
-            outputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
             head = outputBuffer.asReadOnlyBuffer();
         }
 
         private boolean isProxyNegotiationMode() {
             return isProxyConfigured
                     && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
-        }
-
-        protected void writeProxyRequest() {
-            outputBuffer.clear();
-            String request = proxyHandler.createProxyRequest(host, headers);
-            outputBuffer.put(request.getBytes());
         }
 
         @Override
