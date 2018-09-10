@@ -9,8 +9,26 @@ import java.util.Map;
 
 public interface ProxyHandler {
 
+    class ProxyResponseResult {
+        private Boolean isSuccess;
+        private String error;
+
+        public ProxyResponseResult(final Boolean isSuccess, final String error) {
+            this.isSuccess = isSuccess;
+            this.error = error;
+        }
+
+        public Boolean getIsSuccess() {
+            return isSuccess;
+        }
+
+        public String getError() {
+            return error;
+        }
+    }
+
     String createProxyRequest(String hostName, Map<String, String> additionalHeaders);
 
-    Boolean validateProxyReply(ByteBuffer buffer);
+    ProxyResponseResult validateProxyResponse(ByteBuffer buffer);
 
 }

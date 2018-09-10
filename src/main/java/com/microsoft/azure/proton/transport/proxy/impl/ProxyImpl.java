@@ -6,7 +6,6 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
-import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
 
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
@@ -21,7 +20,7 @@ import java.util.Map;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private final int maxFrameSize = 4 * 1024; // buffers are used only for proxy-negotiation
     private boolean tailClosed = false;
     private boolean headClosed = false;
     private boolean isProxyConfigured;
@@ -117,10 +116,16 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
-                        if (proxyHandler.validateProxyReply(inputBuffer)) {
-                            proxyState = ProxyState.PN_PROXY_CONNECTED;
-                        }
+                        final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
+                                .validateProxyResponse(inputBuffer);
                         inputBuffer.compact();
+
+                        if (responseResult.getIsSuccess()) {
+                            proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        } else {
+                            proxyState = ProxyState.PN_PROXY_FAILED;
+                            throw new TransportException(responseResult.getError());
+                        }
                         break;
                     default:
                         underlyingInput.process();
