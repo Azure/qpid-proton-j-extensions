@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 
-public class ProxyHandlerTest {
+public class ProxyHandlerImplTest {
     @Test
     public void testCreateProxyRequest() {
         final String hostName = "testHostName";

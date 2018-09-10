@@ -10,7 +10,7 @@ import org.apache.qpid.proton.engine.Transport;
 import java.util.Map;
 
 public interface Proxy {
-    public enum ProxyState {
+    enum ProxyState {
         PN_PROXY_NOT_STARTED,
         PN_PROXY_CONNECTING,
         PN_PROXY_CONNECTED,

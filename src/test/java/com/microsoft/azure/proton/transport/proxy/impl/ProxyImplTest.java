@@ -5,5 +5,5 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
-public class ProxyTest {
+public class ProxyImplTest {
 }
