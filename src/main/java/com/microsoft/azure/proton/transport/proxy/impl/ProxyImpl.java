@@ -87,8 +87,15 @@ public class ProxyImpl implements Proxy, TransportLayer {
     }
 
     protected boolean getIsHandshakeInProgress() {
-        return isProxyConfigured
-                && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
+        // if handshake is in progress
+        // we do not engage the underlying transportInput/transportOutput.
+        // Only when, ProxyState == Connected - then we can start engaging
+        // next TransportLayers.
+        // So, InProgress includes - proxyState = failed as well.
+        // return true - from the point when proxyImpl.configure() is invoked to
+        // proxyState transitions to Connected.
+        // returns false - in all other cases
+        return isProxyConfigured && proxyState != ProxyState.PN_PROXY_CONNECTED;
     }
 
     protected ProxyState getProxyState() {

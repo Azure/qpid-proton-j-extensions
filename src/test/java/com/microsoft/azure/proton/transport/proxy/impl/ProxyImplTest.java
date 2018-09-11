@@ -112,7 +112,7 @@ public class ProxyImplTest {
         Assert.assertFalse(proxyImpl.getIsHandshakeInProgress());
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
-        Assert.assertFalse(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
     }
 
     @Test
@@ -123,7 +123,8 @@ public class ProxyImplTest {
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
 
-        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        TransportOutput mockOutput = mock(TransportOutput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mockOutput);
         int bytesCount = transportWrapper.pending();
 
         Assert.assertEquals(proxyConnectRequestLength, transportWrapper.head().remaining());
@@ -136,6 +137,8 @@ public class ProxyImplTest {
         Assert.assertEquals(proxyConnectRequestLength, outputBuffer.remaining());
         Assert.assertEquals(proxyConnectRequestLength, bytesCount);
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+
+        verify(mockOutput, times(0)).pending();
     }
 
     @Test
@@ -213,12 +216,14 @@ public class ProxyImplTest {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
         proxyImpl.configure(hostName, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
-        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        TransportInput mockInput = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
         transportWrapper.process();
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
 
+        verify(mockInput, times(1)).process();
     }
 
     private void setProxyState(ProxyImpl proxyImpl, Proxy.ProxyState proxyState) throws NoSuchFieldException, IllegalAccessException {
