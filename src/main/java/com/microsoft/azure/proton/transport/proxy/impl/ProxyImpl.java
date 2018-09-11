@@ -91,6 +91,10 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 && (proxyState == ProxyState.PN_PROXY_NOT_STARTED || proxyState == ProxyState.PN_PROXY_CONNECTING);
     }
 
+    protected ProxyState getProxyState() {
+        return this.proxyState;
+    }
+
     public Map<String, String> getProxyRequestHeaders() {
         return this.headers;
     }
