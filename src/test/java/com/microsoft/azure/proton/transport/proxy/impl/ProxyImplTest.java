@@ -7,6 +7,7 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
+import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.TransportImpl;
 import org.apache.qpid.proton.engine.impl.TransportInput;
@@ -392,6 +393,190 @@ public class ProxyImplTest {
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
         Assert.assertTrue(proxyImpl.getInputBuffer() != transportWrapper.tail());
         verify(mockInput, times(1)).tail();
+    }
+
+    @Test
+    public void testHeadDelegatesToUnderlyingOutputWhenProxyStateIsConnected() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportOutput mockOutput = mock(TransportOutput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mockOutput);
+
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
+        transportWrapper.head();
+        verify(mockOutput, times(1)).head();
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsNotStarted() {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        Assert.assertEquals(0, transportWrapper.position());
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsNotStartedAndTailClosed() {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsConnecting() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
+        Assert.assertEquals(0, transportWrapper.position());
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsConnectingAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.position());
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsConnected() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportInput mockInput = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
+        transportWrapper.position();
+
+        verify(mockInput, times(1)).position();
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsConnectedAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportInput mockInput = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
+        transportWrapper.close_tail();
+        transportWrapper.position();
+
+        verify(mockInput, times(1)).position();
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsFailed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
+        Assert.assertEquals(0, transportWrapper.position());
+    }
+
+    @Test
+    public void testPositionWhenProxyStateIsFailedAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.position());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsNotStarted() {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        Assert.assertEquals(bufferSize, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsNotStartedAndTailClosed() {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsConnecting() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
+        Assert.assertEquals(bufferSize, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsConnectingAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsConnected() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportInput mockInput = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
+        transportWrapper.capacity();
+
+        verify(mockInput, times(1)).capacity();
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsConnectedAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportInput mockInput = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
+        transportWrapper.close_tail();
+        transportWrapper.capacity();
+
+        verify(mockInput, times(1)).capacity();
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsFailed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
+        Assert.assertEquals(bufferSize, transportWrapper.capacity());
+    }
+
+    @Test
+    public void testCapacityWhenProxyStateIsFailedAndTailClosed() throws Exception {
+        ProxyImpl proxyImpl = new ProxyImpl();
+        proxyImpl.configure(hostName, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
+
+        setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
+        transportWrapper.close_tail();
+        Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.capacity());
     }
 
     private void setProxyState(ProxyImpl proxyImpl, Proxy.ProxyState proxyState) throws NoSuchFieldException, IllegalAccessException {
