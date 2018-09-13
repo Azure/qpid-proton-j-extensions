@@ -5,8 +5,13 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
+
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
 
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
@@ -15,11 +20,6 @@ import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
-
-import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
     private final int proxyHandshakeBufferSize = 4 * 1024; // buffers used only for proxy-handshake
@@ -36,6 +36,12 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     private ProxyHandler proxyHandler;
 
+    /**
+     * Create proxy transport layer - which, after configuring using
+     * the {@link #configure(String, Map, ProxyHandler, Transport)} API
+     * is ready for layering in qpid-proton-j transport layers, using
+     * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     */
     public ProxyImpl() {
         inputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
         outputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
@@ -168,8 +174,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
                             tailClosed = true;
                             underlyingTransport.closed(
                                     new TransportException(
-                                            "proxy connect request failed with error: " +
-                                            responseResult.getError()));
+                                            "proxy connect request failed with error: "
+                                            + responseResult.getError()));
                         }
                         break;
                     default:

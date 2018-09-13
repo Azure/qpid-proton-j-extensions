@@ -5,9 +5,9 @@
 
 package com.microsoft.azure.proton.transport.proxy;
 
-import org.apache.qpid.proton.engine.Transport;
-
 import java.util.Map;
+
+import org.apache.qpid.proton.engine.Transport;
 
 public interface Proxy {
     enum ProxyState {
