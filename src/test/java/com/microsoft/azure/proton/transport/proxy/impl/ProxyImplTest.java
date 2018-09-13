@@ -22,6 +22,11 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
+// \org\apache\qpid\proton\reactor\impl\IOHandler.java > connectionReadable and connectionWriteable
+// methods are the starting point which invokes all methods of TransportInput and TransportOutput
+// classes - to implement transport layering.
+// Goal of this class is to test - expected outcomes of proxy transport layer
+// when these methods are invoked, and how ProxyState state transitions plays along.
 public class ProxyImplTest {
 
     private String hostName = "test.host.name";
