@@ -155,10 +155,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
         @Override
         public void process() throws TransportException {
             if (getIsHandshakeInProgress()) {
-                inputBuffer.flip();
-
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
+                        inputBuffer.flip();
                         final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
                                 .validateProxyResponse(inputBuffer);
                         inputBuffer.compact();
@@ -266,6 +265,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public void close_head() {
+            headClosed = true;
             underlyingOutput.close_head();
         }
     }
