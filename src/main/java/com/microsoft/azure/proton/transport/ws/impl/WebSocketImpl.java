@@ -27,6 +27,8 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
 public class WebSocketImpl implements WebSocket, TransportLayer {
+    private final static int MIN_WEB_SOCKET_UPGRADE_RESPONSE_SIZE = 100;
+
     private int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private boolean tailClosed = false;
     private final ByteBuffer inputBuffer;
@@ -275,7 +277,8 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         private void processInput() throws TransportException {
             switch (webSocketState) {
                 case PN_WS_CONNECTING:
-                    if (webSocketHandler.validateUpgradeReply(inputBuffer)) {
+                    if ((inputBuffer.remaining() > MIN_WEB_SOCKET_UPGRADE_RESPONSE_SIZE)
+                            && webSocketHandler.validateUpgradeReply(inputBuffer)) {
                         webSocketState = WebSocketState.PN_WS_CONNECTED_FLOW;
                     }
                     inputBuffer.compact();
