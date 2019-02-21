@@ -10,8 +10,16 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuf
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
@@ -21,8 +29,10 @@ import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
+import javax.xml.bind.DatatypeConverter;
+
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int proxyHandshakeBufferSize = 4 * 1024; // buffers used only for proxy-handshake
+    private final int proxyHandshakeBufferSize = 8 * 1024; // buffers used only for proxy-handshake
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
 
@@ -36,6 +46,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     private ProxyHandler proxyHandler;
 
+    private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
+    private final AtomicInteger nonceCounter = new AtomicInteger(0);
     /**
      * Create proxy transport layer - which, after configuring using
      * the {@link #configure(String, Map, ProxyHandler, Transport)} API
@@ -167,9 +179,22 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
                                 .validateProxyResponse(inputBuffer);
                         inputBuffer.compact();
-
+                        inputBuffer.clear();
                         if (responseResult.getIsSuccess()) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        } else if (responseResult.getError() != null &&
+                                responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
+                            proxyState = ProxyState.PN_PROXY_NOT_STARTED;
+                            final Scanner responseScanner = new Scanner(responseResult.getError());
+                            final Map<String, String> challengeQuestionValues = new HashMap<String, String>();
+                            while (responseScanner.hasNextLine()) {
+                                String line = responseScanner.nextLine();
+                                if (line.contains(PROXY_AUTH_DIGEST)){
+                                    getChallengeQuestionHeaders(line, challengeQuestionValues);
+                                    break;
+                                }
+                            }
+                            computeChallengeAnswer(challengeQuestionValues);
                         } else {
                             tailClosed = true;
                             underlyingTransport.closed(
@@ -273,6 +298,77 @@ public class ProxyImpl implements Proxy, TransportLayer {
         public void close_head() {
             headClosed = true;
             underlyingOutput.close_head();
+        }
+
+        private void getChallengeQuestionHeaders(String line, Map<String, String> challengeQuestionValues) {
+            String context =  line.substring(PROXY_AUTH_DIGEST.length());
+            String[] headerValues = context.split(",");
+
+            for (String headerValue : headerValues) {
+                if (headerValue.contains("=")) {
+                    String key = headerValue.substring(0, headerValue.indexOf("="));
+                    String value = headerValue.substring(headerValue.indexOf("=") + 1);
+                    challengeQuestionValues.put(key.trim(), value.replaceAll("\"", "").trim());
+                }
+            }
+        }
+
+        private void computeChallengeAnswer(Map<String, String> challengeQuestionValues) {
+            String uri = host;
+            PasswordAuthentication passwordAuthentication = Authenticator.requestPasswordAuthentication(
+                    "",
+                    null,
+                    0,
+                    "https",
+                    "Event Hubs client websocket proxy support",
+                    "digest",
+                    null,
+                    Authenticator.RequestorType.PROXY);
+
+            String username = passwordAuthentication.getUserName();
+            String password =  passwordAuthentication.getPassword() != null
+                    ? new String(passwordAuthentication.getPassword())
+                    : null;
+
+            String digestValue;
+            try {
+                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+                random.setSeed(System.currentTimeMillis());
+                byte[] nonceBytes = new byte[16];
+                random.nextBytes(nonceBytes);
+
+                String nonce = challengeQuestionValues.get("nonce");
+                String realm = challengeQuestionValues.get("realm");
+                String qop = challengeQuestionValues.get("qop");
+
+                MessageDigest md5 = MessageDigest.getInstance("md5");
+                SecureRandom secureRandom = new SecureRandom();
+                String a1 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", username, realm, password).getBytes("UTF-8"))).toLowerCase();
+                String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", "CONNECT", uri).getBytes("UTF-8"))).toLowerCase();
+
+                byte[] cnonceBytes = new byte[16];
+                secureRandom.nextBytes(cnonceBytes);
+                String cnonce = DatatypeConverter.printHexBinary(cnonceBytes).toLowerCase();
+                String response;
+                if (qop == null || qop.isEmpty()) {
+                    response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", a1, nonce, a2).getBytes("UTF-8"))).toLowerCase();
+                    digestValue = String.format("Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",response=\"%s\"",
+                            username, realm, nonce, uri, cnonce, response);
+                } else {
+                    int nc = nonceCounter.incrementAndGet();
+                    response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%08X:%s:%s:%s", a1, nonce, nc, cnonce, qop, a2).getBytes("UTF-8"))).toLowerCase();
+                    digestValue = String.format("Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",nc=%08X,response=\"%s\",qop=\"%s\"",
+                            username, realm, nonce, uri, cnonce, nc, response, qop);
+                }
+
+                if (headers == null) {
+                    headers = new HashMap<>();
+                }
+                headers.put("Proxy-Authorization", digestValue);
+
+            } catch(Exception ex) {
+                System.out.println(ex.getMessage());
+            }
         }
     }
 }
