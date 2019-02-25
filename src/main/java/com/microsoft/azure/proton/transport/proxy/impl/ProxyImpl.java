@@ -10,12 +10,15 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuf
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
+import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -32,7 +35,7 @@ import org.apache.qpid.proton.engine.impl.TransportWrapper;
 import javax.xml.bind.DatatypeConverter;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int proxyHandshakeBufferSize = 8 * 1024; // buffers used only for proxy-handshake
+    private final int proxyHandshakeBufferSize = 2 * 1024 * 1024; // buffers used only for proxy-handshake
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
 
@@ -47,6 +50,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private ProxyHandler proxyHandler;
 
     private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
+    private final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
     private final AtomicInteger nonceCounter = new AtomicInteger(0);
     /**
      * Create proxy transport layer - which, after configuring using
@@ -194,7 +198,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
                                     break;
                                 }
                             }
-                            computeChallengeAnswer(challengeQuestionValues);
+                            computeDigestAuthHeader(challengeQuestionValues);
+                        } else if (responseResult.getError() != null &&
+                                responseResult.getError().contains(PROXY_AUTH_BASIC)) {
+                            proxyState = ProxyState.PN_PROXY_NOT_STARTED;
+                            computeBasicAuthHeader();
                         } else {
                             tailClosed = true;
                             underlyingTransport.closed(
@@ -313,7 +321,33 @@ public class ProxyImpl implements Proxy, TransportLayer {
             }
         }
 
-        private void computeChallengeAnswer(Map<String, String> challengeQuestionValues) {
+        private void computeBasicAuthHeader(){
+            final PasswordAuthentication authentication = Authenticator.requestPasswordAuthentication(
+                    "",
+                    null,
+                    0,
+                    "https",
+                    "Event Hubs client websocket proxy support",
+                    "basic",
+                    null,
+                    Authenticator.RequestorType.PROXY);
+            if (authentication == null) return;
+
+            final String proxyUserName = authentication.getUserName();
+            final String proxyPassword = authentication.getPassword() != null
+                    ? new String(authentication.getPassword())
+                    : null;
+            if (isNullOrEmpty(proxyUserName) || isNullOrEmpty(proxyPassword))  return;
+
+            final String usernamePasswordPair = proxyUserName + ":" + proxyPassword;
+            if (headers == null)
+                headers = new HashMap<String, String>();
+            headers.put(
+                    "Proxy-Authorization",
+                    "Basic " + Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes()));
+        }
+
+        private void computeDigestAuthHeader(Map<String, String> challengeQuestionValues) {
             String uri = host;
             PasswordAuthentication passwordAuthentication = Authenticator.requestPasswordAuthentication(
                     "",
@@ -366,9 +400,16 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 }
                 headers.put("Proxy-Authorization", digestValue);
 
-            } catch(Exception ex) {
-                System.out.println(ex.getMessage());
+            } catch(NoSuchAlgorithmException ex) {
+               throw new RuntimeException(ex);
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException(ex);
             }
+        }
+
+
+        private boolean isNullOrEmpty(String string) {
+            return (string == null || string.isEmpty());
         }
     }
 }
