@@ -366,11 +366,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
             String digestValue;
             try {
-                SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-                random.setSeed(System.currentTimeMillis());
-                byte[] nonceBytes = new byte[16];
-                random.nextBytes(nonceBytes);
-
                 String nonce = challengeQuestionValues.get("nonce");
                 String realm = challengeQuestionValues.get("realm");
                 String qop = challengeQuestionValues.get("qop");
