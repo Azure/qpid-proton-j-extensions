@@ -58,8 +58,13 @@ public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
     private PasswordAuthentication getPasswordAuthentication(String scheme) {
         ProxySelector proxySelector = ProxySelector.getDefault();
-        URI uri = URI.create(host);
-        List<Proxy> proxies = proxySelector.select(uri);
+
+        URI uri;
+        List<Proxy> proxies = null;
+        if (host != null && !host.isEmpty()) {
+            uri = URI.create(host);
+            proxies = proxySelector.select(uri);
+        }
 
         InetAddress proxyAddr = null;
         Proxy.Type proxyType = null;
