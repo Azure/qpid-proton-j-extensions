@@ -4,44 +4,28 @@ import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.ProxySelector;
+import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
+    private final String DIGEST = "digest";
+    private final String BASIC = "basic";
     private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
     private final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
     private final AtomicInteger nonceCounter = new AtomicInteger(0);
     private static Map<String, String> headers;
+    private static String host;
+
 
     @Override
     public Map<String, String> getHeader(String challengeResp,
                                          String host) {
-
-
-//        PasswordAuthentication passwordAuthentication = Authenticator.requestPasswordAuthentication(
-//                "",
-//                null,
-//                0,
-//                "https",
-//                "Event Hubs client websocket proxy support",
-//                "digest",
-//                null,
-//                Authenticator.RequestorType.PROXY);
-//        final String proxyUserName = passwordAuthentication.getUserName();
-//        final String proxyPassword = passwordAuthentication.getPassword() != null
-//                ? new String(passwordAuthentication.getPassword())
-//                : null;
-
+        this.host = host;
 
         final Scanner responseScanner = new Scanner(challengeResp);
         final Map<String, String> challengeQuestionValues = new HashMap<String, String>();
@@ -49,10 +33,10 @@ public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
             String line = responseScanner.nextLine();
             if (line.contains(PROXY_AUTH_DIGEST)){
                 getChallengeQuestionHeaders(line, challengeQuestionValues);
-                computeDigestAuthHeader(challengeQuestionValues, host, "", "");
+                computeDigestAuthHeader(challengeQuestionValues, host, getPasswordAuthentication(DIGEST));
                 break;
             } else if (line.contains(PROXY_AUTH_BASIC)) {
-                computeBasicAuthHeader("", "");
+                computeBasicAuthHeader(getPasswordAuthentication(BASIC));
                 break;
             }
         }
@@ -72,24 +56,35 @@ public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
         }
     }
 
-    private void computeBasicAuthHeader(String proxyUserName, String proxyPassword){
-        PasswordAuthentication passwordAuthentication = Authenticator.requestPasswordAuthentication(
+    private PasswordAuthentication getPasswordAuthentication(String scheme) {
+        ProxySelector proxySelector = ProxySelector.getDefault();
+        URI uri = URI.create(host);
+        List<Proxy> proxies = proxySelector.select(uri);
+
+        InetAddress proxyAddr = null;
+        Proxy.Type proxyType = null;
+        if (isProxyAddressLegal(proxies)) {
+            // will be only one element in the proxy list
+            proxyAddr = ((InetSocketAddress)proxies.get(0).address()).getAddress();
+            proxyType = proxies.get(0).type();
+        }
+        return Authenticator.requestPasswordAuthentication(
                 "",
-                null,
+                proxyAddr,
                 0,
-                "https",
+                proxyType == null ? "" : proxyType.name(),
                 "Event Hubs client websocket proxy support",
-                "basic",
+                scheme,
                 null,
                 Authenticator.RequestorType.PROXY);
-        proxyUserName = passwordAuthentication.getUserName();
-        proxyPassword = passwordAuthentication.getPassword() != null
-                ? new String(passwordAuthentication.getPassword())
-                : null;
+    }
 
+    private void computeBasicAuthHeader(PasswordAuthentication passwordAuthentication ){
+        if (!isPasswordAuthenticationHasValues(passwordAuthentication))
+            return;
 
-        if (isNullOrEmpty(proxyUserName) || isNullOrEmpty(proxyPassword))  return;
-
+        String proxyUserName = passwordAuthentication.getUserName();
+        String proxyPassword = new String(passwordAuthentication.getPassword());
         final String usernamePasswordPair = proxyUserName + ":" + proxyPassword;
         if (headers == null)
             headers = new HashMap<String, String>();
@@ -100,25 +95,12 @@ public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
     private void computeDigestAuthHeader(Map<String, String> challengeQuestionValues,
                                          String uri,
-                                         String proxyUserName,
-                                         String proxyPassword) {
+                                         PasswordAuthentication passwordAuthentication) {
+        if (!isPasswordAuthenticationHasValues(passwordAuthentication))
+            return;
 
-        PasswordAuthentication passwordAuthentication = Authenticator.requestPasswordAuthentication(
-                "",
-                null,
-                0,
-                "https",
-                "Event Hubs client websocket proxy support",
-                "digest",
-                null,
-                Authenticator.RequestorType.PROXY);
-        proxyUserName = passwordAuthentication.getUserName();
-        proxyPassword = passwordAuthentication.getPassword() != null
-                ? new String(passwordAuthentication.getPassword())
-                : null;
-
-
-
+        String proxyUserName = passwordAuthentication.getUserName();
+        String proxyPassword = new String(passwordAuthentication.getPassword());
         String digestValue;
         try {
             String nonce = challengeQuestionValues.get("nonce");
@@ -162,5 +144,22 @@ public class ProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
         return (string == null || string.isEmpty());
     }
 
+    private boolean isPasswordAuthenticationHasValues(PasswordAuthentication passwordAuthentication){
+        if (passwordAuthentication == null) return false;
+        String proxyUserName = passwordAuthentication.getUserName() != null
+                ? passwordAuthentication.getUserName()
+                : null ;
+        String proxyPassword = passwordAuthentication.getPassword() != null
+                ? new String(passwordAuthentication.getPassword())
+                : null;
+        if (isNullOrEmpty(proxyUserName) || isNullOrEmpty(proxyPassword))  return false;
+        return true;
+    }
 
+    private static boolean isProxyAddressLegal(final List<Proxy> proxies) {
+        return proxies != null
+                && !proxies.isEmpty()
+                && proxies.get(0).address() != null
+                && proxies.get(0).address() instanceof InetSocketAddress;
+    }
 }
