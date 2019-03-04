@@ -24,7 +24,7 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int proxyHandshakeBufferSize = 2 * 1024 * 1024; // buffers used only for proxy-handshake
+    private final int proxyHandshakeBufferSize = 8 * 1024; // buffers used only for proxy-handshake
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
 

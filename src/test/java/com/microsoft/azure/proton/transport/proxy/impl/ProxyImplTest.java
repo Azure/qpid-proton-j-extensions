@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 public class ProxyImplTest {
 
     private String hostName = "test.host.name";
-    private int bufferSize = 2 * 1024 * 1024;
+    private int bufferSize = 8 * 1024;
     private Map<String, String> headers = new HashMap<>();
     private int proxyConnectRequestLength = 132;
 
