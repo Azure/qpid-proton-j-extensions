@@ -37,7 +37,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
 
     private ProxyHandler proxyHandler;
-    private ProxyChallengeProcessorImpl proxyChallengeProcessorImpl = new ProxyChallengeProcessorImpl();
 
     private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
     private final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
@@ -176,11 +175,14 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         inputBuffer.clear();
                         if (responseResult.getIsSuccess()) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
-                        } else if (responseResult.getError() != null &&
-                                (responseResult.getError().contains(PROXY_AUTH_DIGEST)
-                                        || responseResult.getError().contains(PROXY_AUTH_BASIC))) {
+                        } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
                             proxyState = ProxyState.PN_PROXY_CHALLENGE;
-                            headers = proxyChallengeProcessorImpl.getHeader(responseResult.getError(), host);
+                            DigestProxyChallengeProcessorImpl digestProxyChallengeProcessor = new DigestProxyChallengeProcessorImpl(host, responseResult.getError());
+                            headers = digestProxyChallengeProcessor.getHeader();
+                        } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_BASIC)) {
+                            proxyState = ProxyState.PN_PROXY_CHALLENGE;
+                            BasicProxyChallengeProcessorImpl basicProxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
+                            headers = basicProxyChallengeProcessor.getHeader();
                         } else {
                             tailClosed = true;
                             underlyingTransport.closed(
