@@ -28,9 +28,7 @@ public class DigestProxyChallengeProcessorImplTest {
 
             @Override
             public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-                System.out.println("PROXY CONNECTION FAILED:  " + uri.toString());
-                System.out.println("PROXY CONNECTION FAILED: " + sa.toString());
-                System.out.println("PROXY CONNECTION FAILED: " + ioe.toString());
+                System.out.format("PROXY CONNECTION FAILED: URI = %s, Socket Address = %s, IO Exception = %s\n", uri.toString(), sa.toString(), ioe.toString());
             }
         });
 
