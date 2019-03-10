@@ -13,6 +13,8 @@ public interface Proxy {
     enum ProxyState {
         PN_PROXY_NOT_STARTED,
         PN_PROXY_CONNECTING,
+        PN_PROXY_CHALLENGE,
+        PN_PROXY_CHALLENGE_RESPONDED,
         PN_PROXY_CONNECTED,
         PN_PROXY_FAILED
     }
