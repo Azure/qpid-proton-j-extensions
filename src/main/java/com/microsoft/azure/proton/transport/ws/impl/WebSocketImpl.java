@@ -26,7 +26,12 @@ import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class WebSocketImpl implements WebSocket, TransportLayer {
+    private static final Logger TRACE_LOGGER = LoggerFactory.getLogger(WebSocketImpl.class);
+
     private int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private boolean tailClosed = false;
     private final ByteBuffer inputBuffer;
@@ -275,8 +280,13 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         private void processInput() throws TransportException {
             switch (webSocketState) {
                 case PN_WS_CONNECTING:
+                	inputBuffer.mark();
                     if (webSocketHandler.validateUpgradeReply(inputBuffer)) {
                         webSocketState = WebSocketState.PN_WS_CONNECTED_FLOW;
+                    } else {
+                    	// Input data was incomplete. Reset buffer position and wait for another call after more data arrives.
+                    	inputBuffer.reset();
+                    	TRACE_LOGGER.warn("Websocket connecting response incomplete");
                     }
                     inputBuffer.compact();
                     break;
