@@ -38,9 +38,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     private ProxyHandler proxyHandler;
 
-    private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
-    private final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
-    private final AtomicInteger nonceCounter = new AtomicInteger(0);
+    private static final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
+    private static final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
+
     /**
      * Create proxy transport layer - which, after configuring using
      * the {@link #configure(String, Map, ProxyHandler, Transport)} API
