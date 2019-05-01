@@ -33,26 +33,25 @@ public class ProxyAuthenticator {
                 Authenticator.RequestorType.PROXY);
     }
 
-    public boolean isPasswordAuthenticationHasValues(PasswordAuthentication passwordAuthentication){
-        if (passwordAuthentication == null) return false;
-        String proxyUserName = passwordAuthentication.getUserName() != null
-                ? passwordAuthentication.getUserName()
-                : null ;
-        String proxyPassword = passwordAuthentication.getPassword() != null
-                ? new String(passwordAuthentication.getPassword())
-                : null;
-        if (isNullOrEmpty(proxyUserName) || isNullOrEmpty(proxyPassword))  return false;
-        return true;
+    static boolean isPasswordAuthenticationHasValues(PasswordAuthentication passwordAuthentication) {
+        if (passwordAuthentication == null) {
+            return false;
+        }
+
+        final String username = passwordAuthentication.getUserName();
+        final char[] password = passwordAuthentication.getPassword();
+
+        return !isNullOrEmpty(username) && password != null && password.length > 0;
     }
 
-    private boolean isProxyAddressLegal(final List<Proxy> proxies) {
+    private static boolean isProxyAddressLegal(final List<Proxy> proxies) {
         return proxies != null
                 && !proxies.isEmpty()
                 && proxies.get(0).address() != null
                 && proxies.get(0).address() instanceof InetSocketAddress;
     }
 
-    private boolean isNullOrEmpty(String string) {
+    private static boolean isNullOrEmpty(String string) {
         return (string == null || string.isEmpty());
     }
 
