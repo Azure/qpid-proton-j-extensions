@@ -10,20 +10,41 @@ import java.util.Objects;
 class ProxyAuthenticator {
     private static final String PROMPT = "Event Hubs client web socket proxy support";
 
+    private final PasswordAuthentication passwordAuthentication;
+
     /**
      * Creates an authenticator that authenticates using system-configured authenticator.
      */
     ProxyAuthenticator() {
+        this.passwordAuthentication = null;
     }
 
     /**
-     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}.
+     * Creates an authenticator that responses to authentication requests with the provided username and password.
+     * @param username Username for authentication challenge.
+     * @param password Password for authentication challenge.
+     */
+    ProxyAuthenticator(String username, char[] password) {
+        Objects.requireNonNull(username);
+        Objects.requireNonNull(password);
+
+        passwordAuthentication = new PasswordAuthentication(username, password);
+    }
+
+    /**
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. If
+     * {@link ProxyAuthenticator#ProxyAuthenticator(String, char[])} was used to construct this instance, it is always
+     * returned.
      *
      * @param scheme The authentication scheme for the proxy.
      * @param host The proxy's URL that is requesting authentication.
      * @return The username and password to authenticate against proxy with.
      */
     PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
+        if (passwordAuthentication != null) {
+            return passwordAuthentication;
+        }
+
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
