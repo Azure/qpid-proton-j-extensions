@@ -165,53 +165,58 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public void process() throws TransportException {
-            if (getIsHandshakeInProgress()) {
-                switch (proxyState) {
-                    case PN_PROXY_CONNECTING:
-                        inputBuffer.flip();
-                        final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
-                                .validateProxyResponse(inputBuffer);
-                        inputBuffer.compact();
-                        inputBuffer.clear();
-                        if (responseResult.getIsSuccess()) {
-                            proxyState = ProxyState.PN_PROXY_CONNECTED;
-                        } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
-                            proxyState = ProxyState.PN_PROXY_CHALLENGE;
-                            DigestProxyChallengeProcessorImpl digestProxyChallengeProcessor = new DigestProxyChallengeProcessorImpl(host, responseResult.getError());
-                            headers = digestProxyChallengeProcessor.getHeader();
-                        } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_BASIC)) {
-                            proxyState = ProxyState.PN_PROXY_CHALLENGE;
-                            BasicProxyChallengeProcessorImpl basicProxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
-                            headers = basicProxyChallengeProcessor.getHeader();
-                        } else {
-                            tailClosed = true;
-                            underlyingTransport.closed(
-                                    new TransportException(
-                                            "proxy connect request failed with error: "
-                                            + responseResult.getError()));
-                        }
-                        break;
-                    case PN_PROXY_CHALLENGE_RESPONDED:
-                        inputBuffer.flip();
-                        final ProxyHandler.ProxyResponseResult challengeResponseResult = proxyHandler
-                                .validateProxyResponse(inputBuffer);
-                        inputBuffer.compact();
-
-                        if (challengeResponseResult.getIsSuccess()) {
-                            proxyState = ProxyState.PN_PROXY_CONNECTED;
-                        } else {
-                            tailClosed = true;
-                            underlyingTransport.closed(
-                                    new TransportException(
-                                            "proxy connect request failed with error: "
-                                                    + challengeResponseResult.getError()));
-                        }
-                        break;
-                    default:
-                        underlyingInput.process();
-                }
-            } else {
+            if (!getIsHandshakeInProgress()) {
                 underlyingInput.process();
+                return;
+            }
+
+            switch (proxyState) {
+                case PN_PROXY_CONNECTING:
+                    inputBuffer.flip();
+                    final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
+                            .validateProxyResponse(inputBuffer);
+                    inputBuffer.compact();
+                    inputBuffer.clear();
+                    if (responseResult.getIsSuccess()) {
+                        proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        break;
+
+                    }
+
+                    if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
+                        proxyState = ProxyState.PN_PROXY_CHALLENGE;
+                        DigestProxyChallengeProcessorImpl digestProxyChallengeProcessor = new DigestProxyChallengeProcessorImpl(host, responseResult.getError());
+                        headers = digestProxyChallengeProcessor.getHeader();
+                    } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_BASIC)) {
+                        proxyState = ProxyState.PN_PROXY_CHALLENGE;
+                        BasicProxyChallengeProcessorImpl basicProxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
+                        headers = basicProxyChallengeProcessor.getHeader();
+                    } else {
+                        tailClosed = true;
+                        underlyingTransport.closed(
+                                new TransportException(
+                                        "proxy connect request failed with error: "
+                                        + responseResult.getError()));
+                    }
+                    break;
+                case PN_PROXY_CHALLENGE_RESPONDED:
+                    inputBuffer.flip();
+                    final ProxyHandler.ProxyResponseResult challengeResponseResult = proxyHandler
+                            .validateProxyResponse(inputBuffer);
+                    inputBuffer.compact();
+
+                    if (challengeResponseResult.getIsSuccess()) {
+                        proxyState = ProxyState.PN_PROXY_CONNECTED;
+                    } else {
+                        tailClosed = true;
+                        underlyingTransport.closed(
+                                new TransportException(
+                                        "proxy connect request failed with error: "
+                                                + challengeResponseResult.getError()));
+                    }
+                    break;
+                default:
+                    underlyingInput.process();
             }
         }
 
