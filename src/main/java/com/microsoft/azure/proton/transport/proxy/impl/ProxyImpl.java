@@ -259,12 +259,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
                             return outputBuffer.position();
                         }
                     case PN_PROXY_CHALLENGE_RESPONDED:
-                        if (headClosed && (outputBuffer.position() == 0)) {
-                            proxyState = ProxyState.PN_PROXY_FAILED;
-                            return Transport.END_OF_STREAM;
-                        } else {
-                            return outputBuffer.position();
-                        }
                     case PN_PROXY_CONNECTING:
                         if (headClosed && (outputBuffer.position() == 0)) {
                             proxyState = ProxyState.PN_PROXY_FAILED;
