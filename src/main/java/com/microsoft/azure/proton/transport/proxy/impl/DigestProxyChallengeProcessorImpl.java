@@ -23,11 +23,12 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
     private final String host;
     private final String challenge;
 
-    DigestProxyChallengeProcessorImpl(String host, String challenge) {
+    DigestProxyChallengeProcessorImpl(String host, String challenge, ProxyAuthenticator authenticator) {
+        Objects.requireNonNull(authenticator);
         this.host = host;
         this.challenge = challenge;
         headers = new HashMap<>();
-        proxyAuthenticator = new ProxyAuthenticator();
+        proxyAuthenticator = authenticator;
     }
 
     @Override
