@@ -13,14 +13,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
-    private final String DIGEST = "digest";
-    private final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
+    private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;
+
     private final AtomicInteger nonceCounter = new AtomicInteger(0);
     private final Map<String, String> headers;
     private final ProxyAuthenticator proxyAuthenticator;
 
-    private static String host;
-    private static String challenge;
+    private final String host;
+    private final String challenge;
 
     DigestProxyChallengeProcessorImpl(String host, String challenge) {
         this.host = host;
@@ -35,9 +35,9 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
         final Map<String, String> challengeQuestionValues = new HashMap<>();
         while (responseScanner.hasNextLine()) {
             String line = responseScanner.nextLine();
-            if (line.contains(PROXY_AUTH_DIGEST)){
+            if (line.contains(PROXY_AUTH_DIGEST)) {
                 getChallengeQuestionHeaders(line, challengeQuestionValues);
-                computeDigestAuthHeader(challengeQuestionValues, host, proxyAuthenticator.getPasswordAuthentication(DIGEST, host));
+                computeDigestAuthHeader(challengeQuestionValues, host, proxyAuthenticator.getPasswordAuthentication(Constants.DIGEST, host));
                 break;
             }
         }
@@ -60,8 +60,9 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
     private void computeDigestAuthHeader(Map<String, String> challengeQuestionValues,
                                          String uri,
                                          PasswordAuthentication passwordAuthentication) {
-        if (!proxyAuthenticator.isPasswordAuthenticationHasValues(passwordAuthentication))
+        if (!ProxyAuthenticator.isPasswordAuthenticationHasValues(passwordAuthentication)) {
             return;
+        }
 
         String proxyUserName = passwordAuthentication.getUserName();
         String proxyPassword = new String(passwordAuthentication.getPassword());
@@ -92,9 +93,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             }
 
             headers.put("Proxy-Authorization", digestValue);
-        } catch(NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (UnsupportedEncodingException ex) {
+        } catch(NoSuchAlgorithmException | UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }
     }
