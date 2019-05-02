@@ -2,10 +2,47 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import java.net.*;
 import java.util.List;
+import java.util.Objects;
 
-public class ProxyAuthenticator {
+/**
+ * Responds to proxy challenge requests by providing authentication information.
+ */
+class ProxyAuthenticator {
+    private final PasswordAuthentication passwordAuthentication;
 
-    public PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
+    /**
+     * Creates an authenticator that authenticates using system-configured authenticator.
+     */
+    ProxyAuthenticator() {
+        this.passwordAuthentication = null;
+    }
+
+    /**
+     * Creates an authenticator that responses to authentication requests with the provided {@code passwordAuthentication}.
+     *
+     * @param passwordAuthentication Credentials for authentication challenge.
+     * @throws NullPointerException if {@code passwordAuthentication} is {@code null}.
+     */
+    ProxyAuthenticator(PasswordAuthentication passwordAuthentication) {
+        Objects.requireNonNull(passwordAuthentication);
+
+        this.passwordAuthentication = new PasswordAuthentication(passwordAuthentication.getUserName(), passwordAuthentication.getPassword());
+    }
+
+    /**
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. If
+     * {@link ProxyAuthenticator#ProxyAuthenticator(PasswordAuthentication)} was used to construct this instance, it is always
+     * returned.
+     *
+     * @param scheme The authentication scheme for the proxy.
+     * @param host The proxy's URL that is requesting authentication.
+     * @return The username and password to authenticate against proxy with.
+     */
+    PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
+        if (passwordAuthentication != null) {
+            return passwordAuthentication;
+        }
+
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
