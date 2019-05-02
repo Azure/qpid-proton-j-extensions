@@ -11,10 +11,13 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
     private final Map<String, String> headers;
     private String host;
 
-    BasicProxyChallengeProcessorImpl(String host) {
+    BasicProxyChallengeProcessorImpl(String host, ProxyAuthenticator proxyAuthenticator) {
+        Objects.requireNonNull(host);
+        Objects.requireNonNull(proxyAuthenticator);
+
         this.host = host;
         headers = new HashMap<>();
-        proxyAuthenticator = new ProxyAuthenticator();
+        this.proxyAuthenticator = proxyAuthenticator;
     }
 
     @Override
