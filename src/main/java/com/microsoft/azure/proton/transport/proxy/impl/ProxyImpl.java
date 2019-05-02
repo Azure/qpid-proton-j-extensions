@@ -45,6 +45,17 @@ public class ProxyImpl implements Proxy, TransportLayer {
      * the {@link #configure(String, Map, ProxyHandler, Transport)} API
      * is ready for layering in qpid-proton-j transport layers, using
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     */
+    public ProxyImpl() {
+        this(null);
+    }
+
+    /**
+     * Create proxy transport layer - which, after configuring using
+     * the {@link #configure(String, Map, ProxyHandler, Transport)} API
+     * is ready for layering in qpid-proton-j transport layers, using
+     * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     *
      * @param configuration Proxy configuration to use.
      */
     public ProxyImpl(ProxyConfiguration configuration) {
