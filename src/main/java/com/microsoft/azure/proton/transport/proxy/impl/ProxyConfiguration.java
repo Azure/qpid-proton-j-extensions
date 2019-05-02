@@ -2,46 +2,61 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
 
-import java.net.Authenticator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.PasswordAuthentication;
 import java.util.Objects;
 
 public class ProxyConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
+
     private final String proxyAddress;
     private final ProxyAuthenticationType authentication;
     private final PasswordAuthentication credentials;
 
     /**
+     * Creates a proxy configuration that uses the system-wide proxy configuration and authenticator.
+     */
+    private ProxyConfiguration() {
+        this.authentication = null;
+        this.credentials = null;
+        this.proxyAddress = null;
+    }
+
+    /**
      * Creates a proxy configuration that uses the {@code proxyAddress} and authenticates with provided
      * {@code username}, {@code password} and {@code authentication}.
      *
+     * @param authentication Authentication method to preemptively use with proxy.
      * @param proxyAddress URL of the proxy. If {@code null} is passed in, then the system configured proxy url is used.
-     * @param username Username used to authenticate with proxy. Optional if {@code authentication} is
-     * {@link ProxyAuthenticationType#NONE} or {@link ProxyAuthenticationType#USE_DEFAULT_AUTHENTICATOR}.
-     * @param password Password used to authenticate with proxy. Optional if {@code authentication} is
-     * {@link ProxyAuthenticationType#NONE} or {@link ProxyAuthenticationType#USE_DEFAULT_AUTHENTICATOR}.
-     * @param authentication Authentication method to use with proxy.
+     * @param username Optional. Username used to authenticate with proxy. If not specified, the system-wide
+     * {@link java.net.Authenticator} is used to fetch credentials.
+     * @param password Optional. Password used to authenticate with proxy.
      *
      * @throws NullPointerException if {@code authentication} is {@code null}.
      * @throws IllegalArgumentException if {@code authentication} is {@link ProxyAuthenticationType#BASIC} or
      * {@link ProxyAuthenticationType#DIGEST} and {@code username} or {@code password} are {@code null}.
      */
-    public ProxyConfiguration(String proxyAddress, String username, String password, ProxyAuthenticationType authentication) {
+    public ProxyConfiguration(ProxyAuthenticationType authentication, String proxyAddress, String username, String password) {
         Objects.requireNonNull(authentication);
-
-        // If the user is authenticating with BASIC or DIGEST, they do not want to use the system-configured
-        // authenticator, so we require these values.
-        if (authentication == ProxyAuthenticationType.BASIC || authentication == ProxyAuthenticationType.DIGEST) {
-            Objects.requireNonNull(username);
-            Objects.requireNonNull(password);
-
-            this.credentials = new PasswordAuthentication(username, password.toCharArray());
-        } else {
-            this.credentials = null;
-        }
 
         this.proxyAddress = proxyAddress;
         this.authentication = authentication;
+
+        if (username != null) {
+            this.credentials = new PasswordAuthentication(username, password.toCharArray());
+        } else {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("username is null. Using system-wide authentication.");
+            }
+
+            this.credentials = null;
+        }
+    }
+
+    public static ProxyConfiguration useSystemDefaults() {
+        return new ProxyConfiguration();
     }
 
     String proxyAddress() {
@@ -57,11 +72,21 @@ public class ProxyConfiguration {
     }
 
     /**
-     * Gets whether the proxy address has been configured.
+     * Gets whether the user has defined credentials.
+     *
+     * @return true if the user has defined the credentials to use, false otherwise.
+     */
+    boolean hasUserDefinedCredentials() {
+        return credentials != null;
+    }
+
+    /**
+     * Gets whether the proxy address has been configured. Used to determine whether to use system-defined or
+     * user-defined proxy.
      *
      * @return true if the proxy url has been set, and false otherwise.
      */
-    public boolean isProxyAddressConfigured() {
-        return proxyAddress != null && !proxyAddress.equals("");
+    boolean isProxyAddressConfigured() {
+        return !StringUtils.isNullOrEmpty(proxyAddress);
     }
 }

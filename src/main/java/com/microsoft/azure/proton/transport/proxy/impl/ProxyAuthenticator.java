@@ -10,41 +10,61 @@ import java.util.Objects;
 class ProxyAuthenticator {
     private static final String PROMPT = "Event Hubs client web socket proxy support";
 
-    private final PasswordAuthentication passwordAuthentication;
+    private final ProxyConfiguration configuration;
 
     /**
-     * Creates an authenticator that authenticates using system-configured authenticator.
+     * Creates an authenticator that authenticates using system-configured authenticator and system-configured proxy
+     * settings.
      */
     ProxyAuthenticator() {
-        this.passwordAuthentication = null;
+        this(ProxyConfiguration.useSystemDefaults());
     }
 
     /**
-     * Creates an authenticator that responses to authentication requests with the provided username and password.
-     * @param username Username for authentication challenge.
-     * @param password Password for authentication challenge.
+     * Creates an authenticator that responses to authentication requests with the provided
+     *
+     * @param configuration Proxy configuration to use for requests.
+     * @throws NullPointerException if {@code configuration} is {@code null}.
      */
-    ProxyAuthenticator(String username, char[] password) {
-        Objects.requireNonNull(username);
-        Objects.requireNonNull(password);
+    ProxyAuthenticator(ProxyConfiguration configuration) {
+        Objects.requireNonNull(configuration);
 
-        passwordAuthentication = new PasswordAuthentication(username, password);
+        this.configuration = configuration;
     }
 
     /**
-     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. If
-     * {@link ProxyAuthenticator#ProxyAuthenticator(String, char[])} was used to construct this instance, it is always
-     * returned.
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. Finds credentials
+     * to return in the following order
+     * <ol>
+     *     <li>If user specified username/password from {@link ProxyConfiguration}, return that.</li>
+     *     <li>If user specified proxy address, tries to fetch credentials using the system-wide authenticator.</li>
+     *     <li>Use system-wide proxy configuration and authenticator to fetch credentials.</li>
+     * </ol>
      *
      * @param scheme The authentication scheme for the proxy.
      * @param host The proxy's URL that is requesting authentication.
      * @return The username and password to authenticate against proxy with.
      */
     PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
-        if (passwordAuthentication != null) {
-            return passwordAuthentication;
+        if (configuration.hasUserDefinedCredentials()) {
+            return configuration.credentials();
         }
 
+        // The user has specified the proxy address, so we'll use that address to try to fetch the system-wide
+        // credentials for this.
+        if (configuration.isProxyAddressConfigured()) {
+            return Authenticator.requestPasswordAuthentication(
+                    configuration.proxyAddress(),
+                    null, // It's fine if we don't know the InetAddress for this proxy address.
+                    0,
+                    null,
+                    PROMPT,
+                    scheme,
+                    null,
+                    Authenticator.RequestorType.PROXY);
+        }
+
+        // Otherwise, use the system-configured proxies and authenticator to fetch the credentials.
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
