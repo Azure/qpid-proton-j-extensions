@@ -46,7 +46,7 @@ public class DigestProxyChallengeProcessorImplTest {
             "Proxy-Authenticate: Digest realm=\"Squid proxy-caching web server\", nonce=\"zWV5XAAAAAAgz1ACAAAAAE9hOwIAAAAA\", qop=\"auth\", stale=false\r\n" +
             "Proxy-Authenticate: Basic realm=\"Squid proxy-caching web server\"\r\n" ;
 
-        final DigestProxyChallengeProcessorImpl proxyChallengeProcessor = new DigestProxyChallengeProcessorImpl("", response);
+        final DigestProxyChallengeProcessorImpl proxyChallengeProcessor = new DigestProxyChallengeProcessorImpl("", response, new ProxyAuthenticator());
         headers = proxyChallengeProcessor.getHeader();
         String resp = headers.get(headerKey);
         Assert.assertTrue(resp.contains("Digest "));

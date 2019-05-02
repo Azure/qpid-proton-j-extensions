@@ -39,8 +39,11 @@ public class BasicProxyChallengeProcessorImplTest {
                 return super.getPasswordAuthentication();
             }
         });
+
         final String host = "";
-        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
+        final ProxyAuthenticator authenticator = new ProxyAuthenticator();
+        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host, authenticator);
+
         headers = proxyChallengeProcessor.getHeader();
         Assert.assertEquals("Basic YmFzaWN1c2VyOmJhc2ljcHc=", headers.get(headerKey));
     }
