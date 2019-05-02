@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +30,13 @@ import static org.mockito.Mockito.*;
 // Goal of this class is to test - expected outcomes of proxy transport layer
 // when these methods are invoked, and how ProxyState state transitions plays along.
 public class ProxyImplTest {
+    private static final String hostName = "test.host.name";
+    private static final int bufferSize = 8 * 1024;
+    private static final int proxyConnectRequestLength = 132;
+    private static final String username = "test-user";
+    private static final String password = "test-password!";
 
-    private String hostName = "test.host.name";
-    private int bufferSize = 8 * 1024;
     private Map<String, String> headers = new HashMap<>();
-    private int proxyConnectRequestLength = 132;
 
     private void initHeaders() {
         headers.put("header1", "value1");
@@ -44,6 +47,17 @@ public class ProxyImplTest {
     @Test
     public void testConstructor() {
         ProxyImpl proxyImpl = new ProxyImpl();
+
+        Assert.assertEquals(bufferSize, proxyImpl.getInputBuffer().capacity());
+        Assert.assertEquals(bufferSize, proxyImpl.getOutputBuffer().capacity());
+
+        Assert.assertFalse(proxyImpl.getIsProxyConfigured());
+    }
+
+    @Test
+    public void testConstructorOverload() {
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, hostName, username, password);
+        final ProxyImpl proxyImpl = new ProxyImpl(configuration);
 
         Assert.assertEquals(bufferSize, proxyImpl.getInputBuffer().capacity());
         Assert.assertEquals(bufferSize, proxyImpl.getOutputBuffer().capacity());
