@@ -1,5 +1,7 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
+
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.util.Objects;
@@ -61,27 +63,5 @@ public class ProxyConfiguration {
      */
     public boolean isProxyAddressConfigured() {
         return proxyAddress != null && !proxyAddress.equals("");
-    }
-
-    /**
-     * Supported methods of proxy authentication.
-     */
-    public enum ProxyAuthenticationType {
-        /**
-         * Proxy requires no authentication. Service calls will fail if proxy demands authentication.
-         */
-        NONE,
-        /**
-         * Authenticates against proxy with provided {@code username} and {@code password}.
-         */
-        BASIC,
-        /**
-         * Authenticates against proxy with digest access authentication.
-         */
-        DIGEST,
-        /**
-         * Authenticates against proxy with {@link Authenticator}.
-         */
-        USE_DEFAULT_AUTHENTICATOR,
     }
 }

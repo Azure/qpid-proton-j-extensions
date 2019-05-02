@@ -37,7 +37,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private Map<String, String> headers = null;
     private TransportImpl underlyingTransport;
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
-
+    private ProxyConfiguration proxyConfiguration;
     private ProxyHandler proxyHandler;
 
     /**
@@ -45,11 +45,13 @@ public class ProxyImpl implements Proxy, TransportLayer {
      * the {@link #configure(String, Map, ProxyHandler, Transport)} API
      * is ready for layering in qpid-proton-j transport layers, using
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     * @param configuration Proxy configuration to use.
      */
-    public ProxyImpl() {
+    public ProxyImpl(ProxyConfiguration configuration) {
         inputBuffer = newWriteableBuffer(PROXY_HANDSHAKE_BUFFER_SIZE);
         outputBuffer = newWriteableBuffer(PROXY_HANDSHAKE_BUFFER_SIZE);
         isProxyConfigured = false;
+        proxyConfiguration = configuration;
     }
 
     @Override
@@ -182,7 +184,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     }
 
                     final String error = responseResult.getError();
-                    final ProxyChallengeProcessor challengeProcessor = getChallengeProcessor(error, host);
+                    final ProxyChallengeProcessor challengeProcessor = getChallengeProcessor(error, host, proxyConfiguration);
 
                     if (challengeProcessor != null) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
@@ -191,7 +193,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         tailClosed = true;
                         underlyingTransport.closed(new TransportException(PROXY_CONNECT_FAILED + error));
                     }
-
                     break;
                 case PN_PROXY_CHALLENGE_RESPONDED:
                     inputBuffer.flip();
@@ -323,9 +324,13 @@ public class ProxyImpl implements Proxy, TransportLayer {
          * @param host The host for this response.
          * @return The {@link ProxyChallengeProcessor} for this challenge.
          */
-        private ProxyChallengeProcessor getChallengeProcessor(String challenge, String host) {
+        private ProxyChallengeProcessor getChallengeProcessor(String challenge, String host, ProxyConfiguration configuration) {
             if (StringUtils.isNullOrEmpty(challenge)) {
                 return null;
+            }
+
+            if (configuration != null) {
+                return getChallengeProcessor(configuration.authentication(), host, challenge);
             }
 
             final ProxyAuthenticationType authenticationType = getAuthenticationType(challenge);
