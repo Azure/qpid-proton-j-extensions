@@ -13,7 +13,6 @@ import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import java.nio.ByteBuffer;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
@@ -231,51 +230,51 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
         @Override
         public int pending() {
-            if (getIsHandshakeInProgress()) {
-                switch (proxyState) {
-                    case PN_PROXY_NOT_STARTED:
-                        if (outputBuffer.position() == 0) {
-                            proxyState = ProxyState.PN_PROXY_CONNECTING;
-                            writeProxyRequest();
+            if (!getIsHandshakeInProgress()) {
+                return underlyingOutput.pending();
+            }
 
-                            head.limit(outputBuffer.position());
-                            if (headClosed) {
-                                proxyState = ProxyState.PN_PROXY_FAILED;
-                                return Transport.END_OF_STREAM;
-                            } else {
-                                return outputBuffer.position();
-                            }
-                        } else {
-                            return outputBuffer.position();
-                        }
-                    case PN_PROXY_CHALLENGE:
-                        if (outputBuffer.position() == 0) {
-                            proxyState = ProxyState.PN_PROXY_CHALLENGE_RESPONDED;
-                            writeProxyRequest();
+            switch (proxyState) {
+                case PN_PROXY_NOT_STARTED:
+                    if (outputBuffer.position() == 0) {
+                        proxyState = ProxyState.PN_PROXY_CONNECTING;
+                        writeProxyRequest();
 
-                            head.limit(outputBuffer.position());
-                            if (headClosed) {
-                                proxyState = ProxyState.PN_PROXY_FAILED;
-                                return Transport.END_OF_STREAM;
-                            } else {
-                                return outputBuffer.position();
-                            }
-                        } else {
-                            return outputBuffer.position();
-                        }
-                    case PN_PROXY_CHALLENGE_RESPONDED:
-                    case PN_PROXY_CONNECTING:
-                        if (headClosed && (outputBuffer.position() == 0)) {
+                        head.limit(outputBuffer.position());
+                        if (headClosed) {
                             proxyState = ProxyState.PN_PROXY_FAILED;
                             return Transport.END_OF_STREAM;
                         } else {
                             return outputBuffer.position();
                         }
-                    default:
+                    } else {
+                        return outputBuffer.position();
+                    }
+                case PN_PROXY_CHALLENGE:
+                    if (outputBuffer.position() == 0) {
+                        proxyState = ProxyState.PN_PROXY_CHALLENGE_RESPONDED;
+                        writeProxyRequest();
+
+                        head.limit(outputBuffer.position());
+                        if (headClosed) {
+                            proxyState = ProxyState.PN_PROXY_FAILED;
+                            return Transport.END_OF_STREAM;
+                        } else {
+                            return outputBuffer.position();
+                        }
+                    } else {
+                        return outputBuffer.position();
+                    }
+                case PN_PROXY_CHALLENGE_RESPONDED:
+                case PN_PROXY_CONNECTING:
+                    if (headClosed && (outputBuffer.position() == 0)) {
+                        proxyState = ProxyState.PN_PROXY_FAILED;
                         return Transport.END_OF_STREAM;
-                }
-            } else {
-                return underlyingOutput.pending();
+                    } else {
+                        return outputBuffer.position();
+                    }
+                default:
+                    return Transport.END_OF_STREAM;
             }
         }
 
