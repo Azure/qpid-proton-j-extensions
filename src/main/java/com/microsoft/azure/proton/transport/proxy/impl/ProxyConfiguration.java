@@ -16,6 +16,11 @@ public class ProxyConfiguration {
     private final PasswordAuthentication credentials;
 
     /**
+     * Gets the system defaults for proxy configuration and authentication.
+     */
+    public static final ProxyConfiguration SYSTEM_DEFAULTS = new ProxyConfiguration();
+
+    /**
      * Creates a proxy configuration that uses the system-wide proxy configuration and authenticator.
      */
     private ProxyConfiguration() {
@@ -53,10 +58,6 @@ public class ProxyConfiguration {
 
             this.credentials = null;
         }
-    }
-
-    public static ProxyConfiguration useSystemDefaults() {
-        return new ProxyConfiguration();
     }
 
     String proxyAddress() {
