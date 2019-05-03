@@ -11,6 +11,8 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
     private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;
@@ -74,20 +76,20 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
 
             MessageDigest md5 = MessageDigest.getInstance("md5");
             SecureRandom secureRandom = new SecureRandom();
-            String a1 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", proxyUserName, realm, proxyPassword).getBytes("UTF-8"))).toLowerCase();
-            String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", "CONNECT", uri).getBytes("UTF-8"))).toLowerCase();
+            String a1 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", proxyUserName, realm, proxyPassword).getBytes(UTF_8))).toLowerCase();
+            String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", "CONNECT", uri).getBytes(UTF_8))).toLowerCase();
 
             byte[] cnonceBytes = new byte[16];
             secureRandom.nextBytes(cnonceBytes);
             String cnonce = DatatypeConverter.printHexBinary(cnonceBytes).toLowerCase();
             String response;
             if (qop == null || qop.isEmpty()) {
-                response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", a1, nonce, a2).getBytes("UTF-8"))).toLowerCase();
+                response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", a1, nonce, a2).getBytes(UTF_8))).toLowerCase();
                 digestValue = String.format("Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",response=\"%s\"",
                         proxyUserName, realm, nonce, uri, cnonce, response);
             } else {
                 int nc = nonceCounter.incrementAndGet();
-                response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%08X:%s:%s:%s", a1, nonce, nc, cnonce, qop, a2).getBytes("UTF-8"))).toLowerCase();
+                response = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%08X:%s:%s:%s", a1, nonce, nc, cnonce, qop, a2).getBytes(UTF_8))).toLowerCase();
                 digestValue = String.format("Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",nc=%08X,response=\"%s\",qop=\"%s\"",
                         proxyUserName, realm, nonce, uri, cnonce, nc, response, qop);
             }
