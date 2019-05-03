@@ -44,11 +44,11 @@ public class ProxyConfiguration {
         this.proxyAddress = proxyAddress;
         this.authentication = authentication;
 
-        if (username != null) {
+        if (username != null && password != null) {
             this.credentials = new PasswordAuthentication(username, password.toCharArray());
         } else {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("username is null. Using system-wide authentication.");
+                LOGGER.info("username or password is null. Using system-wide authentication.");
             }
 
             this.credentials = null;
