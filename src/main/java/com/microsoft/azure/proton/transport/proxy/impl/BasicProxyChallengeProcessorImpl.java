@@ -5,6 +5,8 @@ import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import java.net.*;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
     private final ProxyAuthenticator proxyAuthenticator;
@@ -29,13 +31,13 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
             return null;
         }
 
-        String proxyUserName = passwordAuthentication.getUserName();
-        String proxyPassword = new String(passwordAuthentication.getPassword());
-        final String usernamePasswordPair = proxyUserName + ":" + proxyPassword;
+        final String proxyUserName = passwordAuthentication.getUserName();
+        final String proxyPassword = new String(passwordAuthentication.getPassword());
+        final String usernamePasswordPair = String.join(":",proxyUserName, proxyPassword);
 
         headers.put(
                 Constants.PROXY_AUTHORIZATION,
-                String.join(" ", Constants.BASIC, Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes())));
+                String.join(" ", Constants.BASIC, Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes(UTF_8))));
         return headers;
     }
 }
