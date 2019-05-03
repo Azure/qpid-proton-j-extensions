@@ -15,9 +15,9 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.verification.VerificationMode;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +33,9 @@ public class ProxyImplTest {
     private static final String hostName = "test.host.name";
     private static final int bufferSize = 8 * 1024;
     private static final int proxyConnectRequestLength = 132;
-    private static final String username = "test-user";
-    private static final String password = "test-password!";
+    private static final String USERNAME = "test-user";
+    private static final String PASSWORD = "test-password!";
+    private static final String BASIC_AUTH_HEADER = String.join(" ", Constants.PROXY_AUTHENTICATE_HEADER, Constants.BASIC);
 
     private Map<String, String> headers = new HashMap<>();
 
@@ -56,7 +57,7 @@ public class ProxyImplTest {
 
     @Test
     public void testConstructorOverload() {
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, hostName, username, password);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, hostName, USERNAME, PASSWORD);
         final ProxyImpl proxyImpl = new ProxyImpl(configuration);
 
         Assert.assertEquals(bufferSize, proxyImpl.getInputBuffer().capacity());
@@ -591,6 +592,72 @@ public class ProxyImplTest {
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
         transportWrapper.close_tail();
         Assert.assertEquals(Transport.END_OF_STREAM, transportWrapper.capacity());
+    }
+
+    /**
+     * Verifies that if we explicitly set ProxyAuthenticationType.NONE and the proxy asks for verification then we fail.
+     * This closes the underlying transport layer.
+     */
+    @Test
+    public void testAuthenticationTypeNoneClosesTail() {
+        // Arrange
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.NONE, hostName, USERNAME, PASSWORD);
+        ProxyImpl proxyImpl = new ProxyImpl(configuration);
+        ProxyHandler handler = mock(ProxyHandler.class);
+        TransportImpl underlyingTransport = mock(TransportImpl.class);
+        proxyImpl.configure(hostName, headers, handler,underlyingTransport);
+        TransportInput input = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
+        ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
+
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request");
+        when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
+
+        when(mockResponse.getIsSuccess()).thenReturn(false);
+        when(mockResponse.getError()).thenReturn(BASIC_AUTH_HEADER);
+
+        // Act and Assert
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.pending();
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        verify(underlyingTransport, times(1)).closed(isA(TransportException.class));
+    }
+
+    /**
+     * Verifies that if we set ProxyAuthenticationType and are unable to obtain a challenge processor, the
+     * underlying transport is closed.
+     */
+    @Test
+    public void testAuthenticationTypeGetsSpecifiedType() {
+        // Arrange
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, hostName, USERNAME, PASSWORD);
+        ProxyImpl proxyImpl = new ProxyImpl(configuration);
+        ProxyHandler handler = mock(ProxyHandler.class);
+        TransportImpl underlyingTransport = mock(TransportImpl.class);
+        proxyImpl.configure(hostName, headers, handler,underlyingTransport);
+        TransportInput input = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
+        ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
+
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request");
+        when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
+
+        when(mockResponse.getIsSuccess()).thenReturn(false);
+        when(mockResponse.getError()).thenReturn(Constants.PROXY_AUTHENTICATE_HEADER + " A protocol that is not supported.");
+
+        // Act and Assert
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.pending();
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        verify(underlyingTransport, times(1)).closed(isA(TransportException.class));
     }
 
     private void setProxyState(ProxyImpl proxyImpl, Proxy.ProxyState proxyState) throws NoSuchFieldException, IllegalAccessException {
