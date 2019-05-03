@@ -17,7 +17,7 @@ class ProxyAuthenticator {
      * settings.
      */
     ProxyAuthenticator() {
-        this(ProxyConfiguration.useSystemDefaults());
+        this(ProxyConfiguration.SYSTEM_DEFAULTS);
     }
 
     /**
@@ -73,7 +73,6 @@ class ProxyAuthenticator {
             uri = URI.create(host);
             proxies = proxySelector.select(uri);
         }
-
 
         InetAddress proxyAddr = null;
         java.net.Proxy.Type proxyType = null;
