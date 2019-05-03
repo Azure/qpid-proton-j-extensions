@@ -8,13 +8,12 @@ import java.net.*;
 import java.util.*;
 
 public class BasicProxyChallengeProcessorImplTest {
-
-    private final String headerKey = "Proxy-Authorization";
+    private static final String headerKey = "Proxy-Authorization";
+    private static final String HOSTNAME = "127.0.0.1";
+    private static final int PORT = 3128;
+    private static final String USERNAME = "basicuser";
+    private static final String PASSWORD = "basicpw";
     private Map<String, String> headers = new HashMap<>();
-    private final String HOSTNAME = "127.0.0.1";
-    private final int PORT = 3128;
-    private final String USERNAME = "basicuser";
-    private final String PASSWORD = "basicpw";
 
     @Test
     public void testGetHeaderBasic() {
@@ -43,6 +42,6 @@ public class BasicProxyChallengeProcessorImplTest {
         final String host = "";
         final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
         headers = proxyChallengeProcessor.getHeader();
-        Assert.assertTrue(headers.get(headerKey).equals("Basic YmFzaWN1c2VyOmJhc2ljcHc="));
+        Assert.assertEquals("Basic YmFzaWN1c2VyOmJhc2ljcHc=", headers.get(headerKey));
     }
 }
