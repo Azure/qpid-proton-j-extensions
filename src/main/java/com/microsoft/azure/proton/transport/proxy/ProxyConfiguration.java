@@ -1,11 +1,11 @@
-package com.microsoft.azure.proton.transport.proxy.impl;
+package com.microsoft.azure.proton.transport.proxy;
 
-import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
-
+import com.microsoft.azure.proton.transport.proxy.impl.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.PasswordAuthentication;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class ProxyConfiguration {
@@ -60,15 +60,15 @@ public class ProxyConfiguration {
         }
     }
 
-    String proxyAddress() {
+    public String proxyAddress() {
         return proxyAddress;
     }
 
-    PasswordAuthentication credentials() {
+    public PasswordAuthentication credentials() {
         return credentials;
     }
 
-    ProxyAuthenticationType authentication() {
+    public ProxyAuthenticationType authentication() {
         return authentication;
     }
 
@@ -77,7 +77,7 @@ public class ProxyConfiguration {
      *
      * @return true if the user has defined the credentials to use, false otherwise.
      */
-    boolean hasUserDefinedCredentials() {
+    public boolean hasUserDefinedCredentials() {
         return credentials != null;
     }
 
@@ -87,7 +87,15 @@ public class ProxyConfiguration {
      *
      * @return true if the proxy url has been set, and false otherwise.
      */
-    boolean isProxyAddressConfigured() {
+    public boolean isProxyAddressConfigured() {
         return !StringUtils.isNullOrEmpty(proxyAddress);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+
+        // It is up to us to clear the password field when we are done using it.
+        Arrays.fill(credentials.getPassword(), '\0');
     }
 }

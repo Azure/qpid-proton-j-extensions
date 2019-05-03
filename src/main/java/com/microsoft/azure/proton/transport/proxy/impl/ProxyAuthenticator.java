@@ -1,5 +1,7 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
+
 import java.net.*;
 import java.util.List;
 import java.util.Objects;
