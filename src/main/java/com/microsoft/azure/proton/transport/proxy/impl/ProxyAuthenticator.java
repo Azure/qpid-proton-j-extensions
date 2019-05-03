@@ -28,7 +28,7 @@ class ProxyAuthenticator {
 
         URI uri;
         List<Proxy> proxies = null;
-        if (!isNullOrEmpty(host)) {
+        if (!StringUtils.isNullOrEmpty(host)) {
             uri = URI.create(host);
             proxies = proxySelector.select(uri);
         }
@@ -62,7 +62,7 @@ class ProxyAuthenticator {
         final String username = passwordAuthentication.getUserName();
         final char[] password = passwordAuthentication.getPassword();
 
-        return !isNullOrEmpty(username) && password != null && password.length > 0;
+        return !StringUtils.isNullOrEmpty(username) && password != null && password.length > 0;
     }
 
     private static boolean isProxyAddressLegal(final List<Proxy> proxies) {
@@ -70,9 +70,5 @@ class ProxyAuthenticator {
                 && !proxies.isEmpty()
                 && proxies.get(0).address() != null
                 && proxies.get(0).address() instanceof InetSocketAddress;
-    }
-
-    private static boolean isNullOrEmpty(String string) {
-        return (string == null || string.isEmpty());
     }
 }
