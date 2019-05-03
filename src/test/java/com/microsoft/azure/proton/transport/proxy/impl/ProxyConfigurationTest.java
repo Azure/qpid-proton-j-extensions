@@ -1,6 +1,5 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
-import com.microsoft.azure.proton.transport.proxy.Proxy;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -28,7 +27,7 @@ public class ProxyConfigurationTest {
 
     @Test
     public void systemConfiguredConfiguration() {
-        ProxyConfiguration configuration = ProxyConfiguration.useSystemDefaults();
+        ProxyConfiguration configuration = ProxyConfiguration.SYSTEM_DEFAULTS;
 
         Assert.assertFalse(configuration.isProxyAddressConfigured());
         Assert.assertFalse(configuration.hasUserDefinedCredentials());
