@@ -40,6 +40,9 @@ class ProxyAuthenticator {
             proxyAddr = ((InetSocketAddress)proxies.get(0).address()).getAddress();
             proxyType = proxies.get(0).type();
         }
+
+        // It appears to be fine to pass in a null value for proxyAddr and proxyType (which maps to "scheme" argument in
+        // the call to requestPasswordAuthentication).
         return Authenticator.requestPasswordAuthentication(
                 "",
                 proxyAddr,
