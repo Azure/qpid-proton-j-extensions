@@ -189,21 +189,14 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     final String error = responseResult.getError();
                     final ProxyChallengeProcessor challengeProcessor = getChallengeProcessor(error, host);
 
-                    if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
+                    if (challengeProcessor != null) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
-                        DigestProxyChallengeProcessorImpl digestProxyChallengeProcessor = new DigestProxyChallengeProcessorImpl(host, responseResult.getError());
-                        headers = digestProxyChallengeProcessor.getHeader();
-                    } else if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_BASIC)) {
-                        proxyState = ProxyState.PN_PROXY_CHALLENGE;
-                        BasicProxyChallengeProcessorImpl basicProxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host);
-                        headers = basicProxyChallengeProcessor.getHeader();
+                        headers = challengeProcessor.getHeader();
                     } else {
                         tailClosed = true;
-                        underlyingTransport.closed(
-                                new TransportException(
-                                        "proxy connect request failed with error: "
-                                        + responseResult.getError()));
+                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_FAILED + error));
                     }
+
                     break;
                 case PN_PROXY_CHALLENGE_RESPONDED:
                     inputBuffer.flip();
@@ -216,9 +209,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     } else {
                         tailClosed = true;
                         underlyingTransport.closed(
-                                new TransportException(
-                                        "proxy connect request failed with error: "
-                                                + challengeResponseResult.getError()));
+                                new TransportException(PROXY_CONNECT_FAILED + challengeResponseResult.getError()));
                     }
                     break;
                 default:
