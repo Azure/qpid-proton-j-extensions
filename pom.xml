@@ -15,7 +15,7 @@
         <proton-j-version>0.31.0</proton-j-version>
         <junit-version>4.12</junit-version>
         <slf4j-version>1.8.0-alpha2</slf4j-version>
-        <mockito-version>1.10.19</mockito-version>
+        <mockito-version>2.10.0</mockito-version>
         <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
         <checkstyle.consoleOutput>true</checkstyle.consoleOutput>
         <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
