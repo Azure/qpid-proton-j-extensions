@@ -276,7 +276,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
             if (getIsHandshakeInProgress()) {
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
-                        return head;
                     case PN_PROXY_CHALLENGE_RESPONDED:
                         return head;
                     default:
@@ -292,16 +291,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
             if (getIsHandshakeInProgress()) {
                 switch (proxyState) {
                     case PN_PROXY_CONNECTING:
-                        if (outputBuffer.position() != 0) {
-                            outputBuffer.flip();
-                            outputBuffer.position(bytes);
-                            outputBuffer.compact();
-                            head.position(0);
-                            head.limit(outputBuffer.position());
-                        } else {
-                            underlyingOutput.pop(bytes);
-                        }
-                        break;
                     case PN_PROXY_CHALLENGE_RESPONDED:
                         if (outputBuffer.position() != 0) {
                             outputBuffer.flip();
