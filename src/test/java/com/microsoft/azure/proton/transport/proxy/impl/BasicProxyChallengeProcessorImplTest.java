@@ -74,4 +74,30 @@ public class BasicProxyChallengeProcessorImplTest {
         Map<String, String> headers = proxyChallengeProcessor.getHeader();
         Assert.assertEquals(expectedAuthValue, headers.get(Constants.PROXY_AUTHORIZATION));
     }
+
+    /**
+     * Verifies that if we cannot obtain credentials from proxyAuthenticator, then we return null.
+     */
+    @Test
+    public void cannotObtainPasswordCredentialsWithValues() {
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                    return null;
+
+                Assert.fail("Should always be type of ProxyRequest.");
+                throw new RuntimeException("Should be of type ProxyRequest");
+            }
+        });
+
+        final String host = "foo.proxy.com";
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, host, null, null);
+        final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
+        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host, authenticator);
+
+        Map<String, String> headers = proxyChallengeProcessor.getHeader();
+
+        Assert.assertNull(headers);
+    }
 }
