@@ -93,7 +93,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
                         proxyUserName, realm, nonce, uri, cnonce, nc, response, qop);
             }
 
-            headers.put("Proxy-Authorization", digestValue);
+            headers.put(Constants.PROXY_AUTHORIZATION, digestValue);
         } catch(NoSuchAlgorithmException ex) {
             throw new RuntimeException(ex);
         }
