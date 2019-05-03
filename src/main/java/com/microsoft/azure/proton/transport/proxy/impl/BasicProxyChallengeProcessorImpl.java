@@ -31,8 +31,8 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
         final String usernamePasswordPair = proxyUserName + ":" + proxyPassword;
 
         headers.put(
-                "Proxy-Authorization",
-                "Basic " + Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes()));
+                Constants.PROXY_AUTHORIZATION,
+                String.join(" ", Constants.BASIC, Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes())));
         return headers;
     }
 }
