@@ -20,7 +20,7 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
     @Override
     public Map<String, String> getHeader() {
         PasswordAuthentication passwordAuthentication =
-                proxyAuthenticator.getPasswordAuthentication(Constants.BASIC, host);
+                proxyAuthenticator.getPasswordAuthentication(Constants.BASIC_LOWERCASE, host);
 
         if (!ProxyAuthenticator.isPasswordAuthenticationHasValues(passwordAuthentication)) {
             return null;

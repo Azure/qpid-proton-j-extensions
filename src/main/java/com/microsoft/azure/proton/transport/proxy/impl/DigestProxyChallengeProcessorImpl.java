@@ -38,7 +38,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             String line = responseScanner.nextLine();
             if (line.contains(PROXY_AUTH_DIGEST)) {
                 getChallengeQuestionHeaders(line, challengeQuestionValues);
-                computeDigestAuthHeader(challengeQuestionValues, host, proxyAuthenticator.getPasswordAuthentication(Constants.DIGEST, host));
+                computeDigestAuthHeader(challengeQuestionValues, host, proxyAuthenticator.getPasswordAuthentication(Constants.DIGEST_LOWERCASE, host));
                 break;
             }
         }
