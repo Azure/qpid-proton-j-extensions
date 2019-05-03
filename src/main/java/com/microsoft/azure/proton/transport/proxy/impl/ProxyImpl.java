@@ -199,7 +199,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
                     // The proxy did not successfully connect and user has specified that there should be no
                     // authentication, we should fail.
-                    if (proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
+                    if (proxyConfiguration != null && proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
                         if (LOGGER.isWarnEnabled()) {
                             LOGGER.warn("Proxy authentication is required but user specified ProxyAuthenticationType.NONE");
                         }
