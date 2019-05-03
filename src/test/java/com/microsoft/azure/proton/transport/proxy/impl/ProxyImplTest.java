@@ -15,14 +15,23 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.verification.VerificationMode;
+import org.mockito.ArgumentCaptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 // \org\apache\qpid\proton\reactor\impl\IOHandler.java > connectionReadable and connectionWriteable
 // methods are the starting point which invokes all methods of TransportInput and TransportOutput
@@ -36,7 +45,9 @@ public class ProxyImplTest {
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
     private static final String BASIC_AUTH_HEADER = String.join(" ", Constants.PROXY_AUTHENTICATE_HEADER, Constants.BASIC);
+    private static final String OUTPUT_BUFFER_NAME = "outputBuffer";
 
+    private final Logger logger = LoggerFactory.getLogger(ProxyImplTest.class);
     private Map<String, String> headers = new HashMap<>();
 
     private void initHeaders() {
@@ -628,22 +639,23 @@ public class ProxyImplTest {
     }
 
     /**
-     * Verifies that if we set ProxyAuthenticationType and are unable to obtain a challenge processor, the
-     * underlying transport is closed.
+     * Verifies that if we set ProxyAuthenticationType, and it doesn't match the one in our "error" message after
+     * receiving a response, we still use the specified ProxyAuthenticationType.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testAuthenticationTypeGetsSpecifiedType() {
         // Arrange
-        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, hostName, USERNAME, PASSWORD);
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, hostName, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
-        proxyImpl.configure(hostName, headers, handler,underlyingTransport);
-        TransportInput input = mock(TransportInput.class);
-        TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
+        TransportOutput output = mock(TransportOutput.class);
+        proxyImpl.configure(hostName, headers, handler, underlyingTransport);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), output);
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
 
-        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request");
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request", "proxy request2");
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         when(mockResponse.getIsSuccess()).thenReturn(false);
@@ -656,8 +668,29 @@ public class ProxyImplTest {
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
         transportWrapper.process();
 
-        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
-        verify(underlyingTransport, times(1)).closed(isA(TransportException.class));
+        // At this point, we've gotten the correct challenger and set the header we want to respond with. We want to
+        // zero out the output buffer so that it'll write the headers when getting the request from the proxy handler.
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE, proxyImpl.getProxyState());
+        clearBuffer(proxyImpl, OUTPUT_BUFFER_NAME);
+        transportWrapper.pending();
+
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(handler, times(2)).createProxyRequest(argThat(string -> string != null && string.equals(hostName)), (Map<String, String>) captor.capture());
+
+        boolean foundHeader = false;
+        for (Map map : captor.getAllValues()) {
+            if (!map.containsKey(Constants.PROXY_AUTHORIZATION)) {
+                continue;
+            }
+
+            String value = (String) map.get(Constants.PROXY_AUTHORIZATION);
+            if (value.trim().startsWith(Constants.BASIC)) {
+                foundHeader = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(foundHeader);
     }
 
     private void setProxyState(ProxyImpl proxyImpl, Proxy.ProxyState proxyState) throws NoSuchFieldException, IllegalAccessException {
@@ -665,5 +698,28 @@ public class ProxyImplTest {
         proxyStateField.setAccessible(true);
         proxyStateField.set(proxyImpl, proxyState);
         Assert.assertEquals(proxyState, proxyImpl.getProxyState());
+    }
+
+    /**
+     * Clears a {@link ByteBuffer} with the provided {@code fieldName}.
+     */
+    private void clearBuffer(ProxyImpl proxyImpl, String fieldName) {
+        Field outputBuffer;
+        ByteBuffer buffer;
+        try {
+            outputBuffer = ProxyImpl.class.getDeclaredField(fieldName);
+
+            outputBuffer.setAccessible(true);
+            buffer = (ByteBuffer) outputBuffer.get(proxyImpl);
+            buffer.clear();
+        } catch (NoSuchFieldException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Could not locate field '{}' on ProxyImpl class. Exception: {}", fieldName, e);
+            }
+        } catch (IllegalAccessException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error("Could not fetch byte buffer from object.", e);
+            }
+        }
     }
 }
