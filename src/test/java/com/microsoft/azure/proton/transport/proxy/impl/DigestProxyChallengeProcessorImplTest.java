@@ -8,8 +8,6 @@ import java.net.*;
 import java.util.*;
 
 public class DigestProxyChallengeProcessorImplTest {
-
-    private final String headerKey = "Proxy-Authorization";
     private Map<String, String> headers = new HashMap<>();
     private final String HOSTNAME = "127.0.0.1";
     private final int PORT = 3128;
@@ -48,7 +46,7 @@ public class DigestProxyChallengeProcessorImplTest {
 
         final DigestProxyChallengeProcessorImpl proxyChallengeProcessor = new DigestProxyChallengeProcessorImpl("", response, new ProxyAuthenticator());
         headers = proxyChallengeProcessor.getHeader();
-        String resp = headers.get(headerKey);
+        String resp = headers.get(Constants.PROXY_AUTHORIZATION);
         Assert.assertTrue(resp.contains("Digest "));
         Assert.assertTrue(resp.contains("username=\""));
         Assert.assertTrue(resp.contains("realm=\""));
