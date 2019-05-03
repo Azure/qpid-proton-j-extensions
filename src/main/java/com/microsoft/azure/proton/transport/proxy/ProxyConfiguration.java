@@ -60,14 +60,32 @@ public class ProxyConfiguration {
         }
     }
 
+    /**
+     * Gets the proxy address.
+     *
+     * @return The proxy address. Returns {@code null} if user creates proxy credentials with
+     * {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     */
     public String proxyAddress() {
         return proxyAddress;
     }
 
+    /**
+     * Gets credentials to authenticate against proxy with.
+     *
+     * @return Thecredentials to authenticate against proxy with. Returns {@code null} if no credentials were set. This
+     * occurs when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     */
     public PasswordAuthentication credentials() {
         return credentials;
     }
 
+    /**
+     * Gets the proxy authentication type to use.
+     *
+     * @return The proxy authentication type to use. returns {@code null} if no authentication type was set. This occurs
+     * when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     */
     public ProxyAuthenticationType authentication() {
         return authentication;
     }
@@ -96,6 +114,8 @@ public class ProxyConfiguration {
         super.finalize();
 
         // It is up to us to clear the password field when we are done using it.
-        Arrays.fill(credentials.getPassword(), '\0');
+        if (credentials != null) {
+            Arrays.fill(credentials.getPassword(), '\0');
+        }
     }
 }
