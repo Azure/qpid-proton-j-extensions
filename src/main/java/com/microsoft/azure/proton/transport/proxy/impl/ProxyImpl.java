@@ -16,6 +16,8 @@ import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Locale;
@@ -24,6 +26,7 @@ import java.util.Map;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
     private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
     private static final int PROXY_HANDSHAKE_BUFFER_SIZE = 8 * 1024; // buffers used only for proxy-handshake
 
@@ -194,6 +197,20 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         break;
                     }
 
+                    // The proxy did not successfully connect and user has specified that there should be no
+                    // authentication, we should fail.
+                    if (proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
+                        if (LOGGER.isWarnEnabled()) {
+                            LOGGER.warn("Proxy authentication is required but user specified ProxyAuthenticationType.NONE");
+                        }
+
+                        //TODO conniey: Should we also close_tail() here because authentication is not what we expect?
+                        tailClosed = true;
+                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_FAILED + responseResult.getError()));
+
+                        break;
+                    }
+
                     final String error = responseResult.getError();
                     final ProxyChallengeProcessor challengeProcessor = getChallengeProcessor(error, host, proxyConfiguration);
 
@@ -329,17 +346,20 @@ public class ProxyImpl implements Proxy, TransportLayer {
         }
 
         /**
-         * Gets the challenge processor given the challenge and host.
+         * Gets the challenge processor given the challenge, host, and proxy configuration.
          *
          * @param challenge The challenge associated with this response.
          * @param host The host for this response.
-         * @return The {@link ProxyChallengeProcessor} for this challenge.
+         * @param configuration The proxy configuration, if any.
+         * @return The {@link ProxyChallengeProcessor} for this challenge. If {@code proxyConfiguration} is not null,
+         * then it returns the ProxyChallengeProcessor that is specified by the configuration.
          */
         private ProxyChallengeProcessor getChallengeProcessor(String challenge, String host, ProxyConfiguration configuration) {
             if (StringUtils.isNullOrEmpty(challenge)) {
                 return null;
             }
 
+            //TODO conniey: We're ignoring the challenge here. Is this what we want?
             if (configuration != null) {
                 return getChallengeProcessor(configuration.authentication(), host, challenge);
             }
@@ -383,11 +403,13 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 return null;
             }
 
+            final ProxyAuthenticator authenticator = new ProxyAuthenticator(proxyConfiguration);
+
             switch (authentication) {
                 case BASIC:
-                    return new BasicProxyChallengeProcessorImpl(host);
+                    return new BasicProxyChallengeProcessorImpl(host, authenticator);
                 case DIGEST:
-                    return new DigestProxyChallengeProcessorImpl(host, challenge);
+                    return new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
                 case NONE:
                 default:
                     return null;
