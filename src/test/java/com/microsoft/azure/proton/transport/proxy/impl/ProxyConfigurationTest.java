@@ -1,5 +1,7 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
+import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
