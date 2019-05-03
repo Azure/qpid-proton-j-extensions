@@ -4,7 +4,12 @@ import java.net.Authenticator;
 import java.net.InetAddress;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.Arrays;
 
+/**
+ * Test authenticator we can use to test what fields are set when calling
+ * {@link Authenticator#requestPasswordAuthentication(String, InetAddress, int, String, String, String)}.
+ */
 class TestAuthenticator extends Authenticator {
     private final PasswordAuthentication passwordAuthentication;
 
@@ -47,5 +52,14 @@ class TestAuthenticator extends Authenticator {
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
         return passwordAuthentication;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+
+        if (passwordAuthentication != null) {
+            Arrays.fill(passwordAuthentication.getPassword(), '\0');
+        }
     }
 }
