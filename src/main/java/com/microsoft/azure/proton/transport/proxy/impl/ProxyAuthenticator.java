@@ -28,7 +28,7 @@ class ProxyAuthenticator {
 
         URI uri;
         List<Proxy> proxies = null;
-        if (host != null && !host.isEmpty()) {
+        if (!isNullOrEmpty(host)) {
             uri = URI.create(host);
             proxies = proxySelector.select(uri);
         }
