@@ -8,10 +8,13 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 import com.microsoft.azure.proton.transport.proxy.Proxy;
+import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
+import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
 import java.nio.ByteBuffer;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.qpid.proton.engine.Transport;
@@ -21,9 +24,14 @@ import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private final int proxyHandshakeBufferSize = 8 * 1024; // buffers used only for proxy-handshake
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
+    private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
+    private static final int PROXY_HANDSHAKE_BUFFER_SIZE = 8 * 1024; // buffers used only for proxy-handshake
+
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
 
@@ -37,9 +45,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     private ProxyHandler proxyHandler;
 
-    private static final String PROXY_AUTH_DIGEST = "Proxy-Authenticate: Digest";
-    private static final String PROXY_AUTH_BASIC = "Proxy-Authenticate: Basic";
-
     /**
      * Create proxy transport layer - which, after configuring using
      * the {@link #configure(String, Map, ProxyHandler, Transport)} API
@@ -47,8 +52,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
      */
     public ProxyImpl() {
-        inputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
-        outputBuffer = newWriteableBuffer(proxyHandshakeBufferSize);
+        inputBuffer = newWriteableBuffer(PROXY_HANDSHAKE_BUFFER_SIZE);
+        outputBuffer = newWriteableBuffer(PROXY_HANDSHAKE_BUFFER_SIZE);
         isProxyConfigured = false;
     }
 
@@ -179,8 +184,10 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     if (responseResult.getIsSuccess()) {
                         proxyState = ProxyState.PN_PROXY_CONNECTED;
                         break;
-
                     }
+
+                    final String error = responseResult.getError();
+                    final ProxyChallengeProcessor challengeProcessor = getChallengeProcessor(error, host);
 
                     if (responseResult.getError() != null && responseResult.getError().contains(PROXY_AUTH_DIGEST)) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
@@ -334,5 +341,66 @@ public class ProxyImpl implements Proxy, TransportLayer {
             underlyingOutput.close_head();
         }
 
+        /**
+         * Gets the challenge processor given the challenge and host.
+         *
+         * @param challenge The challenge associated with this response.
+         * @param host The host for this response.
+         * @return The {@link ProxyChallengeProcessor} for this challenge.
+         */
+        private ProxyChallengeProcessor getChallengeProcessor(String challenge, String host) {
+            if (StringUtils.isNullOrEmpty(challenge)) {
+                return null;
+            }
+
+            final ProxyAuthenticationType authenticationType = getAuthenticationType(challenge);
+
+            return authenticationType != null
+                    ? getChallengeProcessor(authenticationType, host, challenge)
+                    : null;
+        }
+
+        /**
+         * Gets authentication type based on the {@code error}.
+         *
+         * @param error Response from service call.
+         * @return {@code null} if the value of {@code error} is {@code null}, an empty string. Also, if it does not
+         * contain {@link Constants#PROXY_AUTHENTICATE_HEADER} with {@link Constants#BASIC_LOWERCASE} or
+         * {@link Constants#DIGEST_LOWERCASE}.
+         */
+        private ProxyAuthenticationType getAuthenticationType(String error) {
+            int index = error.indexOf(Constants.PROXY_AUTHENTICATE_HEADER);
+
+            if (index == -1) {
+                return null;
+            }
+
+            String challengeType = error.substring(index).trim().toLowerCase(Locale.ROOT);
+
+            if (challengeType.contains(Constants.BASIC_LOWERCASE)) {
+                return ProxyAuthenticationType.BASIC;
+            } else if (challengeType.contains(Constants.DIGEST_LOWERCASE)) {
+                return ProxyAuthenticationType.DIGEST;
+            } else {
+                return null;
+            }
+        }
+
+        private ProxyChallengeProcessor getChallengeProcessor(ProxyAuthenticationType authentication, String host,
+                                                              String challenge) {
+            if (authentication == null) {
+                return null;
+            }
+
+            switch (authentication) {
+                case BASIC:
+                    return new BasicProxyChallengeProcessorImpl(host);
+                case DIGEST:
+                    return new DigestProxyChallengeProcessorImpl(host, challenge);
+                case NONE:
+                default:
+                    return null;
+            }
+        }
     }
 }
