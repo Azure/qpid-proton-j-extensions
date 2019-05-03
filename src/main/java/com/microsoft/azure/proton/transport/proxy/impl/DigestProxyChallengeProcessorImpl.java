@@ -3,7 +3,6 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 
 import javax.xml.bind.DatatypeConverter;
-import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -95,7 +94,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             }
 
             headers.put("Proxy-Authorization", digestValue);
-        } catch(NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+        } catch(NoSuchAlgorithmException ex) {
             throw new RuntimeException(ex);
         }
     }
