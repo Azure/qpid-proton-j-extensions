@@ -25,7 +25,6 @@ public class ProxyAuthenticatorTests {
     private static final String PASSWORD = "test-password!";
     private static final char[] PASSWORD_CHAR_ARRAY = PASSWORD.toCharArray();
     private static final String PROXY_ADDRESS = "foo.proxy.com";
-    private static final ProxyAuthenticationType AUTHENTICATION_TYPE = ProxyAuthenticationType.DIGEST;
 
     private ProxySelector originalProxySelector;
     private ProxySelector proxySelector;
