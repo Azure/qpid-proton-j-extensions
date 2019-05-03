@@ -404,7 +404,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 return null;
             }
 
-            final ProxyAuthenticator authenticator = new ProxyAuthenticator(proxyConfiguration);
+            final ProxyAuthenticator authenticator = proxyConfiguration != null
+                    ? new ProxyAuthenticator(proxyConfiguration)
+                    : new ProxyAuthenticator();
 
             switch (authentication) {
                 case BASIC:
