@@ -5,18 +5,10 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
-import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
-
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
-
-import java.nio.ByteBuffer;
-
-import java.util.Locale;
-import java.util.Map;
-
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.TransportImpl;
@@ -24,11 +16,14 @@ import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
     private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
     private static final int PROXY_HANDSHAKE_BUFFER_SIZE = 8 * 1024; // buffers used only for proxy-handshake
 
