@@ -8,41 +8,22 @@ import java.util.Objects;
  * Responds to proxy challenge requests by providing authentication information.
  */
 class ProxyAuthenticator {
-    private final PasswordAuthentication passwordAuthentication;
+    private static final String PROMPT = "Event Hubs client web socket proxy support";
 
     /**
      * Creates an authenticator that authenticates using system-configured authenticator.
      */
     ProxyAuthenticator() {
-        this.passwordAuthentication = null;
     }
 
     /**
-     * Creates an authenticator that responses to authentication requests with the provided {@code passwordAuthentication}.
-     *
-     * @param passwordAuthentication Credentials for authentication challenge.
-     * @throws NullPointerException if {@code passwordAuthentication} is {@code null}.
-     */
-    ProxyAuthenticator(PasswordAuthentication passwordAuthentication) {
-        Objects.requireNonNull(passwordAuthentication);
-
-        this.passwordAuthentication = new PasswordAuthentication(passwordAuthentication.getUserName(), passwordAuthentication.getPassword());
-    }
-
-    /**
-     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. If
-     * {@link ProxyAuthenticator#ProxyAuthenticator(PasswordAuthentication)} was used to construct this instance, it is always
-     * returned.
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}.
      *
      * @param scheme The authentication scheme for the proxy.
      * @param host The proxy's URL that is requesting authentication.
      * @return The username and password to authenticate against proxy with.
      */
     PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
-        if (passwordAuthentication != null) {
-            return passwordAuthentication;
-        }
-
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
@@ -64,7 +45,7 @@ class ProxyAuthenticator {
                 proxyAddr,
                 0,
                 proxyType == null ? "" : proxyType.name(),
-                "Event Hubs client websocket proxy support",
+                PROMPT,
                 scheme,
                 null,
                 Authenticator.RequestorType.PROXY);
@@ -91,5 +72,4 @@ class ProxyAuthenticator {
     private static boolean isNullOrEmpty(String string) {
         return (string == null || string.isEmpty());
     }
-
 }
