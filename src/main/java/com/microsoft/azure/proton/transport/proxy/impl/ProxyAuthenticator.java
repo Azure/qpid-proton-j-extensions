@@ -2,15 +2,33 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import java.net.*;
 import java.util.List;
+import java.util.Objects;
 
-public class ProxyAuthenticator {
+/**
+ * Responds to proxy challenge requests by providing authentication information.
+ */
+class ProxyAuthenticator {
+    private static final String PROMPT = "Event Hubs client web socket proxy support";
 
-    public PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
+    /**
+     * Creates an authenticator that authenticates using system-configured authenticator.
+     */
+    ProxyAuthenticator() {
+    }
+
+    /**
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}.
+     *
+     * @param scheme The authentication scheme for the proxy.
+     * @param host The proxy's URL that is requesting authentication.
+     * @return The username and password to authenticate against proxy with.
+     */
+    PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
         List<Proxy> proxies = null;
-        if (host != null && !host.isEmpty()) {
+        if (!StringUtils.isNullOrEmpty(host)) {
             uri = URI.create(host);
             proxies = proxySelector.select(uri);
         }
@@ -22,38 +40,35 @@ public class ProxyAuthenticator {
             proxyAddr = ((InetSocketAddress)proxies.get(0).address()).getAddress();
             proxyType = proxies.get(0).type();
         }
+
+        // It appears to be fine to pass in a null value for proxyAddr and proxyType (which maps to "scheme" argument in
+        // the call to requestPasswordAuthentication).
         return Authenticator.requestPasswordAuthentication(
                 "",
                 proxyAddr,
                 0,
                 proxyType == null ? "" : proxyType.name(),
-                "Event Hubs client websocket proxy support",
+                PROMPT,
                 scheme,
                 null,
                 Authenticator.RequestorType.PROXY);
     }
 
-    public boolean isPasswordAuthenticationHasValues(PasswordAuthentication passwordAuthentication){
-        if (passwordAuthentication == null) return false;
-        String proxyUserName = passwordAuthentication.getUserName() != null
-                ? passwordAuthentication.getUserName()
-                : null ;
-        String proxyPassword = passwordAuthentication.getPassword() != null
-                ? new String(passwordAuthentication.getPassword())
-                : null;
-        if (isNullOrEmpty(proxyUserName) || isNullOrEmpty(proxyPassword))  return false;
-        return true;
+    static boolean isPasswordAuthenticationHasValues(PasswordAuthentication passwordAuthentication) {
+        if (passwordAuthentication == null) {
+            return false;
+        }
+
+        final String username = passwordAuthentication.getUserName();
+        final char[] password = passwordAuthentication.getPassword();
+
+        return !StringUtils.isNullOrEmpty(username) && password != null && password.length > 0;
     }
 
-    private boolean isProxyAddressLegal(final List<Proxy> proxies) {
+    private static boolean isProxyAddressLegal(final List<Proxy> proxies) {
         return proxies != null
                 && !proxies.isEmpty()
                 && proxies.get(0).address() != null
                 && proxies.get(0).address() instanceof InetSocketAddress;
     }
-
-    private boolean isNullOrEmpty(String string) {
-        return (string == null || string.isEmpty());
-    }
-
 }

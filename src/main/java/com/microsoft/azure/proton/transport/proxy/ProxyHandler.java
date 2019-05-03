@@ -28,8 +28,21 @@ public interface ProxyHandler {
         }
     }
 
+    /**
+     * Creates a CONNECT request to the provided {@code hostName} and adds {@code additionalHeaders} to the request.
+     *
+     * @param hostName Name of the host to connect to.
+     * @param additionalHeaders Optional. Additional headers to add to the request.
+     * @return A string representing the HTTP CONNECT request.
+     */
     String createProxyRequest(String hostName, Map<String, String> additionalHeaders);
 
+    /**
+     * Verifies that {@code buffer} contains a successful CONNECT response.
+     *
+     * @param buffer Buffer containing the HTTP response.
+     * @return Indicates if CONNECT response contained a success. If not, contains an error indicating why the call was
+     * not successful.
+     */
     ProxyResponseResult validateProxyResponse(ByteBuffer buffer);
-
 }
