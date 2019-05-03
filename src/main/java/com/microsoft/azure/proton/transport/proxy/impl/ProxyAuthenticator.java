@@ -74,6 +74,7 @@ class ProxyAuthenticator {
             proxies = proxySelector.select(uri);
         }
 
+
         InetAddress proxyAddr = null;
         java.net.Proxy.Type proxyType = null;
         if (isProxyAddressLegal(proxies)) {
