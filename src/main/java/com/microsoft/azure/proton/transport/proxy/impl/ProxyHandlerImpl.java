@@ -14,6 +14,9 @@ import java.util.Scanner;
 
 public class ProxyHandlerImpl implements ProxyHandler {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String createProxyRequest(String hostName, Map<String, String> additionalHeaders) {
         final String endOfLine = "\r\n";
@@ -35,6 +38,9 @@ public class ProxyHandlerImpl implements ProxyHandler {
         return connectRequestBuilder.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ProxyResponseResult validateProxyResponse(ByteBuffer buffer) {
         int size = buffer.remaining();
