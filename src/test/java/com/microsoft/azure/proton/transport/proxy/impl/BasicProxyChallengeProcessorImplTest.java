@@ -47,4 +47,9 @@ public class BasicProxyChallengeProcessorImplTest {
         headers = proxyChallengeProcessor.getHeader();
         Assert.assertEquals("Basic YmFzaWN1c2VyOmJhc2ljcHc=", headers.get(headerKey));
     }
+
+    @Test
+    public void testWithProxyConfiguration() {
+
+    }
 }
