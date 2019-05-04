@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Test authenticator we can use to test what fields are set when calling
  * {@link Authenticator#requestPasswordAuthentication(String, InetAddress, int, String, String, String)}.
  */
-class TestAuthenticator extends Authenticator {
+class TestAuthenticator extends Authenticator implements AutoCloseable {
     private final PasswordAuthentication passwordAuthentication;
 
     TestAuthenticator(String username, String password) {
@@ -55,9 +55,7 @@ class TestAuthenticator extends Authenticator {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
+    public void close() {
         if (passwordAuthentication != null) {
             Arrays.fill(passwordAuthentication.getPassword(), '\0');
         }

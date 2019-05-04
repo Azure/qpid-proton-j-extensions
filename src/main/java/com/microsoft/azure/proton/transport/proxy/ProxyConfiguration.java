@@ -8,7 +8,7 @@ import java.net.PasswordAuthentication;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class ProxyConfiguration {
+public class ProxyConfiguration implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
 
     private final String proxyAddress;
@@ -73,7 +73,7 @@ public class ProxyConfiguration {
     /**
      * Gets credentials to authenticate against proxy with.
      *
-     * @return Thecredentials to authenticate against proxy with. Returns {@code null} if no credentials were set. This
+     * @return The credentials to authenticate against proxy with. Returns {@code null} if no credentials were set. This
      * occurs when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
      */
     public PasswordAuthentication credentials() {
@@ -110,9 +110,7 @@ public class ProxyConfiguration {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-
+    public void close() {
         // It is up to us to clear the password field when we are done using it.
         if (credentials != null) {
             Arrays.fill(credentials.getPassword(), '\0');
