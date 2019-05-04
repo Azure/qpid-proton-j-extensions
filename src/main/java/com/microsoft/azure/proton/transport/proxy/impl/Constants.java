@@ -10,4 +10,6 @@ class Constants {
     static final String BASIC = "Basic";
     static final String BASIC_LOWERCASE = Constants.BASIC.toLowerCase(Locale.ROOT);
     static final String DIGEST_LOWERCASE = Constants.DIGEST.toLowerCase(Locale.ROOT);
+
+    static final String CONNECT = "CONNECT";
 }
