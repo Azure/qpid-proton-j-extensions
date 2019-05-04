@@ -33,7 +33,7 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
 
         final String proxyUserName = passwordAuthentication.getUserName();
         final String proxyPassword = new String(passwordAuthentication.getPassword());
-        final String usernamePasswordPair = String.join(":",proxyUserName, proxyPassword);
+        final String usernamePasswordPair = String.join(":", proxyUserName, proxyPassword);
 
         headers.put(
                 Constants.PROXY_AUTHORIZATION,
