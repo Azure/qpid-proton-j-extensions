@@ -77,7 +77,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             MessageDigest md5 = MessageDigest.getInstance("md5");
             SecureRandom secureRandom = new SecureRandom();
             String a1 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", proxyUserName, realm, proxyPassword).getBytes(UTF_8))).toLowerCase();
-            String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", "CONNECT", uri).getBytes(UTF_8))).toLowerCase();
+            String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", Constants.CONNECT, uri).getBytes(UTF_8))).toLowerCase();
 
             byte[] cnonceBytes = new byte[16];
             secureRandom.nextBytes(cnonceBytes);
