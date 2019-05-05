@@ -123,6 +123,41 @@ public class DigestProxyChallengeProcessorImplTest {
         validator.assertEquals(resp, a1, a2);
     }
 
+    /**
+     * Verifies that if we cannot obtain credentials from proxyAuthenticator, then we return null.
+     */
+    @Test
+    public void cannotObtainPasswordCredentialsWithValues() {
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                    return null;
+
+                Assert.fail("Should always be type of ProxyRequest.");
+                throw new RuntimeException("Should be of type ProxyRequest");
+            }
+        });
+
+        // Arrange
+        final String realm = "My Test Realm";
+        final String nonce = "A randomly generated nonce";
+        final String qop = "auth";
+        final String challenge = generateProxyChallenge(realm, nonce, qop);
+
+        final String host = "foo.proxy.com";
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, host, null, null);
+        final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
+        final DigestProxyChallengeProcessorImpl proxyChallengeProcessor =
+                new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
+
+        // Act
+        Map<String, String> headers = proxyChallengeProcessor.getHeader();
+
+        // Assert
+        Assert.assertTrue(headers.isEmpty());
+    }
+
     private static String generateProxyChallenge(String realm, String nonce, String qop) {
         final String digest = String.format("%s %s realm=\"%s\", nonce=\"%s\", qop=\"%s\", stale=false",
                 Constants.PROXY_AUTHENTICATE_HEADER, Constants.DIGEST, realm, nonce, qop);
