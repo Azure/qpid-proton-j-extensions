@@ -90,35 +90,37 @@ public class DigestProxyChallengeProcessorImplTest {
         validator.assertEquals(resp, a1, a2);
     }
 
+    /**
+     * Verify that when we explicitly pass in proxy configuration, that host and those credentials are used rather than
+     * the system defined ones.
+     */
     @Test
     public void testGetHeaderDigestWithProxy() {
         // Arrange
         final String realm = "My Test Realm";
         final String nonce = "A randomly generated nonce";
         final String qop = "auth";
-        final String response = generateProxyChallenge(realm, nonce, qop);
+        final String challenge = generateProxyChallenge(realm, nonce, qop);
 
-        final String host = "foo.myhost.com";
-        final String username = "my-new-username";
-        final String password = "my-new-password";
+        final String host = "foobar.myhost.com";
+        final String username = "my-different-username";
+        final String password = "my-different-password";
         final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, host, username, password);
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
 
+        // a1 and a2 are hash values generated as an intermediate step in the Digest algorithm.
+        final String a1 = "d9365dc421b15c1fe23ac413788839c7";
+        final String a2 = "5c8c78994a9672c0b394d4615f3f8c23";
+        final DigestValidator validator = new DigestValidator(username, realm, nonce, "00000001", host, qop);
+
         // Act
         final DigestProxyChallengeProcessorImpl proxyChallengeProcessor =
-                new DigestProxyChallengeProcessorImpl("", response, authenticator);
+                new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
         Map<String, String> headers = proxyChallengeProcessor.getHeader();
 
+        // Assert
         String resp = headers.get(Constants.PROXY_AUTHORIZATION);
-        Assert.assertTrue(resp.contains("Digest "));
-        Assert.assertTrue(resp.contains("username=\""));
-        Assert.assertTrue(resp.contains("realm=\""));
-        Assert.assertTrue(resp.contains("nonce=\""));
-        Assert.assertTrue(resp.contains("uri=\""));
-        Assert.assertTrue(resp.contains("cnonce=\""));
-        Assert.assertTrue(resp.contains("nc="));
-        Assert.assertTrue(resp.contains("response=\""));
-        Assert.assertTrue(resp.contains("qop=\""));
+        validator.assertEquals(resp, a1, a2);
     }
 
     private static String generateProxyChallenge(String realm, String nonce, String qop) {
