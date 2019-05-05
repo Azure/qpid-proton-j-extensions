@@ -14,6 +14,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
+    static final String DEFAULT_ALGORITHM = "MD5";
     private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;
 
     private final AtomicInteger nonceCounter = new AtomicInteger(0);
@@ -74,7 +75,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             String realm = challengeQuestionValues.get("realm");
             String qop = challengeQuestionValues.get("qop");
 
-            MessageDigest md5 = MessageDigest.getInstance("md5");
+            MessageDigest md5 = MessageDigest.getInstance(DEFAULT_ALGORITHM);
             SecureRandom secureRandom = new SecureRandom();
             String a1 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s:%s", proxyUserName, realm, proxyPassword).getBytes(UTF_8))).toLowerCase();
             String a2 = DatatypeConverter.printHexBinary(md5.digest(String.format("%s:%s", Constants.CONNECT, uri).getBytes(UTF_8))).toLowerCase();
