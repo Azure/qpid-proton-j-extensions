@@ -48,12 +48,6 @@ public class ProxyImplTest {
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
 
-    private static final String NONCE = "Random nonce to use.";
-    private static final String QOP = "auth";
-    private static final String BASIC_AUTH_HEADER = String.join(" ", PROXY_AUTHENTICATE_HEADER, BASIC);
-    private static final String DIGEST_AUTH_HEADER = String.format("%s %s realm=\"%s\", nonce=\"%s\", qop=\"%s\", stale=false",
-            PROXY_AUTHENTICATE_HEADER, DIGEST, HOST_NAME, NONCE, QOP);
-
     private static final String OUTPUT_BUFFER_NAME = "outputBuffer";
 
     private final Logger logger = LoggerFactory.getLogger(ProxyImplTest.class);
@@ -634,7 +628,7 @@ public class ProxyImplTest {
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         when(mockResponse.getIsSuccess()).thenReturn(false);
-        when(mockResponse.getError()).thenReturn(BASIC_AUTH_HEADER);
+        when(mockResponse.getError()).thenReturn(getProxyChallenge(true, false));
 
         // Act and Assert
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -740,12 +734,13 @@ public class ProxyImplTest {
         builder.append(newLine);
 
         if (includeBasic) {
-            builder.append(BASIC_AUTH_HEADER);
+            builder.append(String.join(" ", PROXY_AUTHENTICATE_HEADER, BASIC));
             builder.append(newLine);
         }
 
         if (includeDigest) {
-            builder.append(DIGEST_AUTH_HEADER);
+            builder.append(String.format("%s %s realm=\"%s\", nonce=\"A randomly set nonce.\", qop=\"auth\", stale=false",
+                    PROXY_AUTHENTICATE_HEADER, DIGEST, HOST_NAME));
             builder.append(newLine);
         }
 
