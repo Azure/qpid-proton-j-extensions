@@ -200,6 +200,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                             .validateProxyResponse(inputBuffer);
                     inputBuffer.compact();
                     inputBuffer.clear();
+
                     if (responseResult.getIsSuccess()) {
                         proxyState = ProxyState.PN_PROXY_CONNECTED;
                         break;
@@ -217,9 +218,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                                     supportedTypes.stream().map(Enum::toString).collect(Collectors.joining(",")));
                         }
 
-                        //TODO conniey: Should we also also call close_tail() here?
-                        tailClosed = true;
-                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_USER_ERROR + challenge));
+                        closeTailProxyError(PROXY_CONNECT_USER_ERROR + challenge);
                         break;
                     }
 
@@ -231,22 +230,18 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
                         headers = processor.getHeader();
                     } else {
-                        tailClosed = true;
-                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_FAILED + challenge));
+                        closeTailProxyError(PROXY_CONNECT_FAILED + challenge);
                     }
                     break;
                 case PN_PROXY_CHALLENGE_RESPONDED:
                     inputBuffer.flip();
-                    final ProxyHandler.ProxyResponseResult challengeResponseResult = proxyHandler
-                            .validateProxyResponse(inputBuffer);
+                    final ProxyHandler.ProxyResponseResult result = proxyHandler.validateProxyResponse(inputBuffer);
                     inputBuffer.compact();
 
-                    if (challengeResponseResult.getIsSuccess()) {
+                    if (result.getIsSuccess()) {
                         proxyState = ProxyState.PN_PROXY_CONNECTED;
                     } else {
-                        tailClosed = true;
-                        underlyingTransport.closed(
-                                new TransportException(PROXY_CONNECT_FAILED + challengeResponseResult.getError()));
+                        closeTailProxyError(PROXY_CONNECT_FAILED + result.getError());
                     }
                     break;
                 default:
@@ -426,6 +421,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 default:
                     return null;
             }
+        }
+
+        private void closeTailProxyError(String errorMessage) {
+            tailClosed = true;
+            underlyingTransport.closed(new TransportException(errorMessage));
         }
     }
 }
