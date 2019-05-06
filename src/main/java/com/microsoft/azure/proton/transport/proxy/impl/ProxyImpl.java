@@ -35,7 +35,7 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuf
 public class ProxyImpl implements Proxy, TransportLayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
     private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
-    private static final String PROXY_CONNECT_USER_ERROR = "User configuration error. Using non-matching proxy authentication." + PROXY_CONNECT_FAILED;
+    private static final String PROXY_CONNECT_USER_ERROR = "User configuration error. Using non-matching proxy authentication.";
     private static final int PROXY_HANDSHAKE_BUFFER_SIZE = 8 * 1024; // buffers used only for proxy-handshake
 
     private final ByteBuffer inputBuffer;
@@ -196,13 +196,23 @@ public class ProxyImpl implements Proxy, TransportLayer {
             switch (proxyState) {
                 case PN_PROXY_CONNECTING:
                     inputBuffer.flip();
-                    final ProxyHandler.ProxyResponseResult responseResult = proxyHandler
-                            .validateProxyResponse(inputBuffer);
+                    final ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(inputBuffer);
                     inputBuffer.compact();
                     inputBuffer.clear();
 
+                    // When connecting to proxy, it does not challenge us for authentication. If the user has specified
+                    // a configuration and it is not NONE, then we fail due to misconfiguration.
                     if (responseResult.getIsSuccess()) {
-                        proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        if (proxyConfiguration == null || proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
+                            proxyState = ProxyState.PN_PROXY_CONNECTED;
+                        } else {
+                            if (LOGGER.isErrorEnabled()) {
+                                LOGGER.error("ProxyConfiguration mismatch. User configured: '{}', but authentication is not required",
+                                        proxyConfiguration.authentication());
+                            }
+
+                            closeTailProxyError(PROXY_CONNECT_USER_ERROR);
+                        }
                         break;
                     }
 
@@ -218,7 +228,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                                     supportedTypes.stream().map(Enum::toString).collect(Collectors.joining(",")));
                         }
 
-                        closeTailProxyError(PROXY_CONNECT_USER_ERROR + challenge);
+                        closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED + challenge);
                         break;
                     }
 
