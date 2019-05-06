@@ -15,7 +15,9 @@ import org.apache.qpid.proton.engine.impl.TransportImpl;
 import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.FromDataPoints;
@@ -26,9 +28,18 @@ import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.*;
@@ -56,11 +67,48 @@ public class ProxyImplTest {
 
     private final Logger logger = LoggerFactory.getLogger(ProxyImplTest.class);
     private Map<String, String> headers = new HashMap<>();
+    private ProxySelector originalProxy;
 
     private void initHeaders() {
         headers.put("header1", "value1");
         headers.put("header2", "value2");
         headers.put("header3", "value3");
+    }
+
+    @Before
+    public void setup() {
+        originalProxy = ProxySelector.getDefault();
+
+        ProxySelector.setDefault(new ProxySelector() {
+            @Override
+            public List<java.net.Proxy> select(URI uri) {
+                List<java.net.Proxy> proxies = new ArrayList<>();
+                proxies.add(new java.net.Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(HOST_NAME, 3138)));
+                return proxies;
+            }
+
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                if (logger.isErrorEnabled()) {
+                    logger.error("PROXY CONNECTION FAILED: URI = {}, Socket Address = {}, IO Exception = {}",
+                            uri.toString(), sa.toString(), ioe.toString());
+                }
+            }
+        });
+
+        Authenticator.setDefault(new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                    return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
+                return super.getPasswordAuthentication();
+            }
+        });
+    }
+
+    @After
+    public void teardown() {
+        ProxySelector.setDefault(originalProxy);
     }
 
     @Test
@@ -215,7 +263,7 @@ public class ProxyImplTest {
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
 
-        for (int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             transportWrapper.pending();
         }
 
@@ -624,7 +672,7 @@ public class ProxyImplTest {
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
-        proxyImpl.configure(HOST_NAME, headers, handler,underlyingTransport);
+        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
         TransportInput input = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
@@ -702,6 +750,68 @@ public class ProxyImplTest {
 
             String value = (String) map.get(PROXY_AUTHORIZATION);
             if (value.trim().startsWith(BASIC)) {
+                foundHeader = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(foundHeader);
+    }
+
+    /**
+     * Verifies that when we use the system defaults and both are offered, then we will use the the DIGEST.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void authenticationWithSystemDefaults() {
+        // Arrange
+        ProxyImpl proxyImpl = new ProxyImpl();
+        ProxyHandler handler = mock(ProxyHandler.class);
+        TransportImpl underlyingTransport = mock(TransportImpl.class);
+        TransportOutput output = mock(TransportOutput.class);
+        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), output);
+        ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
+
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request", "proxy request2");
+        when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
+
+        when(mockResponse.getIsSuccess()).thenReturn(false, true);
+        when(mockResponse.getError()).thenReturn(getProxyChallenge(true, true), "Success.");
+
+        // Act and Assert
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.pending();
+
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        // At this point, we've gotten the correct challenger and set the header we want to respond with. We want to
+        // zero out the output buffer so that it'll write the headers when getting the request from the proxy handler.
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE, proxyImpl.getProxyState());
+        clearOutputBuffer(proxyImpl);
+        transportWrapper.pending();
+
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE_RESPONDED, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        Assert.assertFalse(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTED, proxyImpl.getProxyState());
+
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(handler, times(2)).createProxyRequest(
+                argThat(string -> string != null && string.equals(HOST_NAME)), (Map<String, String>) captor.capture());
+
+        boolean foundHeader = false;
+        for (Map map : captor.getAllValues()) {
+            if (!map.containsKey(PROXY_AUTHORIZATION)) {
+                continue;
+            }
+
+            String value = (String) map.get(PROXY_AUTHORIZATION);
+            if (value.trim().startsWith(DIGEST)) {
                 foundHeader = true;
                 break;
             }
