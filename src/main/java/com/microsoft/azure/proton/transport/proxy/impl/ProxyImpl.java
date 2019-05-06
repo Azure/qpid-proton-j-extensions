@@ -224,8 +224,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     }
 
                     final ProxyChallengeProcessor processor = proxyConfiguration != null
-                            ? getChallengeProcessor(challenge, host, proxyConfiguration.authentication())
-                            : getChallengeProcessor(challenge, host, supportedTypes);
+                            ? getChallengeProcessor(host, challenge, proxyConfiguration.authentication())
+                            : getChallengeProcessor(host, challenge, supportedTypes);
 
                     if (processor != null) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
