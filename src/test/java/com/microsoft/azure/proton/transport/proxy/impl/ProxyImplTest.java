@@ -17,6 +17,11 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.FromDataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +46,9 @@ import static org.mockito.Mockito.when;
 // classes - to implement transport layering.
 // Goal of this class is to test - expected outcomes of proxy transport layer
 // when these methods are invoked, and how ProxyState state transitions plays along.
+
 public class ProxyImplTest {
-    private static final String HOST_NAME = "proxy.host.name";
+    private static final String HOST_NAME = "test.host.name";
     private static final int BUFFER_SIZE = 8 * 1024;
     private static final int PROXY_CONNECT_REQUEST_LENGTH = 132;
     private static final String USERNAME = "test-user";
@@ -608,7 +614,8 @@ public class ProxyImplTest {
 
     /**
      * Verifies that if we explicitly set ProxyAuthenticationType.NONE and the proxy asks for verification then we fail.
-     * This closes the underlying transport layer.
+     * This also covers the case where the proxy configuration suggests one auth method, but it is not supported in the
+     * proxy challenge.
      */
     @Test
     public void authenticationTypeNoneClosesTail() {
@@ -635,8 +642,8 @@ public class ProxyImplTest {
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
         transportWrapper.process();
 
-        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
         verify(underlyingTransport, times(1)).closed(isA(TransportException.class));
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
     }
 
     /**
