@@ -642,12 +642,12 @@ public class ProxyImplTest {
     }
 
     /**
-     * Verifies that if we set ProxyAuthenticationType, and it doesn't match the one in our "error" message after
-     * receiving a response, we still use the specified ProxyAuthenticationType.
+     * Verifies that we can pass in a proxy configuration and connect to the proxy when the challenge contains the
+     * configured auth method.
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testAuthenticationTypeGetsSpecifiedType() {
+    public void authenticationWithProxyConfiguration() {
         // Arrange
         ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, HOST_NAME, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
@@ -661,13 +661,14 @@ public class ProxyImplTest {
         when(handler.createProxyRequest(any(), any())).thenReturn("proxy request", "proxy request2");
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
-        when(mockResponse.getIsSuccess()).thenReturn(false);
-        when(mockResponse.getError()).thenReturn(getProxyChallenge(true, true));
+        when(mockResponse.getIsSuccess()).thenReturn(false, true);
+        when(mockResponse.getError()).thenReturn(getProxyChallenge(true, true), "Success.");
 
         // Act and Assert
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
         transportWrapper.pending();
 
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
         transportWrapper.process();
 
@@ -677,8 +678,16 @@ public class ProxyImplTest {
         clearBuffer(proxyImpl, OUTPUT_BUFFER_NAME);
         transportWrapper.pending();
 
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE_RESPONDED, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        Assert.assertFalse(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTED, proxyImpl.getProxyState());
+
         ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
-        verify(handler, times(2)).createProxyRequest(argThat(string -> string != null && string.equals(HOST_NAME)), (Map<String, String>) captor.capture());
+        verify(handler, times(2)).createProxyRequest(
+                argThat(string -> string != null && string.equals(HOST_NAME)), (Map<String, String>) captor.capture());
 
         boolean foundHeader = false;
         for (Map map : captor.getAllValues()) {
