@@ -48,8 +48,6 @@ public class ProxyImplTest {
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
 
-    private static final String OUTPUT_BUFFER_NAME = "outputBuffer";
-
     private final Logger logger = LoggerFactory.getLogger(ProxyImplTest.class);
     private Map<String, String> headers = new HashMap<>();
 
@@ -613,7 +611,7 @@ public class ProxyImplTest {
      * This closes the underlying transport layer.
      */
     @Test
-    public void testAuthenticationTypeNoneClosesTail() {
+    public void authenticationTypeNoneClosesTail() {
         // Arrange
         ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.NONE, HOST_NAME, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
@@ -675,7 +673,7 @@ public class ProxyImplTest {
         // At this point, we've gotten the correct challenger and set the header we want to respond with. We want to
         // zero out the output buffer so that it'll write the headers when getting the request from the proxy handler.
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE, proxyImpl.getProxyState());
-        clearBuffer(proxyImpl, OUTPUT_BUFFER_NAME);
+        clearOutputBuffer(proxyImpl);
         transportWrapper.pending();
 
         Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
@@ -712,21 +710,21 @@ public class ProxyImplTest {
         Assert.assertEquals(proxyState, proxyImpl.getProxyState());
     }
 
-    /**
-     * Clears a {@link ByteBuffer} with the provided {@code fieldName}.
-     */
-    private void clearBuffer(ProxyImpl proxyImpl, String fieldName) {
+    private void clearOutputBuffer(ProxyImpl proxyImpl) {
+        // Clears the "ProxyImpl.outputBuffer" field.
+        final String outputBufferName = "outputBuffer";
+
         Field outputBuffer;
         ByteBuffer buffer;
         try {
-            outputBuffer = ProxyImpl.class.getDeclaredField(fieldName);
+            outputBuffer = ProxyImpl.class.getDeclaredField(outputBufferName);
 
             outputBuffer.setAccessible(true);
             buffer = (ByteBuffer) outputBuffer.get(proxyImpl);
             buffer.clear();
         } catch (NoSuchFieldException e) {
             if (logger.isErrorEnabled()) {
-                logger.error("Could not locate field '{}' on ProxyImpl class. Exception: {}", fieldName, e);
+                logger.error("Could not locate field '{}' on ProxyImpl class. Exception: {}", outputBufferName, e);
             }
         } catch (IllegalAccessException e) {
             if (logger.isErrorEnabled()) {
