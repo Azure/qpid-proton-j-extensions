@@ -219,7 +219,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
                         //TODO conniey: Should we also also call close_tail() here?
                         tailClosed = true;
-                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_USER_ERROR + responseResult.getError()));
+                        underlyingTransport.closed(new TransportException(PROXY_CONNECT_USER_ERROR + challenge));
                         break;
                     }
 
