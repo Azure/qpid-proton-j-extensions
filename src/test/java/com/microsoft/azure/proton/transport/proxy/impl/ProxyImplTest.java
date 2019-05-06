@@ -695,6 +695,40 @@ public class ProxyImplTest {
     }
 
     /**
+     * Verifies that if we explicitly set ProxyAuthenticationType.NONE and the proxy asks for verification then we fail.
+     * This also covers the case where the proxy configuration suggests one auth method, but it is not supported in the
+     * proxy challenge.
+     */
+    @Test
+    public void authenticationNoAuthMismatchClosesTail() {
+        // Arrange
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, HOST_NAME, USERNAME, PASSWORD);
+        ProxyImpl proxyImpl = new ProxyImpl(configuration);
+        ProxyHandler handler = mock(ProxyHandler.class);
+        TransportImpl underlyingTransport = mock(TransportImpl.class);
+        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        TransportInput input = mock(TransportInput.class);
+        TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
+        ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
+
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request");
+        when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
+
+        when(mockResponse.getIsSuccess()).thenReturn(true);
+        when(mockResponse.getError()).thenReturn(null);
+
+        // Act and Assert
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.pending();
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        verify(underlyingTransport, times(1)).closed(isA(TransportException.class));
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+    }
+
+    /**
      * Verifies that we can pass in a proxy configuration and connect to the proxy when the challenge contains the
      * configured auth method.
      */
