@@ -364,6 +364,37 @@ public class ProxyImpl implements Proxy, TransportLayer {
             underlyingOutput.close_head();
         }
 
+        /*
+         * Gets the ProxyChallengeProcessor based on authentication types supported. Prefers DIGEST authentication if
+         * supported over BASIC. Returns null if it cannot match any supported types.
+         */
+        private ProxyChallengeProcessor getChallengeProcessor(String host, String challenge,
+                                                              Set<ProxyAuthenticationType> authentication) {
+            if (authentication.contains(DIGEST)) {
+                return getChallengeProcessor(host, challenge, DIGEST);
+            } else if (authentication.contains(BASIC)) {
+                return getChallengeProcessor(host, challenge, BASIC);
+            } else {
+                return null;
+            }
+        }
+
+        private ProxyChallengeProcessor getChallengeProcessor(String host, String challenge,
+                                                              ProxyAuthenticationType authentication) {
+            final ProxyAuthenticator authenticator = proxyConfiguration != null
+                    ? new ProxyAuthenticator(proxyConfiguration)
+                    : new ProxyAuthenticator();
+
+            switch (authentication) {
+                case DIGEST:
+                    return new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
+                case BASIC:
+                    return new BasicProxyChallengeProcessorImpl(host, authenticator);
+                default:
+                    return null;
+            }
+        }
+
         /**
          * Gets the supported authentication types based on the {@code error}.
          *
@@ -401,37 +432,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
             }
 
             return supportedTypes;
-        }
-
-        /*
-         * Gets the ProxyChallengeProcessor based on authentication types supported. Prefers DIGEST authentication if
-         * supported over BASIC. Returns null if it cannot match any supported types.
-         */
-        private ProxyChallengeProcessor getChallengeProcessor(String host, String challenge,
-                                                              Set<ProxyAuthenticationType> authentication) {
-            if (authentication.contains(DIGEST)) {
-                return getChallengeProcessor(host, challenge, DIGEST);
-            } else if (authentication.contains(BASIC)) {
-                return getChallengeProcessor(host, challenge, BASIC);
-            } else {
-                return null;
-            }
-        }
-
-        private ProxyChallengeProcessor getChallengeProcessor(String host, String challenge,
-                                                              ProxyAuthenticationType authentication) {
-            final ProxyAuthenticator authenticator = proxyConfiguration != null
-                    ? new ProxyAuthenticator(proxyConfiguration)
-                    : new ProxyAuthenticator();
-
-            switch (authentication) {
-                case DIGEST:
-                    return new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
-                case BASIC:
-                    return new BasicProxyChallengeProcessorImpl(host, authenticator);
-                default:
-                    return null;
-            }
         }
 
         private void closeTailProxyError(String errorMessage) {
