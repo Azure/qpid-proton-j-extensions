@@ -2,7 +2,13 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 
-import java.net.*;
+import java.net.Authenticator;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 

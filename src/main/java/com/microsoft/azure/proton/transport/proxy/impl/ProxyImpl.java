@@ -29,7 +29,8 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.*;
+import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
+import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {

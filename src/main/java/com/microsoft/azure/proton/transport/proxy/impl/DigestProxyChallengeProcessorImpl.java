@@ -3,11 +3,14 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 
 import javax.xml.bind.DatatypeConverter;
-import java.net.*;
+import java.net.PasswordAuthentication;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
