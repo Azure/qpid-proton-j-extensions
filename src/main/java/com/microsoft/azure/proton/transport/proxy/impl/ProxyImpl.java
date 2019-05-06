@@ -41,6 +41,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
+    private final ProxyConfiguration proxyConfiguration;
 
     private boolean tailClosed = false;
     private boolean headClosed = false;
@@ -49,7 +50,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private Map<String, String> headers = null;
     private TransportImpl underlyingTransport;
     private ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
-    private ProxyConfiguration proxyConfiguration;
     private ProxyHandler proxyHandler;
 
     /**
