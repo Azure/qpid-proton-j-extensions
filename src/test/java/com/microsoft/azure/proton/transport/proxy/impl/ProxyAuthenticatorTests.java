@@ -93,13 +93,16 @@ public class ProxyAuthenticatorTests {
     public void useProxyConfigurationWithCredentials() {
         // Arrange
         final String scheme = "Digest";
-        final InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 443);
+        final String host = "foobar.myhost.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved(host, 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
+
         final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC,
-                "test-proxy.proxy.com", "my-username", "my-password");
+                proxy, "my-username", "my-password");
         final ProxyAuthenticator proxyAuthenticator = new ProxyAuthenticator(configuration);
 
         final List<Proxy> proxies = new ArrayList<>();
-        proxies.add(new Proxy(Proxy.Type.HTTP, socketAddress));
+        proxies.add(proxy);
 
         when(proxySelector.select(argThat(u -> u != null && u.getPath().equals(PROXY_ADDRESS))))
                 .thenReturn(proxies);
@@ -125,13 +128,15 @@ public class ProxyAuthenticatorTests {
     public void useProxyConfigurationWithCredentialsNoAddress() {
         // Arrange
         final String scheme = "Digest";
-        final InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), 443);
+        final String host = "foobar.myhost.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved(host, 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
         final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC,
                 null, "my-username", "my-password");
         final ProxyAuthenticator proxyAuthenticator = new ProxyAuthenticator(configuration);
 
         final List<Proxy> proxies = new ArrayList<>();
-        proxies.add(new Proxy(Proxy.Type.HTTP, socketAddress));
+        proxies.add(proxy);
 
         when(proxySelector.select(argThat(u -> u != null && u.getPath().equals(PROXY_ADDRESS))))
                 .thenReturn(proxies);
@@ -158,13 +163,13 @@ public class ProxyAuthenticatorTests {
     public void useProxyAddressWithSystemAuthentication() {
         // Arrange
         final String scheme = "Digest";
-        final InetAddress loopbackAddress = InetAddress.getLoopbackAddress();
-        final InetSocketAddress socketAddress = new InetSocketAddress(loopbackAddress, 443);
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC,
-                "my-proxy.foo.com", null, null);
+        final String host = "my-proxy.myhost.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved(host, 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, proxy,
+                null, null);
         final ProxyAuthenticator proxyAuthenticator = new ProxyAuthenticator(configuration);
 
-        final Proxy proxy = new Proxy(Proxy.Type.HTTP, socketAddress);
         final List<Proxy> proxies = new ArrayList<>();
         proxies.add(proxy);
 
@@ -179,7 +184,7 @@ public class ProxyAuthenticatorTests {
         Assert.assertEquals(USERNAME, authentication.getUserName());
         Assert.assertArrayEquals(PASSWORD_CHAR_ARRAY, authentication.getPassword());
 
-        Assert.assertEquals(configuration.proxyAddress(), authenticator.requestingHost());
+        Assert.assertEquals(host, authenticator.requestingHost());
         Assert.assertNull(authenticator.requestingProtocol());
         Assert.assertNull(authenticator.requestingSite());
         Assert.assertEquals(scheme, authenticator.requestingScheme());

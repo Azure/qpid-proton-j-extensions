@@ -59,7 +59,8 @@ public class BasicProxyChallengeProcessorImplTest {
      */
     @Test
     public void testWithProxyConfiguration() {
-        final String host = "foo.proxy.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved("foo.proxy.com", 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
         final String username = "test-username";
         final String password = "test-password!!";
 
@@ -67,9 +68,9 @@ public class BasicProxyChallengeProcessorImplTest {
         final String base64Encoded = Base64.getEncoder().encodeToString(encoded);
         final String expectedAuthValue = String.join(" ", Constants.BASIC, base64Encoded);
 
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, host, username, password );
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, proxy, username, password );
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
-        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host, authenticator);
+        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl("something.com", authenticator);
 
         Map<String, String> headers = proxyChallengeProcessor.getHeader();
         Assert.assertEquals(expectedAuthValue, headers.get(Constants.PROXY_AUTHORIZATION));
@@ -91,10 +92,11 @@ public class BasicProxyChallengeProcessorImplTest {
             }
         });
 
-        final String host = "foo.proxy.com";
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, host, null, null);
+        final InetSocketAddress address = InetSocketAddress.createUnresolved("foo.proxy.com", 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, proxy, null, null);
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
-        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl(host, authenticator);
+        final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl("something.foo.com", authenticator);
 
         Map<String, String> headers = proxyChallengeProcessor.getHeader();
 

@@ -10,20 +10,24 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
 @RunWith(value = Theories.class)
 public class ProxyConfigurationTest {
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
     private static final char[] PASSWORD_CHARS = PASSWORD.toCharArray();
-    private static final String PROXY_ADDRESS = "foo.proxy.com";
+    private static final InetSocketAddress PROXY_ADDRESS = InetSocketAddress.createUnresolved("foo.proxy.com", 3138);
+    private static final Proxy PROXY = new Proxy(Proxy.Type.HTTP, PROXY_ADDRESS);
     private static final ProxyAuthenticationType AUTHENTICATION_TYPE = ProxyAuthenticationType.BASIC;
 
     @DataPoints("userConfigurations")
     public static ProxyConfiguration[] userConfigurations() {
         return new ProxyConfiguration[]{
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY_ADDRESS, null, PASSWORD),
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY_ADDRESS, USERNAME, null),
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY_ADDRESS, null, null),
+                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, PASSWORD),
+                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, USERNAME, null),
+                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, null),
         };
     }
 
@@ -41,13 +45,13 @@ public class ProxyConfigurationTest {
 
     @Test
     public void userDefinedConfiguration() {
-        ProxyConfiguration configuration = new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY_ADDRESS, USERNAME, PASSWORD);
+        ProxyConfiguration configuration = new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, USERNAME, PASSWORD);
 
         Assert.assertTrue(configuration.isProxyAddressConfigured());
         Assert.assertTrue(configuration.hasUserDefinedCredentials());
 
         Assert.assertEquals(AUTHENTICATION_TYPE, configuration.authentication());
-        Assert.assertEquals(PROXY_ADDRESS, configuration.proxyAddress());
+        Assert.assertEquals(PROXY, configuration.proxyAddress());
         Assert.assertEquals(USERNAME, configuration.credentials().getUserName());
         Assert.assertArrayEquals(PASSWORD_CHARS, configuration.credentials().getPassword());
     }
@@ -63,7 +67,7 @@ public class ProxyConfigurationTest {
         Assert.assertNull(configuration.credentials());
 
         Assert.assertEquals(AUTHENTICATION_TYPE, configuration.authentication());
-        Assert.assertEquals(PROXY_ADDRESS, configuration.proxyAddress());
+        Assert.assertEquals(PROXY, configuration.proxyAddress());
     }
 
     /**

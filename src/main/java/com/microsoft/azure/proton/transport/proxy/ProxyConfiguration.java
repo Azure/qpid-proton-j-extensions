@@ -1,6 +1,5 @@
 package com.microsoft.azure.proton.transport.proxy;
 
-import com.microsoft.azure.proton.transport.proxy.impl.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +10,7 @@ import java.util.Objects;
 public class ProxyConfiguration implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
 
-    private final String proxyAddress;
+    private final java.net.Proxy proxyAddress;
     private final ProxyAuthenticationType authentication;
     private final PasswordAuthentication credentials;
 
@@ -34,7 +33,8 @@ public class ProxyConfiguration implements AutoCloseable {
      * {@code username}, {@code password} and {@code authentication}.
      *
      * @param authentication Authentication method to preemptively use with proxy.
-     * @param proxyAddress URL of the proxy. If {@code null} is passed in, then the system configured proxy url is used.
+     * @param proxyAddress Proxy to use. If {@code null} is passed in, then the system configured {@link java.net.Proxy}
+     * is used.
      * @param username Optional. Username used to authenticate with proxy. If not specified, the system-wide
      * {@link java.net.Authenticator} is used to fetch credentials.
      * @param password Optional. Password used to authenticate with proxy.
@@ -43,7 +43,7 @@ public class ProxyConfiguration implements AutoCloseable {
      * @throws IllegalArgumentException if {@code authentication} is {@link ProxyAuthenticationType#BASIC} or
      * {@link ProxyAuthenticationType#DIGEST} and {@code username} or {@code password} are {@code null}.
      */
-    public ProxyConfiguration(ProxyAuthenticationType authentication, String proxyAddress, String username, String password) {
+    public ProxyConfiguration(ProxyAuthenticationType authentication, java.net.Proxy proxyAddress, String username, String password) {
         Objects.requireNonNull(authentication);
 
         this.proxyAddress = proxyAddress;
@@ -66,7 +66,7 @@ public class ProxyConfiguration implements AutoCloseable {
      * @return The proxy address. Returns {@code null} if user creates proxy credentials with
      * {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
      */
-    public String proxyAddress() {
+    public java.net.Proxy proxyAddress() {
         return proxyAddress;
     }
 
@@ -106,7 +106,7 @@ public class ProxyConfiguration implements AutoCloseable {
      * @return true if the proxy url has been set, and false otherwise.
      */
     public boolean isProxyAddressConfigured() {
-        return !StringUtils.isNullOrEmpty(proxyAddress);
+        return proxyAddress != null && proxyAddress.address() != null;
     }
 
     @Override

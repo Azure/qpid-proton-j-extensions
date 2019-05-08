@@ -114,9 +114,11 @@ public class DigestProxyChallengeProcessorImplTest {
         final String challenge = generateProxyChallenge(realm, nonce, qop);
 
         final String host = "foobar.myhost.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved(host, 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
         final String username = "my-different-username";
         final String password = "my-different-password";
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, host, username, password);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, proxy, username, password);
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
 
         // a1 and a2 are hash values generated as an intermediate step in the Digest algorithm.
@@ -156,8 +158,10 @@ public class DigestProxyChallengeProcessorImplTest {
         final String qop = "auth";
         final String challenge = generateProxyChallenge(realm, nonce, qop);
 
-        final String host = "foo.proxy.com";
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, host, null, null);
+        final String host = "foobar.myhost.com";
+        final InetSocketAddress address = InetSocketAddress.createUnresolved(host, 3138);
+        final Proxy proxy = new Proxy(Proxy.Type.SOCKS, address);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, proxy, null, null);
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
         final DigestProxyChallengeProcessorImpl proxyChallengeProcessor =
                 new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);

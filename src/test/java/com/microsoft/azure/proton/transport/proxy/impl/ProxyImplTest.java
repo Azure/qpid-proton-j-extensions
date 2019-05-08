@@ -32,9 +32,11 @@ import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.BASIC;
@@ -57,9 +59,9 @@ import static org.mockito.Mockito.when;
 // when these methods are invoked, and how ProxyState state transitions plays along.
 
 public class ProxyImplTest {
-    private static final String HOST_NAME = "test.host.name";
+    private static final InetSocketAddress PROXY_ADDRESS = InetSocketAddress.createUnresolved("my.host.name", 8888);
+    private static final java.net.Proxy PROXY = new java.net.Proxy(java.net.Proxy.Type.HTTP, PROXY_ADDRESS);
     private static final int BUFFER_SIZE = 8 * 1024;
-    private static final int PROXY_CONNECT_REQUEST_LENGTH = 132;
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
 
@@ -81,7 +83,7 @@ public class ProxyImplTest {
             @Override
             public List<java.net.Proxy> select(URI uri) {
                 List<java.net.Proxy> proxies = new ArrayList<>();
-                proxies.add(new java.net.Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress(HOST_NAME, 3138)));
+                proxies.add(PROXY);
                 return proxies;
             }
 
@@ -121,7 +123,7 @@ public class ProxyImplTest {
 
     @Test
     public void testConstructorOverload() {
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, HOST_NAME, USERNAME, PASSWORD);
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, PROXY, USERNAME, PASSWORD);
         final ProxyImpl proxyImpl = new ProxyImpl(configuration);
 
         Assert.assertEquals(BUFFER_SIZE, proxyImpl.getInputBuffer().capacity());
@@ -136,7 +138,7 @@ public class ProxyImplTest {
         ProxyHandlerImpl proxyHandler = mock(ProxyHandlerImpl.class);
         TransportImpl transport = mock(TransportImpl.class);
 
-        proxyImpl.configure(HOST_NAME, headers, proxyHandler, transport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, proxyHandler, transport);
 
         Assert.assertTrue(proxyImpl.getIsProxyConfigured());
         Assert.assertEquals(proxyHandler, proxyImpl.getProxyHandler());
@@ -148,20 +150,21 @@ public class ProxyImplTest {
     @Test
     public void testWriteProxyRequest() {
         initHeaders();
+        int expectedRequestLength = getConnectRequestLength(PROXY_ADDRESS.getHostName(), headers);
 
         ProxyHandlerImpl spyProxyHandler = spy(new ProxyHandlerImpl());
         TransportImpl transport = mock(TransportImpl.class);
 
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, spyProxyHandler, transport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, spyProxyHandler, transport);
         proxyImpl.writeProxyRequest();
 
-        verify(spyProxyHandler, times(1)).createProxyRequest(HOST_NAME, headers);
+        verify(spyProxyHandler, times(1)).createProxyRequest(PROXY_ADDRESS.getHostName(), headers);
 
         ByteBuffer outputBuffer = proxyImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, outputBuffer.remaining());
+        Assert.assertEquals(expectedRequestLength, outputBuffer.remaining());
     }
 
     @Test
@@ -188,7 +191,7 @@ public class ProxyImplTest {
         ProxyImpl proxyImpl = new ProxyImpl();
         ProxyHandlerImpl proxyHandler = mock(ProxyHandlerImpl.class);
         TransportImpl transport = mock(TransportImpl.class);
-        proxyImpl.configure(HOST_NAME, headers, proxyHandler, transport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, proxyHandler, transport);
 
         Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
 
@@ -205,8 +208,10 @@ public class ProxyImplTest {
     @Test
     public void testPendingWhenProxyStateIsNotStarted() {
         initHeaders();
+        int expectedRequestLength = getConnectRequestLength(PROXY_ADDRESS.getHostName(), headers);
+
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
 
@@ -214,15 +219,15 @@ public class ProxyImplTest {
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mockOutput);
         int bytesCount = transportWrapper.pending();
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, transportWrapper.head().remaining());
+        Assert.assertEquals(expectedRequestLength, transportWrapper.head().remaining());
 
         ByteBuffer outputBuffer = proxyImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, transportWrapper.head().remaining());
+        Assert.assertEquals(expectedRequestLength, transportWrapper.head().remaining());
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, outputBuffer.remaining());
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, bytesCount);
+        Assert.assertEquals(expectedRequestLength, outputBuffer.remaining());
+        Assert.assertEquals(expectedRequestLength, bytesCount);
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
 
         verify(mockOutput, times(0)).pending();
@@ -232,7 +237,7 @@ public class ProxyImplTest {
     public void testPendingWhenProxyStateIsNotStartedAndOutputBufferIsNotEmpty() {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
 
@@ -253,8 +258,10 @@ public class ProxyImplTest {
     @Test
     public void testPendingWhenProxyStateIsConnecting() {
         initHeaders();
+        int expectedRequestLength = getConnectRequestLength(PROXY_ADDRESS.getHostName(), headers);
+
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
 
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
         transportWrapper.pending();
@@ -265,12 +272,12 @@ public class ProxyImplTest {
             transportWrapper.pending();
         }
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, transportWrapper.head().remaining());
+        Assert.assertEquals(expectedRequestLength, transportWrapper.head().remaining());
 
         ByteBuffer outputBuffer = proxyImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        Assert.assertEquals(PROXY_CONNECT_REQUEST_LENGTH, outputBuffer.remaining());
+        Assert.assertEquals(expectedRequestLength, outputBuffer.remaining());
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
     }
 
@@ -278,7 +285,7 @@ public class ProxyImplTest {
     public void testPendingWhenProxyStateIsConnected() throws Exception {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
 
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
@@ -290,7 +297,7 @@ public class ProxyImplTest {
     public void testPendingWhenProxyStateIsFailed() throws Exception {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
 
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
@@ -302,7 +309,7 @@ public class ProxyImplTest {
     public void testProcessWhenProxyStateNotStarted() {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, new ProxyHandlerImpl(), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
 
@@ -317,16 +324,16 @@ public class ProxyImplTest {
     public void testProcessWhenProxyStateConnectingTransitionsToConnectedOnValidResponse() {
         ProxyImpl proxyImpl = new ProxyImpl();
         ProxyHandler mockHandler = mock(ProxyHandler.class);
-        proxyImpl.configure(HOST_NAME, headers, mockHandler, mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mockHandler, mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
 
-        when(mockHandler.createProxyRequest((String) any(), (Map<String, String>) any())).thenReturn("proxy request");
+        when(mockHandler.createProxyRequest(any(), any())).thenReturn("proxy request");
 
         when(mockResponse.getIsSuccess()).thenReturn(true);
         when(mockResponse.getError()).thenReturn(null);
-        when(mockHandler.validateProxyResponse((ByteBuffer) any())).thenReturn(mockResponse);
+        when(mockHandler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
         transportWrapper.pending();
@@ -342,16 +349,16 @@ public class ProxyImplTest {
         ProxyImpl proxyImpl = new ProxyImpl();
         ProxyHandler mockHandler = mock(ProxyHandler.class);
         TransportImpl mockTransport = mock(TransportImpl.class);
-        proxyImpl.configure(HOST_NAME, headers, mockHandler, mockTransport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mockHandler, mockTransport);
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
 
-        when(mockHandler.createProxyRequest((String) any(), (Map<String, String>) any())).thenReturn("proxy request");
+        when(mockHandler.createProxyRequest(any(), any())).thenReturn("proxy request");
 
         when(mockResponse.getIsSuccess()).thenReturn(false);
         when(mockResponse.getError()).thenReturn("proxy failure response");
-        when(mockHandler.validateProxyResponse((ByteBuffer) any())).thenReturn(mockResponse);
+        when(mockHandler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
         transportWrapper.pending();
@@ -360,14 +367,14 @@ public class ProxyImplTest {
         transportWrapper.process();
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
-        verify(mockTransport, times(1)).closed((TransportException) any());
+        verify(mockTransport, times(1)).closed(isA(TransportException.class));
     }
 
     @Test
     public void testProcessProxyStateIsConnected() throws Exception {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
 
         TransportInput mockInput = mock(TransportInput.class);
@@ -381,7 +388,7 @@ public class ProxyImplTest {
     public void testProcessProxyStateIsFailed() throws Exception {
         initHeaders();
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
 
         TransportInput mockInput = mock(TransportInput.class);
@@ -394,7 +401,7 @@ public class ProxyImplTest {
     @Test
     public void testPopProxyStateIsNotStarted() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_NOT_STARTED);
 
         TransportOutput mockOutput = mock(TransportOutput.class);
@@ -407,7 +414,7 @@ public class ProxyImplTest {
     @Test
     public void testPopProxyStateConnecting() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
 
         ByteBuffer outputBuffer = proxyImpl.getOutputBuffer();
@@ -430,7 +437,7 @@ public class ProxyImplTest {
     @Test
     public void testPopProxyStateIsConnected() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
 
         TransportOutput mockOutput = mock(TransportOutput.class);
@@ -443,7 +450,7 @@ public class ProxyImplTest {
     @Test
     public void testPopProxyStateIsFailed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
 
         TransportOutput mockOutput = mock(TransportOutput.class);
@@ -456,28 +463,28 @@ public class ProxyImplTest {
     @Test
     public void testTailReturnsCurrentInputBufferExceptProxyStateIsConnected() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_NOT_STARTED);
-        Assert.assertTrue(proxyImpl.getInputBuffer() == transportWrapper.tail());
+        Assert.assertSame(proxyImpl.getInputBuffer(), transportWrapper.tail());
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
-        Assert.assertTrue(proxyImpl.getInputBuffer() == transportWrapper.tail());
+        Assert.assertSame(proxyImpl.getInputBuffer(), transportWrapper.tail());
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
-        Assert.assertTrue(proxyImpl.getInputBuffer() == transportWrapper.tail());
+        Assert.assertSame(proxyImpl.getInputBuffer(), transportWrapper.tail());
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
-        Assert.assertTrue(proxyImpl.getInputBuffer() != transportWrapper.tail());
+        Assert.assertNotSame(proxyImpl.getInputBuffer(), transportWrapper.tail());
         verify(mockInput, times(1)).tail();
     }
 
     @Test
     public void testHeadDelegatesToUnderlyingOutputWhenProxyStateIsConnected() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportOutput mockOutput = mock(TransportOutput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mockOutput);
 
@@ -489,7 +496,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsNotStarted() {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -499,7 +506,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsNotStartedAndTailClosed() {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -510,7 +517,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsConnecting() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
         Assert.assertEquals(0, transportWrapper.position());
@@ -519,7 +526,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsConnectingAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
@@ -530,7 +537,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsConnected() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
@@ -542,7 +549,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsConnectedAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
@@ -555,7 +562,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsFailed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
         Assert.assertEquals(0, transportWrapper.position());
@@ -564,7 +571,7 @@ public class ProxyImplTest {
     @Test
     public void testPositionWhenProxyStateIsFailedAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
@@ -575,7 +582,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsNotStarted() {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -585,7 +592,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsNotStartedAndTailClosed() {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -596,7 +603,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsConnecting() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
         Assert.assertEquals(BUFFER_SIZE, transportWrapper.capacity());
@@ -605,7 +612,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsConnectingAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTING);
@@ -616,7 +623,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsConnected() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
@@ -628,7 +635,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsConnectedAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportInput mockInput = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(mockInput, mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_CONNECTED);
@@ -641,7 +648,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsFailed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
         Assert.assertEquals(BUFFER_SIZE, transportWrapper.capacity());
@@ -650,7 +657,7 @@ public class ProxyImplTest {
     @Test
     public void testCapacityWhenProxyStateIsFailedAndTailClosed() throws Exception {
         ProxyImpl proxyImpl = new ProxyImpl();
-        proxyImpl.configure(HOST_NAME, headers, mock(ProxyHandler.class), mock(TransportImpl.class));
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, mock(ProxyHandler.class), mock(TransportImpl.class));
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), mock(TransportOutput.class));
 
         setProxyState(proxyImpl, Proxy.ProxyState.PN_PROXY_FAILED);
@@ -666,11 +673,11 @@ public class ProxyImplTest {
     @Test
     public void authenticationTypeNoneClosesTail() {
         // Arrange
-        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.NONE, HOST_NAME, USERNAME, PASSWORD);
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.NONE, PROXY, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
-        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, handler, underlyingTransport);
         TransportInput input = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
@@ -700,11 +707,11 @@ public class ProxyImplTest {
     @Test
     public void authenticationNoAuthMismatchClosesTail() {
         // Arrange
-        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, HOST_NAME, USERNAME, PASSWORD);
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, PROXY, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
-        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, handler, underlyingTransport);
         TransportInput input = mock(TransportInput.class);
         TransportWrapper transportWrapper = proxyImpl.wrap(input, mock(TransportOutput.class));
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
@@ -734,12 +741,12 @@ public class ProxyImplTest {
     @SuppressWarnings("unchecked")
     public void authenticationWithProxyConfiguration() {
         // Arrange
-        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, HOST_NAME, USERNAME, PASSWORD);
+        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, PROXY, USERNAME, PASSWORD);
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
         TransportOutput output = mock(TransportOutput.class);
-        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, handler, underlyingTransport);
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), output);
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
 
@@ -772,7 +779,7 @@ public class ProxyImplTest {
 
         ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
         verify(handler, times(2)).createProxyRequest(
-                argThat(string -> string != null && string.equals(HOST_NAME)), (Map<String, String>) captor.capture());
+                argThat(string -> string != null && string.equals(PROXY_ADDRESS.getHostName())), (Map<String, String>) captor.capture());
 
         boolean foundHeader = false;
         for (Map map : captor.getAllValues()) {
@@ -801,7 +808,7 @@ public class ProxyImplTest {
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);
         TransportOutput output = mock(TransportOutput.class);
-        proxyImpl.configure(HOST_NAME, headers, handler, underlyingTransport);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, handler, underlyingTransport);
         TransportWrapper transportWrapper = proxyImpl.wrap(mock(TransportInput.class), output);
         ProxyHandler.ProxyResponseResult mockResponse = mock(ProxyHandler.ProxyResponseResult.class);
 
@@ -834,7 +841,7 @@ public class ProxyImplTest {
 
         ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
         verify(handler, times(2)).createProxyRequest(
-                argThat(string -> string != null && string.equals(HOST_NAME)), (Map<String, String>) captor.capture());
+                argThat(string -> string != null && string.equals(PROXY_ADDRESS.getHostName())), (Map<String, String>) captor.capture());
 
         boolean foundHeader = false;
         for (Map map : captor.getAllValues()) {
@@ -850,6 +857,21 @@ public class ProxyImplTest {
         }
 
         Assert.assertTrue(foundHeader);
+    }
+
+    private static int getConnectRequestLength(String host, Map<String, String> headers) {
+        StringBuilder builder = new StringBuilder(String.format(Locale.ROOT, ProxyHandlerImpl.CONNECT_REQUEST, host, ProxyHandlerImpl.NEW_LINE));
+
+        if (headers != null) {
+            headers.forEach((key, value) -> {
+                builder.append(String.format(Locale.ROOT, ProxyHandlerImpl.HEADER_FORMAT, key, value));
+                builder.append(ProxyHandlerImpl.NEW_LINE);
+            });
+        }
+
+        builder.append(ProxyHandlerImpl.NEW_LINE);
+
+        return builder.toString().getBytes(StandardCharsets.UTF_8).length;
     }
 
     private void setProxyState(ProxyImpl proxyImpl, Proxy.ProxyState proxyState) throws NoSuchFieldException, IllegalAccessException {
@@ -896,7 +918,7 @@ public class ProxyImplTest {
 
         if (includeDigest) {
             builder.append(String.format("%s %s realm=\"%s\", nonce=\"A randomly set nonce.\", qop=\"auth\", stale=false",
-                    PROXY_AUTHENTICATE_HEADER, DIGEST, HOST_NAME));
+                    PROXY_AUTHENTICATE_HEADER, DIGEST, PROXY));
             builder.append(newLine);
         }
 

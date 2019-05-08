@@ -61,9 +61,11 @@ class ProxyAuthenticator {
         // The user has specified the proxy address, so we'll use that address to try to fetch the system-wide
         // credentials for this.
         if (configuration.isProxyAddressConfigured()) {
+            // We can cast this because Proxy ctor verifies that address is an instance of InetSocketAddress.
+            InetSocketAddress address = (InetSocketAddress) configuration.proxyAddress().address();
             return Authenticator.requestPasswordAuthentication(
-                    configuration.proxyAddress(),
-                    null, // It's fine if we don't know the InetAddress for this proxy address.
+                    address.getHostName(),
+                    address.getAddress(),
                     0,
                     null,
                     PROMPT,
