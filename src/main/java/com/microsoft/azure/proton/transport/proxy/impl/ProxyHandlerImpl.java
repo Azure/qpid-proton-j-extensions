@@ -9,32 +9,35 @@ import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
 public class ProxyHandlerImpl implements ProxyHandler {
+    /**
+     * CONNECT request format string initiated by ProxyHandler.
+     */
+    static final String CONNECT_REQUEST = "CONNECT %1$s HTTP/1.1%2$sHost: %1$s%2$sConnection: Keep-Alive%2$s";
+    static final String HEADER_FORMAT = "%s: %s";
+    static final String NEW_LINE = "\r\n";
 
     /**
      * {@inheritDoc}
      */
     @Override
     public String createProxyRequest(String hostName, Map<String, String> additionalHeaders) {
-        final String endOfLine = "\r\n";
         final StringBuilder connectRequestBuilder = new StringBuilder();
         connectRequestBuilder.append(
-                String.format(
-                        "CONNECT %1$s HTTP/1.1%2$sHost: %1$s%2$sConnection: Keep-Alive%2$s",
-                        hostName,
-                        endOfLine));
+                String.format(Locale.ROOT, CONNECT_REQUEST, hostName, NEW_LINE));
+
         if (additionalHeaders != null) {
-            for (Map.Entry<String, String> entry: additionalHeaders.entrySet()) {
-                connectRequestBuilder.append(entry.getKey());
-                connectRequestBuilder.append(": ");
-                connectRequestBuilder.append(entry.getValue());
-                connectRequestBuilder.append(endOfLine);
-            }
+            additionalHeaders.forEach((header, value) -> {
+                connectRequestBuilder.append(String.format(HEADER_FORMAT, header, value));
+                connectRequestBuilder.append(NEW_LINE);
+            });
         }
-        connectRequestBuilder.append(endOfLine);
+
+        connectRequestBuilder.append(NEW_LINE);
         return connectRequestBuilder.toString();
     }
 

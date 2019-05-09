@@ -1,6 +1,14 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
-import java.net.*;
+import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
+
+import java.net.Authenticator;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,20 +18,63 @@ import java.util.Objects;
 class ProxyAuthenticator {
     private static final String PROMPT = "Event Hubs client web socket proxy support";
 
+    private final ProxyConfiguration configuration;
+
     /**
-     * Creates an authenticator that authenticates using system-configured authenticator.
+     * Creates an authenticator that authenticates using system-configured authenticator and system-configured proxy
+     * settings.
      */
     ProxyAuthenticator() {
+        this(ProxyConfiguration.SYSTEM_DEFAULTS);
     }
 
     /**
-     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}.
+     * Creates an authenticator that responses to authentication requests with the provided
+     *
+     * @param configuration Proxy configuration to use for requests.
+     * @throws NullPointerException if {@code configuration} is {@code null}.
+     */
+    ProxyAuthenticator(ProxyConfiguration configuration) {
+        Objects.requireNonNull(configuration);
+
+        this.configuration = configuration;
+    }
+
+    /**
+     * Gets the credentials to use for proxy authentication given the {@code scheme} and {@code host}. Finds credentials
+     * to return in the following order
+     * <ol>
+     *     <li>If user specified username/password from {@link ProxyConfiguration}, return that.</li>
+     *     <li>If user specified proxy address, tries to fetch credentials using the system-wide authenticator.</li>
+     *     <li>Use system-wide proxy configuration and authenticator to fetch credentials.</li>
+     * </ol>
      *
      * @param scheme The authentication scheme for the proxy.
      * @param host The proxy's URL that is requesting authentication.
      * @return The username and password to authenticate against proxy with.
      */
     PasswordAuthentication getPasswordAuthentication(String scheme, String host) {
+        if (configuration.hasUserDefinedCredentials()) {
+            return configuration.credentials();
+        }
+
+        // The user has specified the proxy address, so we'll use that address to try to fetch the system-wide
+        // credentials for this.
+        if (configuration.isProxyAddressConfigured()) {
+            // We can cast this because Proxy ctor verifies that address is an instance of InetSocketAddress.
+            InetSocketAddress address = (InetSocketAddress) configuration.proxyAddress().address();
+            return Authenticator.requestPasswordAuthentication(
+                    address.getHostName(),
+                    address.getAddress(),
+                    0,
+                    null,
+                    PROMPT,
+                    scheme,
+                    null,
+                    Authenticator.RequestorType.PROXY);
+        }
+
+        // Otherwise, use the system-configured proxies and authenticator to fetch the credentials.
         ProxySelector proxySelector = ProxySelector.getDefault();
 
         URI uri;
