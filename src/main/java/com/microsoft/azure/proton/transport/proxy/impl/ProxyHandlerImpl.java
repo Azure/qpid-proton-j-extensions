@@ -56,7 +56,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
             final Scanner responseScanner = new Scanner(response);
             if (responseScanner.hasNextLine()) {
                 final String firstLine = responseScanner.nextLine();
-                if (firstLine.toLowerCase().contains("http/1.1")
+                if ((firstLine.toLowerCase().contains("http/1.1") || firstLine.toLowerCase().contains("http/1.0"))
                         && firstLine.contains("200")
                         && firstLine.toLowerCase().contains("connection established")) {
                     return new ProxyResponseResult(true, null);
