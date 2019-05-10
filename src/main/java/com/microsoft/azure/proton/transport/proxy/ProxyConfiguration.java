@@ -1,11 +1,11 @@
 package com.microsoft.azure.proton.transport.proxy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.PasswordAuthentication;
 import java.util.Arrays;
 import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProxyConfiguration implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
