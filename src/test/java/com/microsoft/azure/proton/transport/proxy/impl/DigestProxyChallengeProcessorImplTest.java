@@ -77,7 +77,7 @@ public class DigestProxyChallengeProcessorImplTest {
     }
 
     @Test
-    public void testGetHeaderDigest() {
+    public void testGetHeaderDigest() throws NoSuchAlgorithmException {
         // Arrange
         final String realm = "Squid proxy-caching web server";
         final String nonce = "zWV5XAAAAAAgz1ACAAAAAE9hOwIAAAAA";
@@ -105,7 +105,7 @@ public class DigestProxyChallengeProcessorImplTest {
      * the system defined ones.
      */
     @Test
-    public void testGetHeaderDigestWithProxy() {
+    public void testGetHeaderDigestWithProxy() throws NoSuchAlgorithmException {
         // Arrange
         final String realm = "My Test Realm";
         final String nonce = "A randomly generated nonce";
@@ -139,7 +139,7 @@ public class DigestProxyChallengeProcessorImplTest {
      * Verifies that if we cannot obtain credentials from proxyAuthenticator, then we return null.
      */
     @Test
-    public void cannotObtainPasswordCredentialsWithValues() {
+    public void cannotObtainPasswordCredentialsWithValues() throws NoSuchAlgorithmException {
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {

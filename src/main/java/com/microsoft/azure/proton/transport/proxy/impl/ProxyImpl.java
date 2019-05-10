@@ -15,6 +15,7 @@ import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -386,7 +387,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
             switch (authentication) {
                 case DIGEST:
-                    return new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
+                    try {
+                        return new DigestProxyChallengeProcessorImpl(host, challenge, authenticator);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException("Unable to create DigestProxyChallengeProcessor.", e);
+                    }
                 case BASIC:
                     return new BasicProxyChallengeProcessorImpl(host, authenticator);
                 default:
