@@ -1,5 +1,7 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 
 import java.net.PasswordAuthentication;
@@ -8,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 

@@ -5,11 +5,23 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
+import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
+import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
+
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.TransportImpl;
@@ -19,19 +31,6 @@ import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
-import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
-import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);

@@ -1,5 +1,8 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import static com.microsoft.azure.proton.transport.proxy.impl.DigestUtils.convertToHexString;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 
 import java.net.PasswordAuthentication;
@@ -11,9 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.microsoft.azure.proton.transport.proxy.impl.DigestUtils.convertToHexString;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
