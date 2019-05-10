@@ -1,7 +1,7 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
 class DigestUtils {
-    private final static char[] HEX_CHARACTERS = "0123456789abcdef".toCharArray();
+    private static final char[] HEX_CHARACTERS = "0123456789abcdef".toCharArray();
 
     /**
      * Converts a byte array to its hex string representation.
