@@ -5,7 +5,7 @@ class DigestUtils {
 
     /**
      * Converts a byte array to its hex string representation.
-     * Taken from: https://stackoverflow.com/a/9855338
+     * From: https://stackoverflow.com/a/9855338
      */
     static String convertToHexString(byte[] bytes) {
         final char[] hexChars = new char[bytes.length * 2];
