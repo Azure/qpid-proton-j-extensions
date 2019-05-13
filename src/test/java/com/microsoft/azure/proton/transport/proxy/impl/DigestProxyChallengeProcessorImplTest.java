@@ -26,8 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.microsoft.azure.proton.transport.proxy.impl.DigestProxyChallengeProcessorImpl.printHexBinary;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 public class DigestProxyChallengeProcessorImplTest {
     private static final String NEW_LINE = "\r\n";
