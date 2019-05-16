@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
+import static com.microsoft.azure.proton.transport.proxy.impl.ProxyHandlerImpl.NEW_LINE;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 public class ProxyImpl implements Proxy, TransportLayer {
@@ -117,7 +118,12 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     protected void writeProxyRequest() {
         outputBuffer.clear();
-        String request = proxyHandler.createProxyRequest(host, headers);
+        final String request = proxyHandler.createProxyRequest(host, headers);
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Writing proxy request:{}{}", System.lineSeparator(), request);
+        }
+
         outputBuffer.put(request.getBytes());
     }
 
