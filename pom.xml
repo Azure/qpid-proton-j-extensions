@@ -153,4 +153,68 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+    <!-- By default we build against our baseline, Java 8, but we also want to ensure compatibility against the latest
+        Java LTS release, currently Java 11. We therefore have two profiles:
+        * The default 'java8', which will perform a build using Java 8 as its target.
+        * The non-default 'java-lts' profile, which will build against the current LTS release. -->
+        <profile>
+            <id>java8</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!java-lts</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>${maven-compiler-plugin.version}</version>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <showWarnings>true</showWarnings>
+                            <failOnWarning>true</failOnWarning>
+                            <compilerArgs>
+                                <arg>-Xlint:all</arg>
+                                <arg>-Xlint:-serial</arg>
+                                <arg>-Xlint:-deprecation</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>java-lts</id>
+            <activation>
+                <property>
+                <name>java-lts</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <showWarnings>true</showWarnings>
+                    <failOnWarning>true</failOnWarning>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                        <arg>-Xlint:-serial</arg>
+                        <arg>-Xlint:-deprecation</arg>
+                    </compilerArgs>
+                    </configuration>
+                </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
