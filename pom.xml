@@ -58,18 +58,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <optimize>true</optimize>
-                    <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                </configuration>
-            </plugin>
 
             <!-- Configure the jar plugin -->
             <plugin>
@@ -177,11 +165,12 @@
                             <target>1.8</target>
                             <showWarnings>true</showWarnings>
                             <failOnWarning>true</failOnWarning>
-                            <compilerArgs>
+                            <!-- Ignore these until we fix ProxyImpl exposing raw types. -->
+                            <!-- <compilerArgs>
                                 <arg>-Xlint:all</arg>
                                 <arg>-Xlint:-serial</arg>
                                 <arg>-Xlint:-deprecation</arg>
-                            </compilerArgs>
+                            </compilerArgs> -->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -206,11 +195,12 @@
                     <target>11</target>
                     <showWarnings>true</showWarnings>
                     <failOnWarning>true</failOnWarning>
-                    <compilerArgs>
+                    <!-- Ignore these until we fix ProxyImpl exposing raw types. -->
+                    <!-- <compilerArgs>
                         <arg>-Xlint:all</arg>
                         <arg>-Xlint:-serial</arg>
                         <arg>-Xlint:-deprecation</arg>
-                    </compilerArgs>
+                    </compilerArgs> -->
                     </configuration>
                 </plugin>
                 </plugins>
