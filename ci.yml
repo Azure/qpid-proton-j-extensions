@@ -95,7 +95,7 @@ stages:
             displayName: 'Run Tests'
             inputs:
               mavenPomFile: 'pom.xml'
-              options: '$(DefaultOptions) $(ProfileFlag)'
+              options: '$(DefaultOptions)'
               mavenOptions: '-Xmx3072m $(LoggingOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
