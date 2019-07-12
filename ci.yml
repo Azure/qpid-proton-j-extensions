@@ -68,26 +68,32 @@ stages:
             Linux - Java 8:
               OSName: 'Linux'
               OSVmImage: 'ubuntu-16.04'
+              ProfileFlag: ''
               JavaVersion: '1.8'
             macOS - Java 8:
               OSName: 'macOS'
               OSVmImage: 'macOS-10.13'
+              ProfileFlag: ''
               JavaVersion: '1.8'
             Windows - Java 8:
               OSName: 'Windows'
               OSVmImage: 'vs2017-win2016'
+              ProfileFlag: ''
               JavaVersion: '1.8'
             Linux - Java LTS:
               OSName: 'Linux'
               OSVmImage: 'ubuntu-16.04'
+              ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             macOS - Java LTS:
               OSName: 'macOS'
               OSVmImage: 'macOS-10.13'
+              ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             Windows - Java LTS:
               OSName: 'Windows'
               OSVmImage: 'vs2017-win2016'
+              ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
 
         pool:
