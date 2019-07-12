@@ -57,6 +57,7 @@ stages:
             displayName: 'Publish Artifacts $(ArtifactName)'
             inputs:
               artifactName: '$(ArtifactName)'
+              targetPath: $(Build.ArtifactStagingDirectory)
 
       - job: 'Test'
 
