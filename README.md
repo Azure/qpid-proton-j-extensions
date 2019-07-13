@@ -15,18 +15,24 @@
 </h1>
 
 The Advanced Message Queuing Protocol (AMQP) is an open internet protocol for messaging. Several messaging platforms
-hosted on Azure like Azure Service Bus, Azure Event Hubs and Azure IOT Hub supports AMQP. To know more about AMQP refer
-the [complete protocol specification here](http://docs.oasis-open.org/amqp/core/v1.0/amqp-core-complete-v1.0.pdf). In
-our java client libraries we use [qpid-proton-j library](https://github.com/apache/qpid-proton-j), an open source
-implementation of AMQP. Extensions built atop [qpid-proton-j library](https://github.com/apache/qpid-proton-j) are
-hosted here.
+hosted on Azure like Azure Service Bus, Azure Event Hubs and Azure IOT Hub supports AMQP 1.0. To know more about AMQP
+refer to the [OASIS AMQP 1.0 protocol specification][amqp-spec].
 
-## ISSUES
+In our Java client libraries we use [qpid-proton-j library][proton-j], an open source implementation of AMQP. Extensions
+built atop [qpid-proton-j library][proton-j] are hosted here.
 
-Currently, this library is used only in conjunction with [IOT SDK](https://github.com/Azure/azure-iot-sdk-java) or
-[EventHubs SDK](https://github.com/Azure/azure-event-hubs-java). File the issues directly on the respective projects.
+## Issues
+
+Currently, this library is used only in conjunction with [Azure IOT SDK][azure-iot] or [Azure Event Hubs client
+library][azure-sdk-for-java]. File the issues directly on the respective projects.
 
 ## Contributing
 
-This project welcomes contributions and suggestions. Please refer to our [Contribution
-Guidelines](./.github/CONTRIBUTING.md) for more details.
+This project welcomes contributions and suggestions. Please refer to our [Contribution Guidelines](./CONTRIBUTING.md)
+for more details.
+
+<!-- Links -->
+[amqp-spec]: http://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html
+[azure-iot]: https://github.com/Azure/azure-iot-sdk-java
+[azure-sdk-for-java]: https://github.com/Azure/azure-sdk-for-java
+[proton-j]: https://github.com/apache/qpid-proton-j
