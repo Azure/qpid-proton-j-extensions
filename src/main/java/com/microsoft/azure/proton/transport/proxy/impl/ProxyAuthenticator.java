@@ -29,7 +29,7 @@ class ProxyAuthenticator {
     }
 
     /**
-     * Creates an authenticator that responses to authentication requests with the provided
+     * Creates an authenticator that responses to authentication requests with the provided configuration.
      *
      * @param configuration Proxy configuration to use for requests.
      * @throws NullPointerException if {@code configuration} is {@code null}.

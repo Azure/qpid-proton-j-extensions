@@ -5,18 +5,9 @@
 
 package com.microsoft.azure.proton.transport.ws.impl;
 
-import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
-import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
-import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
-import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
-
 import com.microsoft.azure.proton.transport.ws.WebSocket;
 import com.microsoft.azure.proton.transport.ws.WebSocketHandler;
 import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
-
-import java.nio.ByteBuffer;
-import java.util.Map;
-
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
 import org.apache.qpid.proton.engine.impl.ByteBufferUtils;
@@ -25,14 +16,21 @@ import org.apache.qpid.proton.engine.impl.TransportInput;
 import org.apache.qpid.proton.engine.impl.TransportLayer;
 import org.apache.qpid.proton.engine.impl.TransportOutput;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
+
+import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK;
+import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
+import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
+import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
 
 public class WebSocketImpl implements WebSocket, TransportLayer {
     private static final Logger TRACE_LOGGER = LoggerFactory.getLogger(WebSocketImpl.class);
 
-    private int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private final int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private boolean tailClosed = false;
     private final ByteBuffer inputBuffer;
     private boolean headClosed = false;
@@ -280,13 +278,13 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         private void processInput() throws TransportException {
             switch (webSocketState) {
                 case PN_WS_CONNECTING:
-                	inputBuffer.mark();
+                    inputBuffer.mark();
                     if (webSocketHandler.validateUpgradeReply(inputBuffer)) {
                         webSocketState = WebSocketState.PN_WS_CONNECTED_FLOW;
                     } else {
-                    	// Input data was incomplete. Reset buffer position and wait for another call after more data arrives.
-                    	inputBuffer.reset();
-                    	TRACE_LOGGER.warn("Websocket connecting response incomplete");
+                        // Input data was incomplete. Reset buffer position and wait for another call after more data arrives.
+                        inputBuffer.reset();
+                        TRACE_LOGGER.warn("Websocket connecting response incomplete");
                     }
                     inputBuffer.compact();
                     break;

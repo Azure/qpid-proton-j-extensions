@@ -29,19 +29,18 @@ public class ProxyConfiguration implements AutoCloseable {
     }
 
     /**
-     * Creates a proxy configuration that uses the {@code proxyAddress} and authenticates with provided
-     * {@code username}, {@code password} and {@code authentication}.
+     * Creates a proxy configuration that uses the {@code proxyAddress} and authenticates with provided {@code
+     * username}, {@code password} and {@code authentication}.
      *
      * @param authentication Authentication method to preemptively use with proxy.
-     * @param proxyAddress Proxy to use. If {@code null} is passed in, then the system configured {@link java.net.Proxy}
-     * is used.
+     * @param proxyAddress Proxy to use. If {@code null} is passed in, then the system configured {@link
+     *         java.net.Proxy} is used.
      * @param username Optional. Username used to authenticate with proxy. If not specified, the system-wide
-     * {@link java.net.Authenticator} is used to fetch credentials.
+     *         {@link java.net.Authenticator} is used to fetch credentials.
      * @param password Optional. Password used to authenticate with proxy.
-     *
      * @throws NullPointerException if {@code authentication} is {@code null}.
      * @throws IllegalArgumentException if {@code authentication} is {@link ProxyAuthenticationType#BASIC} or
-     * {@link ProxyAuthenticationType#DIGEST} and {@code username} or {@code password} are {@code null}.
+     *         {@link ProxyAuthenticationType#DIGEST} and {@code username} or {@code password} are {@code null}.
      */
     public ProxyConfiguration(ProxyAuthenticationType authentication, java.net.Proxy proxyAddress, String username, String password) {
         Objects.requireNonNull(authentication);
@@ -63,8 +62,8 @@ public class ProxyConfiguration implements AutoCloseable {
     /**
      * Gets the proxy address.
      *
-     * @return The proxy address. Returns {@code null} if user creates proxy credentials with
-     * {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     * @return The proxy address. Returns {@code null} if user creates proxy credentials with {@link
+     *         ProxyConfiguration#SYSTEM_DEFAULTS}.
      */
     public java.net.Proxy proxyAddress() {
         return proxyAddress;
@@ -74,7 +73,7 @@ public class ProxyConfiguration implements AutoCloseable {
      * Gets credentials to authenticate against proxy with.
      *
      * @return The credentials to authenticate against proxy with. Returns {@code null} if no credentials were set. This
-     * occurs when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     *         occurs when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
      */
     public PasswordAuthentication credentials() {
         return credentials;
@@ -84,7 +83,7 @@ public class ProxyConfiguration implements AutoCloseable {
      * Gets the proxy authentication type to use.
      *
      * @return The proxy authentication type to use. returns {@code null} if no authentication type was set. This occurs
-     * when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
+     *         when user uses {@link ProxyConfiguration#SYSTEM_DEFAULTS}.
      */
     public ProxyAuthenticationType authentication() {
         return authentication;

@@ -30,9 +30,8 @@
         <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 
-        <checkstyle.config.location>checkstyle.xml</checkstyle.config.location>
-        <checkstyle.consoleOutput>true</checkstyle.consoleOutput>
-        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
+        <!-- Build tools -->
+        <checkstyle.version>8.18</checkstyle.version>
     </properties>
 
     <build>
@@ -54,9 +53,19 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>8.18</version>
+                        <version>${checkstyle.version}</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                    <configLocation>checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <linkXRef>true</linkXRef>
+
+                    <failsOnError>true</failsOnError>
+                    <failOnViolation>true</failOnViolation>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
             </plugin>
 
             <!-- Configure the jar plugin -->

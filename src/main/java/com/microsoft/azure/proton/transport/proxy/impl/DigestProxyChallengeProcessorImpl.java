@@ -56,7 +56,8 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
 
             if (line.contains(PROXY_AUTH_DIGEST)) {
                 getChallengeQuestionHeaders(line, challengeQuestionValues);
-                computeDigestAuthHeader(challengeQuestionValues, host, proxyAuthenticator.getPasswordAuthentication(Constants.DIGEST_LOWERCASE, host));
+                computeDigestAuthHeader(challengeQuestionValues, host,
+                        proxyAuthenticator.getPasswordAuthentication(Constants.DIGEST_LOWERCASE, host));
 
                 logger.info("Finished getting auth header.");
                 break;
@@ -143,7 +144,8 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
 
                 response = printHexBinary(md5.digest(String.format("%s:%s:%08X:%s:%s:%s", a1, nonce, nc, cnonce, qop, a2).getBytes(UTF_8)));
 
-                digestValue = String.format("Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",nc=%08X,response=\"%s\",qop=\"%s\"",
+                digestValue = String.format(
+                        "Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",cnonce=\"%s\",nc=%08X,response=\"%s\",qop=\"%s\"",
                         proxyUserName, realm, nonce, uri, cnonce, nc, response, qop);
             }
 

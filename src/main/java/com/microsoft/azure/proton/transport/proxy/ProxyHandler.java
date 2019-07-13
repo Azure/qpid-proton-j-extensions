@@ -42,7 +42,7 @@ public interface ProxyHandler {
      *
      * @param buffer Buffer containing the HTTP response.
      * @return Indicates if CONNECT response contained a success. If not, contains an error indicating why the call was
-     * not successful.
+     *         not successful.
      */
     ProxyResponseResult validateProxyResponse(ByteBuffer buffer);
 }

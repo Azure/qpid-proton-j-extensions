@@ -65,7 +65,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
                 retVal = webSocketUpgrade.validateUpgradeReply(data);
                 if (retVal) {
-                	webSocketUpgrade = null;
+                    webSocketUpgrade = null;
                 }
             }
         }
