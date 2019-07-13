@@ -55,8 +55,8 @@ If you'd like to get involved, but don't know what to work on, then please reach
 If you're new to opening pull requests - or would like some additional guidance - the following list is a good set of
 best practices!
 
-- Title of the pull request is clear and informative
-- There are a small number of commits that each have an informative message
+- Title of the pull request is clear and informative.
+- There are a small number of commits that each have an informative message.
 - A description of the changes the pull request makes is included, and a reference to the bug/issue the pull request
-  fixes is included, if applicable
-- Pull request includes comprehensive test coverage for the included changes
+  fixes is included, if applicable.
+- Pull request includes comprehensive test coverage for the included changes.
