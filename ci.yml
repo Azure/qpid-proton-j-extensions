@@ -124,53 +124,7 @@ stages:
 
   # The Prerelease and Release stages are conditioned on whether we are building a pull request and the branch.
   - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
-    - stage: Signing
-      dependsOn: Build
-      jobs:
-        - deployment: CodeSign
-          environment: esrp
-          strategy:
-            runOnce:
-              deploy:
-                steps:
-                  - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
-                    parameters:
-                      ArtifactDirectory: $(Pipeline.Workspace)/packages
-
-                  - publish: $(Pipeline.Workspace)/packages
-                    artifact: packages-signed
-                    displayName: 'Store signed packages in packages-signed artifact'
-
-    - stage: Prerelease
-      dependsOn: Signing
-      jobs:
-        - deployment: PublishPackage
-          environment: azure-sdk
-          
-          pool:
-            vmImage: vs2017-win2016
-
-          strategy:
-            runOnce:
-              deploy:
-                steps:
-                  - script: |
-                      echo "Pretend I'm doing a release of your code!"
-                      dir $(Pipeline.Workspace)/packages-signed
-
-    - stage: Release
-      dependsOn: Prerelease
-      jobs:
-        - deployment: PublishPackage
-          environment: maven
-          
-          pool:
-            vmImage: vs2017-win2016
-
-          strategy:
-            runOnce:
-              deploy:
-                steps:
-                  - script: |
-                      echo "Pretend I'm doing a release of your code!"
-                      dir $(Pipeline.Workspace)/packages-signed
+    - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
+      parameters:
+        DependsOn: Build
+        ArtifactName: packages
