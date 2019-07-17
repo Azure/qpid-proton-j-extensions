@@ -3,6 +3,12 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
+resources:
+  repositories:
+    - repository: azure-sdk-build-tools
+      type: git
+      name: internal/azure-sdk-build-tools
+
 trigger:
   branches:
     include:
@@ -121,7 +127,7 @@ stages:
   # The Prerelease and Release stages are conditioned on whether we are building a pull request and the branch.
   - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
     - stage: Prerelease
-      dependsOn: Build
+      dependsOn: Test
       jobs:
         - deployment: PublishPackage
           environment: azure-sdk
@@ -133,6 +139,7 @@ stages:
             runOnce:
               deploy:
                 steps:
+                  - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
                   - script: |
                       echo Pretend I'm doing a pre-release of your code!
 
