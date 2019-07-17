@@ -143,7 +143,7 @@ stages:
               deploy:
                 steps:
                   - script: |
-                      echo Pretend I'm doing a release of your code!
+                      echo "Pretend I'm doing a release of your code!"
 
     - stage: Release
       dependsOn: Prerelease
@@ -159,4 +159,4 @@ stages:
               deploy:
                 steps:
                   - script: |
-                      echo Pretend I'm doing a release of your code!
+                      echo "Pretend I'm doing a release of your code!"
