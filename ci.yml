@@ -61,11 +61,14 @@ stages:
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
 
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish Artifacts $(ArtifactName)'
-            inputs:
-              artifactName: '$(ArtifactName)'
-              targetPath: $(Build.ArtifactStagingDirectory)
+          # If we are running on an internal pipeline and this is not a pull request, sign the jars.
+          - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
+            - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
+              parameters:
+                ArtifactDirectory: $(Build.ArtifactStagingDirectory)
+
+          - publish: $(Build.ArtifactStagingDirectory)
+            artifact: $(ArtifactName)
 
       - job: 'Test'
 
@@ -139,9 +142,8 @@ stages:
             runOnce:
               deploy:
                 steps:
-                  - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
                   - script: |
-                      echo Pretend I'm doing a pre-release of your code!
+                      echo Pretend I'm doing a release of your code!
 
     - stage: Release
       dependsOn: Prerelease
