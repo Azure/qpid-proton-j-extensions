@@ -129,15 +129,17 @@ stages:
       jobs:
         - deployment: CodeSign
           environment: esrp
-          steps:
-            - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
-              parameters:
-                ArtifactDirectory: $(Build.ArtifactStagingDirectory)
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
+                    parameters:
+                      ArtifactDirectory: $(Build.ArtifactStagingDirectory)
 
             - publish: $(Pipeline.Workspace)/packages
               artifact: packages-signed
               displayName: 'Store signed packages in packages-signed artifact'
-              
 
     - stage: Prerelease
       dependsOn: Signing
