@@ -61,12 +61,6 @@ stages:
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
 
-          # If we are running on an internal pipeline and this is not a pull request, sign the jars.
-          - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
-            - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
-              parameters:
-                ArtifactDirectory: $(Build.ArtifactStagingDirectory)
-
           - publish: $(Build.ArtifactStagingDirectory)
             artifact: $(ArtifactName)
             displayName: 'Publish outputs to $(ArtifactName) artifact'
@@ -130,8 +124,23 @@ stages:
 
   # The Prerelease and Release stages are conditioned on whether we are building a pull request and the branch.
   - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
-    - stage: Prerelease
+    - stage: Signing
       dependsOn: Build
+      jobs:
+        - deployment: CodeSign
+          environment: esrp
+          steps:
+            - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
+              parameters:
+                ArtifactDirectory: $(Build.ArtifactStagingDirectory)
+
+            - publish: $(Pipeline.Workspace)/packages
+              artifact: packages-signed
+              displayName: 'Store signed packages in packages-signed artifact'
+              
+
+    - stage: Prerelease
+      dependsOn: Signing
       jobs:
         - deployment: PublishPackage
           environment: azure-sdk
@@ -145,6 +154,7 @@ stages:
                 steps:
                   - script: |
                       echo "Pretend I'm doing a release of your code!"
+                      dir $(Pipeline.Workspace)/packages-signed
 
     - stage: Release
       dependsOn: Prerelease
@@ -161,3 +171,4 @@ stages:
                 steps:
                   - script: |
                       echo "Pretend I'm doing a release of your code!"
+                      dir $(Pipeline.Workspace)/packages-signed
