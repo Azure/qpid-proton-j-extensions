@@ -69,6 +69,7 @@ stages:
 
           - publish: $(Build.ArtifactStagingDirectory)
             artifact: $(ArtifactName)
+            displayName: 'Publish outputs to $(ArtifactName) artifact'
 
       - job: 'Test'
 
