@@ -136,7 +136,7 @@ stages:
           environment: azure-sdk
           
           pool:
-            vmImage: ubuntu-16.04
+            vmImage: vs2017-win2016
 
           strategy:
             runOnce:
@@ -152,7 +152,7 @@ stages:
           environment: maven
           
           pool:
-            vmImage: ubuntu-16.04
+            vmImage: vs2017-win2016
 
           strategy:
             runOnce:
