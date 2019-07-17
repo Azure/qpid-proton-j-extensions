@@ -135,7 +135,7 @@ stages:
                 steps:
                   - template: pipelines/steps/maven-signing.yml@azure-sdk-build-tools
                     parameters:
-                      ArtifactDirectory: $(Build.ArtifactStagingDirectory)
+                      ArtifactDirectory: $(Pipeline.Workspace)/packages
 
                   - publish: $(Pipeline.Workspace)/packages
                     artifact: packages-signed
