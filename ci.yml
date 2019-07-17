@@ -137,9 +137,9 @@ stages:
                     parameters:
                       ArtifactDirectory: $(Build.ArtifactStagingDirectory)
 
-            - publish: $(Pipeline.Workspace)/packages
-              artifact: packages-signed
-              displayName: 'Store signed packages in packages-signed artifact'
+                  - publish: $(Pipeline.Workspace)/packages
+                    artifact: packages-signed
+                    displayName: 'Store signed packages in packages-signed artifact'
 
     - stage: Prerelease
       dependsOn: Signing
