@@ -53,13 +53,17 @@ stages:
             displayName: 'Build and Package'
             inputs:
               mavenPomFile: 'pom.xml'
-              goals: 'package'
-              options: '$(DefaultOptions) $(ProfileFlag) "-DpackageOutputDirectory=$(Build.ArtifactStagingDirectory)" -Dmaven.test.skip=true'
+              goals: 'deploy'
+              options: '$(DefaultOptions) $(ProfileFlag) -DaltDeploymentRepository="local::default::file:///${project.basedir}/output" -Dmaven.test.skip=true'
               mavenOptions: '$(LoggingOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
+
+          - scripts: |
+              for /r output %f in (*.*) do copy %f $(Build.ArtifactStagingDirectory)
+            displayName: Flatten and copy build outputs
 
           - publish: $(Build.ArtifactStagingDirectory)
             artifact: $(ArtifactName)
