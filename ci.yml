@@ -62,7 +62,7 @@ stages:
               publishJUnitResults: false
 
           - script: |
-              for /r output %f in (*.*) do copy %f $(Build.ArtifactStagingDirectory)
+              cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
             displayName: Flatten and copy build outputs
 
           - publish: $(Build.ArtifactStagingDirectory)
