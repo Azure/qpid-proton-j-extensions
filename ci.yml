@@ -61,7 +61,7 @@ stages:
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
 
-          - scripts: |
+          - script: |
               for /r output %f in (*.*) do copy %f $(Build.ArtifactStagingDirectory)
             displayName: Flatten and copy build outputs
 
