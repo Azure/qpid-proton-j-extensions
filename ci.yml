@@ -135,3 +135,5 @@ stages:
       parameters:
         DependsOn: Build
         ArtifactName: packages
+        Artifacts:
+          - qpid-proton-j-extensions
