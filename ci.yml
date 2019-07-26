@@ -124,7 +124,7 @@ stages:
               goals: 'test'
 
           - task: PublishTestResults@2
-            condition: succeededOrFailed()
+            condition: succeededOrFailed()/_usersSettings/keys
             inputs:
               mergeTestResults: true
               testRunTitle: '$(OSName) on Java $(JavaVersion)'
@@ -136,4 +136,5 @@ stages:
         DependsOn: Build
         ArtifactName: packages
         Artifacts:
-          - qpid-proton-j-extensions
+          - name: qpid-proton-j-extensions
+            safeName: qpidprotonjextensions
