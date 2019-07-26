@@ -124,7 +124,7 @@ stages:
               goals: 'test'
 
           - task: PublishTestResults@2
-            condition: succeededOrFailed()/_usersSettings/keys
+            condition: succeededOrFailed()
             inputs:
               mergeTestResults: true
               testRunTitle: '$(OSName) on Java $(JavaVersion)'
