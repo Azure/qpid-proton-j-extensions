@@ -19,6 +19,13 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+        <id>microsoft</id>
+        <name>Microsoft Corporation</name>
+        </developer>
+    </developers>
+
     <scm>
         <url>https://github.com/Azure/qpid-proton-j-extensions</url>
         <connection>scm:git:https://github.com/Azure/qpid-proton-j-extensions.git</connection>
