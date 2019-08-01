@@ -3,6 +3,12 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
+resources:
+  repositories:
+    - repository: azure-sdk-build-tools
+      type: git
+      name: internal/azure-sdk-build-tools
+
 trigger:
   branches:
     include:
@@ -47,19 +53,24 @@ stages:
             displayName: 'Build and Package'
             inputs:
               mavenPomFile: 'pom.xml'
-              goals: 'package'
-              options: '$(DefaultOptions) $(ProfileFlag) "-DpackageOutputDirectory=$(Build.ArtifactStagingDirectory)" -Dmaven.test.skip=true'
+              goals: 'deploy'
+              options: '$(DefaultOptions) $(ProfileFlag) -DaltDeploymentRepository="local::default::file:///${project.basedir}/output" -Dmaven.test.skip=true --settings eng/settings.xml'
               mavenOptions: '$(LoggingOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
 
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish Artifacts $(ArtifactName)'
-            inputs:
-              artifactName: '$(ArtifactName)'
-              targetPath: $(Build.ArtifactStagingDirectory)
+          - script: |
+              cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
+              rm $(Build.ArtifactStagingDirectory)/*.sha1
+              rm $(Build.ArtifactStagingDirectory)/*.md5
+              
+            displayName: Flatten and copy build outputs
+
+          - publish: $(Build.ArtifactStagingDirectory)
+            artifact: $(ArtifactName)
+            displayName: 'Publish outputs to $(ArtifactName) artifact'
 
       - job: 'Test'
 
@@ -104,7 +115,7 @@ stages:
             displayName: 'Run Tests'
             inputs:
               mavenPomFile: 'pom.xml'
-              options: '$(DefaultOptions) $(ProfileFlag)'
+              options: '$(DefaultOptions) $(ProfileFlag) --settings eng/settings.xml'
               mavenOptions: '-Xmx3072m $(LoggingOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
@@ -117,3 +128,13 @@ stages:
             inputs:
               mergeTestResults: true
               testRunTitle: '$(OSName) on Java $(JavaVersion)'
+
+  # The Prerelease and Release stages are conditioned on whether we are building a pull request and the branch.
+  - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
+    - template: pipelines/stages/archetype-java-release.yml@azure-sdk-build-tools
+      parameters:
+        DependsOn: Build
+        ArtifactName: packages
+        Artifacts:
+          - name: qpid-proton-j-extensions
+            safeName: qpidprotonjextensions

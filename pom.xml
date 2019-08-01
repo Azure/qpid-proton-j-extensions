@@ -11,6 +11,27 @@
 
     <url>https://github.com/Azure/qpid-proton-j-extensions</url>
 
+    <licenses>
+        <license>
+        <name>The MIT License (MIT)</name>
+        <url>http://opensource.org/licenses/MIT</url>
+        <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+        <id>microsoft</id>
+        <name>Microsoft Corporation</name>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/Azure/qpid-proton-j-extensions</url>
+        <connection>scm:git:https://github.com/Azure/qpid-proton-j-extensions.git</connection>
+        <developerConnection>scm:git:https://github.com/Azure/qpid-proton-j-extensions.git</developerConnection>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <packageOutputDirectory>${project.build.directory}</packageOutputDirectory>
