@@ -138,3 +138,4 @@ stages:
         Artifacts:
           - name: qpid-proton-j-extensions
             safeName: qpidprotonjextensions
+            stagingProfileId: 534d15ee3800f4
