@@ -54,7 +54,15 @@ public class HttpStatusLine {
                     "Protocol is invalid, expected HTTP/{version}. Actual: %s", components[0]));
         }
 
-        return new HttpStatusLine(protocol[1], Integer.parseInt(components[1]), components[2]);
+        int statusCode;
+        try {
+            statusCode = Integer.parseInt(components[1]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(String.format(Locale.US,
+                    "HTTP Status code '%s' is not valid.", components[1]), e);
+        }
+
+        return new HttpStatusLine(protocol[1], statusCode, components[2]);
     }
 
     /**
