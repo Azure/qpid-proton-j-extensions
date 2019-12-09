@@ -9,7 +9,7 @@
 
     <groupId>com.microsoft.azure</groupId>
     <artifactId>qpid-proton-j-extensions</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 
     <licenses>
         <license>
@@ -95,6 +95,11 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
                 <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <automatic-module-name>com.microsoft.azure.proton.transport</automatic-module-name>
+                        </manifestEntries>
+                    </archive>
                     <outputDirectory>${packageOutputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
