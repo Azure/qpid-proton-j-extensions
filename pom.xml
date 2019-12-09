@@ -9,7 +9,7 @@
 
     <groupId>com.microsoft.azure</groupId>
     <artifactId>qpid-proton-j-extensions</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 
     <licenses>
         <license>
@@ -37,22 +37,22 @@
         <packageOutputDirectory>${project.build.directory}</packageOutputDirectory>
 
         <!-- Product dependency versions -->
-        <proton-j-version>0.31.0</proton-j-version>
-        <slf4j-version>1.8.0-alpha2</slf4j-version>
+        <proton-j-version>0.33.2</proton-j-version>
+        <slf4j-version>1.7.28</slf4j-version>
 
         <!-- Test dependency versions -->
         <junit-version>4.12</junit-version>
-        <mockito-version>2.28.2</mockito-version>
+        <mockito-version>3.0.0</mockito-version>
 
         <!-- Maven tool versions -->
         <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
+        <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 
         <!-- Build tools -->
-        <checkstyle.version>8.18</checkstyle.version>
+        <checkstyle.version>8.24</checkstyle.version>
     </properties>
 
     <build>
@@ -95,6 +95,11 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven-jar-plugin.version}</version>
                 <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>com.microsoft.azure.qpid.protonj.extensions</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
                     <outputDirectory>${packageOutputDirectory}</outputDirectory>
                 </configuration>
             </plugin>
