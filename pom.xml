@@ -97,7 +97,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Automatic-Module-Name>com.microsoft.azure.proton.transport</Automatic-Module-Name>
+                            <Automatic-Module-Name>com.microsoft.azure.qpid.protonj.extensions</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
                     <outputDirectory>${packageOutputDirectory}</outputDirectory>
