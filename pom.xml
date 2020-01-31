@@ -52,7 +52,7 @@
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 
         <!-- Build tools -->
-        <checkstyle.version>8.24</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
     </properties>
 
     <build>
