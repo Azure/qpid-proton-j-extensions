@@ -76,6 +76,24 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         isWebSocketEnabled = false;
     }
 
+    /**
+     * Create WebSocket transport layer - which, after configuring using
+     * the {@link #configure(String, String, String, int, String, Map, WebSocketHandler)} API
+     * is ready for layering in qpid-proton-j transport layers, using
+     * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     * @param customMaxFrameSize the maximum frame size that this layer will buffer for
+     */
+    public WebSocketImpl(int customMaxFrameSize) {
+        inputBuffer = newWriteableBuffer(customMaxFrameSize);
+        outputBuffer = newWriteableBuffer(customMaxFrameSize);
+        pingBuffer = newWriteableBuffer(customMaxFrameSize);
+        wsInputBuffer = newWriteableBuffer(customMaxFrameSize);
+        tempBuffer = newWriteableBuffer(customMaxFrameSize);
+        lastType = WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
+        lastLength = 0;
+        isWebSocketEnabled = false;
+    }
+
     @Override
     public TransportWrapper wrap(final TransportInput input, final TransportOutput output) {
         return new WebSocketSniffer(new WebSocketTransportWrapper(input, output), new PlainTransportWrapper(output, input)) {
