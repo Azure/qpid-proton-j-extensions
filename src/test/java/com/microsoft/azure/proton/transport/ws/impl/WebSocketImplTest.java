@@ -86,6 +86,28 @@ public class WebSocketImplTest {
     }
 
     @Test
+    public void testConstructorWithCustomBufferSize() {
+        init();
+
+        int customBufferSize = 10;
+        WebSocketImpl webSocketImpl = new WebSocketImpl(customBufferSize);
+
+        ByteBuffer inputBuffer = webSocketImpl.getInputBuffer();
+        ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
+        ByteBuffer pingBuffer = webSocketImpl.getPingBuffer();
+
+        assertNotNull(inputBuffer);
+        assertNotNull(outputBuffer);
+        assertNotNull(pingBuffer);
+
+        assertEquals(inputBuffer.capacity(), customBufferSize);
+        assertEquals(outputBuffer.capacity(), customBufferSize);
+        assertEquals(pingBuffer.capacity(), customBufferSize);
+
+        assertFalse(webSocketImpl.getEnabled());
+    }
+
+    @Test
     public void testConfigure_handler_null() {
         init();
 

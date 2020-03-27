@@ -30,7 +30,7 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
 public class WebSocketImpl implements WebSocket, TransportLayer {
     private static final Logger TRACE_LOGGER = LoggerFactory.getLogger(WebSocketImpl.class);
 
-    private final int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private static final int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private boolean tailClosed = false;
     private final ByteBuffer inputBuffer;
     private boolean headClosed = false;
@@ -66,11 +66,22 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
      */
     public WebSocketImpl() {
-        inputBuffer = newWriteableBuffer(maxFrameSize);
-        outputBuffer = newWriteableBuffer(maxFrameSize);
-        pingBuffer = newWriteableBuffer(maxFrameSize);
-        wsInputBuffer = newWriteableBuffer(maxFrameSize);
-        tempBuffer = newWriteableBuffer(maxFrameSize);
+        this(maxFrameSize);
+    }
+
+    /**
+     * Create WebSocket transport layer - which, after configuring using
+     * the {@link #configure(String, String, String, int, String, Map, WebSocketHandler)} API
+     * is ready for layering in qpid-proton-j transport layers, using
+     * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
+     * @param customMaxFrameSize the maximum frame size that this layer will buffer for
+     */
+    public WebSocketImpl(int customMaxFrameSize) {
+        inputBuffer = newWriteableBuffer(customMaxFrameSize);
+        outputBuffer = newWriteableBuffer(customMaxFrameSize);
+        pingBuffer = newWriteableBuffer(customMaxFrameSize);
+        wsInputBuffer = newWriteableBuffer(customMaxFrameSize);
+        tempBuffer = newWriteableBuffer(customMaxFrameSize);
         lastType = WEB_SOCKET_MESSAGE_TYPE_UNKNOWN;
         lastLength = 0;
         isWebSocketEnabled = false;
