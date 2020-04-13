@@ -37,7 +37,7 @@
         <packageOutputDirectory>${project.build.directory}</packageOutputDirectory>
 
         <!-- Product dependency versions -->
-        <proton-j-version>0.33.2</proton-j-version>
+        <proton-j-version>0.33.4</proton-j-version>
         <slf4j-version>1.7.28</slf4j-version>
 
         <!-- Test dependency versions -->
