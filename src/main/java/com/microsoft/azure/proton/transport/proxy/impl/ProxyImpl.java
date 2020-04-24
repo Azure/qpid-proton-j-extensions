@@ -21,13 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
@@ -232,7 +232,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         if (LOGGER.isErrorEnabled()) {
                             LOGGER.error("Proxy authentication required. User configured: '{}', but supported proxy authentication methods are: {}",
                                     proxyConfiguration.authentication(),
-                                    supportedTypes.stream().map(Enum::toString).collect(Collectors.joining(",")));
+                                    Arrays.toString(supportedTypes.toArray()).replace("[", "").replace("]", ""));
                         }
 
                         closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED + challenge);

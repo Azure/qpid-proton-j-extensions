@@ -67,9 +67,9 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
         if (logger.isInfoEnabled()) {
             logger.info("Headers added are:");
 
-            headers.forEach((key, value) -> {
-                logger.info("{}: {}", key, value);
-            });
+            for (String header : headers.keySet()) {
+                logger.info("{}: {}", header, headers.get(header));
+            }
         }
 
         return headers;
@@ -94,9 +94,9 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
         if (logger.isInfoEnabled()) {
             logger.info("Challenge questions are: ");
 
-            challengeQuestionValues.forEach((key, value) -> {
-                logger.info("{}: {}", key, value);
-            });
+            for (String challengeQuestion : challengeQuestionValues.keySet()) {
+                logger.info("{}: {}", challengeQuestion, headers.get(challengeQuestionValues.get(challengeQuestion)));
+            }
         }
     }
 

@@ -31,10 +31,10 @@ public class ProxyHandlerImpl implements ProxyHandler {
                 String.format(Locale.ROOT, CONNECT_REQUEST, hostName, NEW_LINE));
 
         if (additionalHeaders != null) {
-            additionalHeaders.forEach((header, value) -> {
-                connectRequestBuilder.append(String.format(HEADER_FORMAT, header, value));
+            for (String header : additionalHeaders.keySet()) {
+                connectRequestBuilder.append(String.format(HEADER_FORMAT, header, additionalHeaders.get(header)));
                 connectRequestBuilder.append(NEW_LINE);
-            });
+            }
         }
 
         connectRequestBuilder.append(NEW_LINE);
