@@ -9,7 +9,7 @@
 
     <groupId>com.microsoft.azure</groupId>
     <artifactId>qpid-proton-j-extensions</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4-SNAPSHOT</version>
 
     <licenses>
         <license>
