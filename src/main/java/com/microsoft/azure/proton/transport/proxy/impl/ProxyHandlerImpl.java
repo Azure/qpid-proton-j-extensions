@@ -56,7 +56,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
             final Scanner responseScanner = new Scanner(response);
             if (responseScanner.hasNextLine()) {
                 final String firstLine = responseScanner.nextLine();
-                if (firstLine.toLowerCase().trim().matches("^^http\\/(1.0|1.1)\\s(200|201|202|203|204|205|206)\\s\\w.*$")) {
+                if (firstLine.toLowerCase().trim().matches("^http\\/(1.0|1.1)\\s(200|201|202|203|204|205|206)\\s\\w.*$")) {
                     return new ProxyResponseResult(true, null);
                 }
             }
