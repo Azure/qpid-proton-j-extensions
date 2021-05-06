@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.function.Predicate;
 
 public class ProxyHandlerImpl implements ProxyHandler {
     /**
@@ -20,7 +22,9 @@ public class ProxyHandlerImpl implements ProxyHandler {
     static final String CONNECT_REQUEST = "CONNECT %1$s HTTP/1.1%2$sHost: %1$s%2$sConnection: Keep-Alive%2$s";
     static final String HEADER_FORMAT = "%s: %s";
     static final String NEW_LINE = "\r\n";
-
+    private final Pattern successStatusLine = Pattern.compile("^http/1\\.(0|1) (?<statusCode>2[0-9]{2})", Pattern.CASE_INSENSITIVE);
+    private final Predicate<String> successStatusLinePredicate = successStatusLine.asPredicate();
+    
     /**
      * {@inheritDoc}
      */
@@ -56,7 +60,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
             final Scanner responseScanner = new Scanner(response);
             if (responseScanner.hasNextLine()) {
                 final String firstLine = responseScanner.nextLine();
-                if (firstLine.toLowerCase().trim().matches("^http\\/(1.0|1.1)\\s(200|201|202|203|204|205|206)\\s\\w.*$")) {
+                if (successStatusLinePredicate.test(firstLine)) {
                     return new ProxyResponseResult(true, null);
                 }
             }
