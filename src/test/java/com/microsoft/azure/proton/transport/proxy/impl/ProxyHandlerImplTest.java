@@ -8,6 +8,8 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -34,9 +36,10 @@ public class ProxyHandlerImplTest {
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
 
-    @Test
-    public void testValidateProxyResponseOnSuccess() {
-        final String validResponse = "HTTP/1.1 200 Connection Established\r\n" +
+    @ParameterizedTest
+	@ValueSource(ints = {200, 201, 202, 203, 204, 205, 206})
+    public void testValidateProxyResponseOnSuccess(int httpCode) {
+        final String validResponse = "HTTP/1.1 " + httpCode + "Connection Established\r\n" +
                 "FiddlerGateway: Direct\r\n" +
                 "StartTime: 13:08:21.574\r\n" +
                 "Connection: close\r\n\r\n";
@@ -52,145 +55,10 @@ public class ProxyHandlerImplTest {
 
         Assert.assertEquals(0, buffer.remaining());
     }
-	
-	    @Test
-    public void testValidateProxyResponseOnSuccess201() {
-        final String validResponse = "HTTP/1.1 201 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-		    @Test
-    public void testValidateProxyResponseOnSuccess202() {
-        final String validResponse = "HTTP/1.1 202 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-		    @Test
-    public void testValidateProxyResponseOnSuccess203() {
-        final String validResponse = "HTTP/1.1 203 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-		    @Test
-    public void testValidateProxyResponseOnSuccess204() {
-        final String validResponse = "HTTP/1.1 204 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-		    @Test
-    public void testValidateProxyResponseOnSuccess205() {
-        final String validResponse = "HTTP/1.1 205 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-		    @Test
-    public void testValidateProxyResponseOnSuccess206() {
-        final String validResponse = "HTTP/1.1 206 Connected\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(responseResult.getIsSuccess());
-        Assert.assertNull(responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
 
     @Test
     public void testValidateProxyResponseOnFailure() {
         final String failResponse = "HTTP/1.1 407 Proxy Auth Required\r\n" +
-                "Connection: close\r\n" +
-                "Proxy-Authenticate: Basic realm=\"FiddlerProxy (user: 1, pass: 1)\"\r\n" +
-                "Content-Type: text/html\r\n" +
-                "<html><body>[Fiddler] Proxy Authentication Required.<BR></body></html>\r\n\r\n";
-        final ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(failResponse.getBytes(StandardCharsets.UTF_8));
-        buffer.flip();
-
-        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(buffer);
-
-        Assert.assertTrue(!responseResult.getIsSuccess());
-        Assert.assertEquals(failResponse, responseResult.getError());
-
-        Assert.assertEquals(0, buffer.remaining());
-    }
-	
-	@Test
-    public void testValidateProxyResponseOnEmptyReasonPhrase() {
-        final String failResponse = "HTTP/1.1 200\r\n" +
                 "Connection: close\r\n" +
                 "Proxy-Authenticate: Basic realm=\"FiddlerProxy (user: 1, pass: 1)\"\r\n" +
                 "Content-Type: text/html\r\n" +
