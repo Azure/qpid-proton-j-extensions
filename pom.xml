@@ -202,10 +202,18 @@
           <version>${maven-javadoc-plugin.version}</version>
           <configuration>
             <source>1.8</source>
+            <doctitle>Extensions on Apache Proton-J Reference Documentation</doctitle>
+            <windowtitle>Extensions on Apache Proton-J Reference Documentation</windowtitle>
             <jarOutputDirectory>${packageOutputDirectory}</jarOutputDirectory>
             <failOnError>true</failOnError>
             <failOnWarnings>true</failOnWarnings>
             <doclint>all</doclint>
+
+            <links combine.children="append">
+              <!-- JDK APIs -->
+              <link>https://docs.oracle.com/javase/8/docs/api/</link>
+            </links>
+            <detectJavaApiLink>false</detectJavaApiLink>
           </configuration>
         </plugin>
 
@@ -337,9 +345,34 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>${maven-compiler-plugin.version}</version>
             <configuration>
-              <source>11</source>
-              <target>11</target>
+              <testRelease>11</testRelease>
+              <compilerArgs combine.children="append">
+                <arg>-Xlint:-module</arg> <!-- FIXME: this is required for now as it introduces a build failure -->
+                <arg>-Xlint:-requires-transitive-automatic</arg> <!-- FIXME: this is required for now as it introduces a build failure -->
+              </compilerArgs>
             </configuration>
+            <executions>
+              <!-- compile first with module-info for Java 9+ -->
+              <execution>
+                <id>default-compile</id>
+                <configuration>
+                  <release>11</release>
+                </configuration>
+              </execution>
+              <!-- then compile without module-info for Java 8 -->
+              <execution>
+                <id>base-compile</id>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                <configuration>
+                  <release>8</release>
+                  <excludes>
+                    <exclude>module-info.java</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
 
           <!-- Surefire plugin is broken, https://issues.apache.org/jira/browse/SUREFIRE-1501 -->
