@@ -65,7 +65,7 @@ stages:
               cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
               rm $(Build.ArtifactStagingDirectory)/*.sha1
               rm $(Build.ArtifactStagingDirectory)/*.md5
-              
+
             displayName: Flatten and copy build outputs
 
           - publish: $(Build.ArtifactStagingDirectory)
@@ -83,7 +83,7 @@ stages:
               JavaVersion: '1.8'
             macOS - Java 8:
               OSName: 'macOS'
-              OSVmImage: 'macOS-10.13'
+              OSVmImage: 'macOS-10.15'
               ProfileFlag: ''
               JavaVersion: '1.8'
             Windows - Java 8:
@@ -98,7 +98,7 @@ stages:
               JavaVersion: '1.11'
             macOS - Java LTS:
               OSName: 'macOS'
-              OSVmImage: 'macOS-10.13'
+              OSVmImage: 'macOS-10.15'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             Windows - Java LTS:
@@ -128,14 +128,3 @@ stages:
             inputs:
               mergeTestResults: true
               testRunTitle: '$(OSName) on Java $(JavaVersion)'
-
-  # The Prerelease and Release stages are conditioned on whether we are building a pull request and the branch.
-  - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
-    - template: pipelines/stages/archetype-java-release.yml@azure-sdk-build-tools
-      parameters:
-        DependsOn: Build
-        ArtifactName: packages
-        Artifacts:
-          - name: qpid-proton-j-extensions
-            safeName: qpidprotonjextensions
-            stagingProfileId: 534d15ee3800f4
