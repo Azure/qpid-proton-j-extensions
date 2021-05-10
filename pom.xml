@@ -271,12 +271,15 @@
     <profile>
       <id>java8</id>
       <activation>
-        <property>
-          <name>!java-lts</name>
-        </property>
+        <jdk>[1.8,9)</jdk>
       </activation>
+      <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+      </properties>
       <build>
         <plugins>
+          <!-- Don't compile module-info.java, see java 9+ profile -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -290,7 +293,7 @@
             </configuration>
           </plugin>
 
-          <!-- Avoid errors from module-info -->
+          <!-- javadoc: Avoid errors from module-info -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -306,7 +309,7 @@
 
       <reporting>
         <plugins>
-          <!-- Avoid errors from module-info -->
+          <!-- javadoc: Avoid errors from module-info.java -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -325,9 +328,7 @@
       <id>java-lts</id>
       <activation>
         <activeByDefault>true</activeByDefault>
-        <property>
-          <name>java-lts</name>
-        </property>
+        <jdk>[11,)</jdk>
       </activation>
       <build>
         <plugins>
@@ -339,6 +340,13 @@
               <source>11</source>
               <target>11</target>
             </configuration>
+          </plugin>
+
+          <!-- Surefire plugin is broken, https://issues.apache.org/jira/browse/SUREFIRE-1501 -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven-surefire-plugin.version}</version>
           </plugin>
         </plugins>
       </build>
