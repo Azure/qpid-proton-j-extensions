@@ -406,8 +406,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
          *
          * @param error Response from service call.
          * @return The supported proxy authentication methods. Or, an empty array if the value of {@code error} is
-         * {@code null}, an empty string. Also, if it does not contain {@link Constants#PROXY_AUTHENTICATE_HEADER} with
-         * {@link Constants#BASIC_LOWERCASE} or {@link Constants#DIGEST_LOWERCASE}.
+         *     {@code null}, an empty string. Also, if it does not contain {@link Constants#PROXY_AUTHENTICATE_HEADER} with
+         *     {@link Constants#BASIC_LOWERCASE} or {@link Constants#DIGEST_LOWERCASE}.
          */
         private Set<ProxyAuthenticationType> getAuthenticationTypes(String error) {
             int index = error.indexOf(Constants.PROXY_AUTHENTICATE_HEADER);
