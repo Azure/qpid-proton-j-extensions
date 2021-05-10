@@ -1,8 +1,3 @@
-# Maven
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 resources:
   repositories:
     - repository: azure-sdk-build-tools
@@ -26,22 +21,21 @@ pr:
       - hotfix/*
 
 variables:
-  DefaultOptions: '--batch-mode -Dmaven.wagon.http.pool=false'
+  DefaultOptions: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
   LoggingOptions: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+  MemoryOptions: '-Xmx3072m'
 
 stages:
   - stage: Build
     jobs:
       - job: 'Build'
-
         pool:
-          vmImage: 'ubuntu-16.04'
-
+          vmImage: 'ubuntu-18.04'
         strategy:
           matrix:
             Java 8:
-              ArtifactName: 'packages'
-              ProfileFlag: ''
+              ArtifactName: 'java8-packages'
+              ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             Java LTS:
               ArtifactName: 'java-lts-packages'
@@ -54,18 +48,29 @@ stages:
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'deploy'
-              options: '$(DefaultOptions) $(ProfileFlag) -DaltDeploymentRepository="local::default::file:///${project.basedir}/output" -Dmaven.test.skip=true --settings eng/settings.xml'
-              mavenOptions: '$(LoggingOptions)'
+              options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true -Drevapi.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
+              mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
               jdkArchitectureOption: 'x64'
               publishJUnitResults: false
 
+          - task: Maven@3
+                displayName: 'Run SpotBugs, Checkstyle, RevApi, and Javadoc'
+                inputs:
+                    mavenPomFile: pom.xml
+                    options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
+                    mavenOptions: '$(MemoryOptions)'
+                    javaHomeOption: 'JDKVersion'
+                    jdkVersionOption: $(JavaVersion)
+                    jdkArchitectureOption: 'x64'
+                    publishJUnitResults: false
+                    goals: 'verify'
+
           - script: |
               cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
               rm $(Build.ArtifactStagingDirectory)/*.sha1
               rm $(Build.ArtifactStagingDirectory)/*.md5
-
             displayName: Flatten and copy build outputs
 
           - publish: $(Build.ArtifactStagingDirectory)
@@ -73,27 +78,26 @@ stages:
             displayName: 'Publish outputs to $(ArtifactName) artifact'
 
       - job: 'Test'
-
         strategy:
           matrix:
             Linux - Java 8:
               OSName: 'Linux'
-              OSVmImage: 'ubuntu-16.04'
-              ProfileFlag: ''
+              OSVmImage: 'ubuntu-18.04'
+              ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             macOS - Java 8:
               OSName: 'macOS'
               OSVmImage: 'macOS-10.15'
-              ProfileFlag: ''
+              ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             Windows - Java 8:
               OSName: 'Windows'
               OSVmImage: 'vs2017-win2016'
-              ProfileFlag: ''
+              ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             Linux - Java LTS:
               OSName: 'Linux'
-              OSVmImage: 'ubuntu-16.04'
+              OSVmImage: 'ubuntu-18.04'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             macOS - Java LTS:
