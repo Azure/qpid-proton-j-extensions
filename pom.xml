@@ -66,14 +66,14 @@
 
   <build>
     <plugins>
+      <!-- Configure checkstyle plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven-checkstyle-plugin.version}</version>
         <executions>
           <execution>
-            <id>validate</id>
-            <phase>validate</phase>
+            <phase>verify</phase>
             <goals>
               <goal>check</goal>
             </goals>
@@ -154,6 +154,7 @@
   </build>
 
   <dependencies>
+    <!-- Product dependencies -->
     <dependency>
       <groupId>org.apache.qpid</groupId>
       <artifactId>proton-j</artifactId>
@@ -165,6 +166,7 @@
       <version>${slf4j-version}</version>
     </dependency>
 
+    <!-- Test dependencies -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -213,6 +215,9 @@
             <configuration>
               <source>1.8</source>
               <target>1.8</target>
+              <excludes>
+                <exclude>module-info.java</exclude>
+              </excludes>
               <showWarnings>true</showWarnings>
               <failOnWarning>true</failOnWarning>
               <!-- Ignore these until we fix ProxyImpl exposing raw types. -->
@@ -223,8 +228,36 @@
               </compilerArgs> -->
             </configuration>
           </plugin>
+
+          <!-- Avoid errors from module-info -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <configuration>
+              <sourceFileExcludes>
+                <sourceFileExclude>module-info.java</sourceFileExclude>
+              </sourceFileExcludes>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
+
+      <reporting>
+        <plugins>
+          <!-- Avoid errors from module-info -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <configuration>
+              <sourceFileExcludes>
+                <sourceFileExclude>module-info.java</sourceFileExclude>
+              </sourceFileExcludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
 
     <profile>
