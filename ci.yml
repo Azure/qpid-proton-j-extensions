@@ -37,8 +37,9 @@ stages:
               ArtifactName: 'java8-packages'
               ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
+            # We name this 'packages' because it is the default version we want to ship with.
             Java LTS:
-              ArtifactName: 'java-lts-packages'
+              ArtifactName: 'packages'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
 
