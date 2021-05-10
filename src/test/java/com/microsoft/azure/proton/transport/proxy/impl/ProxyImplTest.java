@@ -66,7 +66,7 @@ public class ProxyImplTest {
     private static final String PASSWORD = "test-password!";
 
     private final Logger logger = LoggerFactory.getLogger(ProxyImplTest.class);
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
     private ProxySelector originalProxy;
 
     private void initHeaders() {
@@ -738,7 +738,7 @@ public class ProxyImplTest {
      * configured auth method.
      */
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void authenticationWithProxyConfiguration() {
         // Arrange
         ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, PROXY, USERNAME, PASSWORD);
@@ -801,7 +801,7 @@ public class ProxyImplTest {
      * Verifies that when we use the system defaults and both are offered, then we will use the the DIGEST.
      */
     @Test
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void authenticationWithSystemDefaults() {
         // Arrange
         ProxyImpl proxyImpl = new ProxyImpl();

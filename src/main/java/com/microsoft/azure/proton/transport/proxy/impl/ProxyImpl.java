@@ -232,7 +232,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         if (LOGGER.isErrorEnabled()) {
                             LOGGER.error("Proxy authentication required. User configured: '{}', but supported proxy authentication methods are: {}",
                                     proxyConfiguration.authentication(),
-                                    supportedTypes.stream().map(Enum::toString).collect(Collectors.joining(",")));
+                                    supportedTypes.stream().map(type -> type.toString()).collect(Collectors.joining(",")));
                         }
 
                         closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED + challenge);
