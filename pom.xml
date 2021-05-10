@@ -266,14 +266,11 @@
   </dependencies>
 
   <profiles>
-    <!-- By default we build against our baseline, Java 8, but we also want to ensure compatibility against the latest
-        Java LTS release, currently Java 11. We therefore have two profiles:
-        * The default 'java8', which will perform a build using Java 8 as its target.
-        * The non-default 'java-lts' profile, which will build against the current LTS release. -->
+    <!-- By default we build against our baseline, Java 11, but we also want to ensure compatibility against the latest
+        Java 8 LTS release. The default 'java11', which will perform a build using Java 11 as its target. -->
     <profile>
       <id>java8</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
         <property>
           <name>!java-lts</name>
         </property>
@@ -327,6 +324,7 @@
     <profile>
       <id>java-lts</id>
       <activation>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>java-lts</name>
         </property>
