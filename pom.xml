@@ -59,6 +59,7 @@
     <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
 
     <!-- Build tools -->
     <checkstyle.version>8.42</checkstyle.version>
@@ -79,23 +80,6 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>${checkstyle.version}</version>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <configLocation>checkstyle.xml</configLocation>
-          <encoding>UTF-8</encoding>
-          <consoleOutput>true</consoleOutput>
-          <linkXRef>true</linkXRef>
-          <includeTestSourceDirectory>true</includeTestSourceDirectory>
-          <failsOnError>true</failsOnError>
-          <failOnViolation>true</failOnViolation>
-          <violationSeverity>warning</violationSeverity>
-        </configuration>
       </plugin>
 
       <!-- Configure the jar plugin -->
@@ -142,15 +126,103 @@
             <goals>
               <goal>jar</goal>
             </goals>
-            <configuration>
-              <jarOutputDirectory>${packageOutputDirectory}</jarOutputDirectory>
-              <failOnError>true</failOnError>
-              <failOnWarnings>true</failOnWarnings>
-            </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!-- This plugin configures the bas requirements for compilation -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version> <!-- {x-version-update;org.apache.maven.plugins:maven-compiler-plugin;external_dependency} -->
+          <configuration>
+            <showWarnings>true</showWarnings>
+            <failOnWarning>true</failOnWarning>
+            <compilerArgs combine.children="append" combine.self="append">
+              <!-- Turn off annotation processing -->
+              <arg>-proc:none</arg>
+
+              <!-- https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html#xlintwarnings -->
+              <arg>-Xlint:cast</arg>
+              <arg>-Xlint:classfile</arg>
+              <arg>-Xlint:deprecation</arg>
+              <arg>-Xlint:dep-ann</arg>
+              <arg>-Xlint:divzero</arg>
+              <arg>-Xlint:empty</arg>
+              <arg>-Xlint:fallthrough</arg>
+              <arg>-Xlint:finally</arg>
+              <arg>-Xlint:options</arg>
+              <arg>-Xlint:overrides</arg>
+              <arg>-Xlint:path</arg>
+              <!-- <arg>-Xlint:processing</arg> -->
+              <arg>-Xlint:rawtypes</arg>
+              <!-- <arg>-Xlint:serial</arg> -->
+              <arg>-Xlint:static</arg>
+              <arg>-Xlint:try</arg>
+              <arg>-Xlint:unchecked</arg>
+              <arg>-Xlint:varargs</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+
+        <!-- This plugin scans checkstyle issues in the code -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven-checkstyle-plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version> <!-- {x-version-update;com.puppycrawl.tools:checkstyle;external_dependency} -->
+            </dependency>
+          </dependencies>
+          <configuration>
+            <configLocation>checkstyle.xml</configLocation>
+            <!-- <suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation> -->
+            <!-- <headerLocation>checkstyle/checkstyle/java.header</headerLocation> -->
+            <propertyExpansion>samedir=</propertyExpansion>
+            <encoding>UTF-8</encoding>
+            <consoleOutput>true</consoleOutput>
+            <!-- Remove when https://github.com/Azure/qpid-proton-j-extensions/issues/39 is fixed. -->
+            <!-- <includeTestSourceDirectory>true</includeTestSourceDirectory>-->
+            <linkXRef>true</linkXRef>
+            <failsOnError>true</failsOnError>
+            <failOnViolation>true</failOnViolation>
+          </configuration>
+        </plugin>
+
+        <!-- This plugin generates Javadocs -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+          <configuration>
+            <source>1.8</source>
+            <jarOutputDirectory>${packageOutputDirectory}</jarOutputDirectory>
+            <failOnError>true</failOnError>
+            <failOnWarnings>true</failOnWarnings>
+            <doclint>all</doclint>
+          </configuration>
+        </plugin>
+
+        <!-- This plugin runs tests -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+          <configuration>
+            <runOrder>alphabetical</runOrder>
+            <useSystemClassLoader>false</useSystemClassLoader>
+            <forkCount>1</forkCount>
+            <testFailureIgnore>false</testFailureIgnore>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <dependencies>
@@ -218,14 +290,6 @@
               <excludes>
                 <exclude>module-info.java</exclude>
               </excludes>
-              <showWarnings>true</showWarnings>
-              <failOnWarning>true</failOnWarning>
-              <!-- Ignore these until we fix ProxyImpl exposing raw types. -->
-              <!-- <compilerArgs>
-                  <arg>-Xlint:all</arg>
-                  <arg>-Xlint:-serial</arg>
-                  <arg>-Xlint:-deprecation</arg>
-              </compilerArgs> -->
             </configuration>
           </plugin>
 
@@ -276,14 +340,6 @@
             <configuration>
               <source>11</source>
               <target>11</target>
-              <showWarnings>true</showWarnings>
-              <failOnWarning>true</failOnWarning>
-              <!-- Ignore these until we fix ProxyImpl exposing raw types. -->
-              <!-- <compilerArgs>
-                  <arg>-Xlint:all</arg>
-                  <arg>-Xlint:-serial</arg>
-                  <arg>-Xlint:-deprecation</arg>
-              </compilerArgs> -->
             </configuration>
           </plugin>
         </plugins>
