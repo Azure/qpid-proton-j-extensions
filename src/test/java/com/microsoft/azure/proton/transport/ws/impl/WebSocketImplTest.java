@@ -1085,7 +1085,7 @@ public class WebSocketImplTest {
         random.nextBytes(data);
 
         byte finbit = (byte) (WebSocketHeader.FINBIT_MASK & 0xFF);
-        byte opcode = (byte) WebSocketHeader.OPCODE_MASK & 0x2;
+        byte opcode = WebSocketHeader.OPCODE_MASK & 0x2;
         byte firstbyte = (byte) (finbit | opcode);
         byte secondbyte = (byte) (size - 2);
 
@@ -1268,7 +1268,7 @@ public class WebSocketImplTest {
         byte[] message = new byte[chunkSize];
 
         byte finbit = (byte) (WebSocketHeader.FINBIT_MASK & 0xFF);
-        byte opcode = (byte) WebSocketHeader.OPCODE_MASK & 0x2;
+        byte opcode = WebSocketHeader.OPCODE_MASK & 0x2;
         byte firstbyte = (byte) (finbit | opcode);
         byte secondbyte = (byte) payloadLength;
 

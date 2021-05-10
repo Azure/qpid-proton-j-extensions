@@ -1,0 +1,21 @@
+# EditorConfig helps developers define and maintain consistent coding styles between different editors and IDEs
+# editorconfig.org
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 150
+
+# From https://maven.apache.org/developers/conventions/code.html
+[*.xml]
+indent_size = 2
+max_line_length = 240
+
+[*.java]
+# ij_continuation_indent_size is non-standard and only works in IntelliJ. Currently continuation_indent_size is not part of the
+# .editorconfig standard.
+ij_continuation_indent_size = 4
