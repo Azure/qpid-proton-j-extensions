@@ -42,6 +42,7 @@
 
         <!-- Test dependency versions -->
         <junit-version>4.13.1</junit-version>
+		<junit-params-version>5.8.0-M1</junit-params-version>
         <mockito-version>3.0.0</mockito-version>
 
         <!-- Maven tool versions -->
@@ -160,6 +161,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit-version}</version>
+            <scope>test</scope>
+        </dependency>
+		<dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-params-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

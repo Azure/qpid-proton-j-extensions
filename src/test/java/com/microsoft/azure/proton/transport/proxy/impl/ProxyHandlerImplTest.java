@@ -8,6 +8,8 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -34,9 +36,10 @@ public class ProxyHandlerImplTest {
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
 
-    @Test
-    public void testValidateProxyResponseOnSuccess() {
-        final String validResponse = "HTTP/1.1 200 Connection Established\r\n" +
+    @ParameterizedTest
+	@ValueSource(ints = {200, 201, 202, 203, 204, 205, 206})
+    public void testValidateProxyResponseOnSuccess(int httpCode) {
+        final String validResponse = "HTTP/1.1 " + httpCode + "Connection Established\r\n" +
                 "FiddlerGateway: Direct\r\n" +
                 "StartTime: 13:08:21.574\r\n" +
                 "Connection: close\r\n\r\n";
