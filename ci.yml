@@ -48,7 +48,7 @@ stages:
             inputs:
               mavenPomFile: 'pom.xml'
               goals: 'deploy'
-              options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true -Drevapi.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
+              options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
               mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: $(JavaVersion)
@@ -56,16 +56,16 @@ stages:
               publishJUnitResults: false
 
           - task: Maven@3
-                displayName: 'Run SpotBugs, Checkstyle, RevApi, and Javadoc'
-                inputs:
-                    mavenPomFile: pom.xml
-                    options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
-                    mavenOptions: '$(MemoryOptions)'
-                    javaHomeOption: 'JDKVersion'
-                    jdkVersionOption: $(JavaVersion)
-                    jdkArchitectureOption: 'x64'
-                    publishJUnitResults: false
-                    goals: 'verify'
+            displayName: 'Run SpotBugs, Checkstyle, and Javadoc'
+            inputs:
+                mavenPomFile: pom.xml
+                options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
+                mavenOptions: '$(MemoryOptions)'
+                javaHomeOption: 'JDKVersion'
+                jdkVersionOption: $(JavaVersion)
+                jdkArchitectureOption: 'x64'
+                publishJUnitResults: false
+                goals: 'verify'
 
           - script: |
               cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)

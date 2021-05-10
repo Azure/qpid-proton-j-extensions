@@ -91,7 +91,7 @@
           <encoding>UTF-8</encoding>
           <consoleOutput>true</consoleOutput>
           <linkXRef>true</linkXRef>
-
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <failsOnError>true</failsOnError>
           <failOnViolation>true</failOnViolation>
           <violationSeverity>warning</violationSeverity>
