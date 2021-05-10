@@ -4,9 +4,12 @@
   <name>Extensions on Apache Proton-J library</name>
   <description>Extensions on Apache Proton-J library</description>
   <url>https://github.com/Azure/qpid-proton-j-extensions</url>
+  <organization>
+    <name>Microsoft Corporation</name>
+    <url>http://microsoft.com</url>
+  </organization>
 
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.microsoft.azure</groupId>
   <artifactId>qpid-proton-j-extensions</artifactId>
   <version>1.2.4-SNAPSHOT</version>
@@ -29,8 +32,13 @@
   <scm>
     <url>https://github.com/Azure/qpid-proton-j-extensions</url>
     <connection>scm:git:https://github.com/Azure/qpid-proton-j-extensions.git</connection>
-    <developerConnection>scm:git:https://github.com/Azure/qpid-proton-j-extensions.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/Azure/qpid-proton-j-extensions/issues</url>
+  </issueManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -46,14 +54,14 @@
     <mockito-version>3.0.0</mockito-version>
 
     <!-- Maven tool versions -->
-    <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
+    <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
 
     <!-- Build tools -->
-    <checkstyle.version>8.29</checkstyle.version>
+    <checkstyle.version>8.42</checkstyle.version>
   </properties>
 
   <build>
