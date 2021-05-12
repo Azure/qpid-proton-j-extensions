@@ -183,8 +183,6 @@
           <configuration>
             <configLocation>eng/checkstyle/checkstyle.xml</configLocation>
             <suppressionsLocation>eng/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-            <headerLocation>eng/checkstyle/checkstyle/java.header</headerLocation>
-            <propertyExpansion>samedir=</propertyExpansion>
             <encoding>UTF-8</encoding>
             <consoleOutput>true</consoleOutput>
             <!-- Remove when https://github.com/Azure/qpid-proton-j-extensions/issues/39 is fixed. -->
