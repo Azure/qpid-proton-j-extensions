@@ -9,7 +9,16 @@ import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
 import org.apache.qpid.proton.engine.impl.HandshakeSniffingTransportWrapper;
 import org.apache.qpid.proton.engine.impl.TransportWrapper;
 
+/**
+ * Determines which transport layer to read web socket bytes from.
+ */
 public class WebSocketSniffer extends HandshakeSniffingTransportWrapper<TransportWrapper, TransportWrapper> {
+    /**
+     * Creates an instance.
+     *
+     * @param webSocket Web socket transport layer.
+     * @param other The next transport layer.
+     */
     public WebSocketSniffer(TransportWrapper webSocket, TransportWrapper other) {
         super(webSocket, other);
     }

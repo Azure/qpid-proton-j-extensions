@@ -2,6 +2,9 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import java.util.Locale;
 
+/**
+ * Package private constants.
+ */
 class Constants {
     static final String PROXY_AUTHENTICATE_HEADER = "Proxy-Authenticate:";
     static final String PROXY_AUTHORIZATION = "Proxy-Authorization";

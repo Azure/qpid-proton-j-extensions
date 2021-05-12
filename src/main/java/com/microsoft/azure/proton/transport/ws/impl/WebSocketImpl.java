@@ -27,10 +27,13 @@ import static com.microsoft.azure.proton.transport.ws.WebSocketHandler.WebSocket
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.pourAll;
 
+/**
+ * Implementation for {@link WebSocket}.
+ */
 public class WebSocketImpl implements WebSocket, TransportLayer {
     private static final Logger TRACE_LOGGER = LoggerFactory.getLogger(WebSocketImpl.class);
+    private static final int MAX_FRAME_SIZE = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
 
-    private static final int maxFrameSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     private boolean tailClosed = false;
     private final ByteBuffer inputBuffer;
     private boolean headClosed = false;
@@ -66,7 +69,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
      * {@link org.apache.qpid.proton.engine.impl.TransportInternal#addTransportLayer(TransportLayer)} API.
      */
     public WebSocketImpl() {
-        this(maxFrameSize);
+        this(MAX_FRAME_SIZE);
     }
 
     /**
@@ -220,7 +223,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         outputBuffer.put(pingBuffer);
     }
 
-    private class WebSocketTransportWrapper implements TransportWrapper {
+    private final class WebSocketTransportWrapper implements TransportWrapper {
         private final TransportInput underlyingInput;
         private final TransportOutput underlyingOutput;
         private final ByteBuffer head;
@@ -624,7 +627,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
             underlyingOutput.close_head();
         }
 
-        public final char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        private final char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
         private String convertToHex(byte[] bb) {
             final int lgt = bb.length;

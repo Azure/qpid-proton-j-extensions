@@ -12,6 +12,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Represents a web socket upgrade request.
+ */
 public class WebSocketUpgrade {
     private final String rfcGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private final char questionMark = '?';
@@ -175,11 +178,7 @@ public class WebSocketUpgrade {
 
         scanner.close();
 
-        if ((isStatusLineOk) && (isUpgradeHeaderOk) && (isConnectionHeaderOk) && (isProtocolHeaderOk) && (isAcceptHeaderOk)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (isStatusLineOk) && (isUpgradeHeaderOk) && (isConnectionHeaderOk) && (isProtocolHeaderOk) && (isAcceptHeaderOk);
     }
 
     @Override

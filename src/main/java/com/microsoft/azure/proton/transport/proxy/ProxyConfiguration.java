@@ -7,6 +7,11 @@ import java.net.PasswordAuthentication;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * Options for configuring the {@link Proxy}.
+ *
+ * @see Proxy
+ */
 public class ProxyConfiguration implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
 

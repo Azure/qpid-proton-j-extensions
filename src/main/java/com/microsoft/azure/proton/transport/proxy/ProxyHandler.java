@@ -8,12 +8,24 @@ package com.microsoft.azure.proton.transport.proxy;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+/**
+ * Creates and validates proxy requests and responses.
+ */
 public interface ProxyHandler {
 
+    /**
+     * Represents a response from the proxy.
+     */
     class ProxyResponseResult {
-        private Boolean isSuccess;
-        private String error;
+        private final Boolean isSuccess;
+        private final String error;
 
+        /**
+         * Creates a new response.
+         *
+         * @param isSuccess {@code true} if it was successful; {@code false} otherwise.
+         * @param error The error from the proxy. Or {@code null} if there was none.
+         */
         public ProxyResponseResult(final Boolean isSuccess, final String error) {
             this.isSuccess = isSuccess;
             this.error = error;

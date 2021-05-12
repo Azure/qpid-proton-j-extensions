@@ -17,6 +17,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Implementation to support digest authentication for proxies.
+ *
+ * @see <a href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Proxy-Authenticate">Proxy-Authenticate</a>
+ * @see <a href="https://developer.mozilla.orgdocs/Web/HTTP/Authentication#authentication_schemes">Authentication Schemes</a>
+ */
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
     static final String DEFAULT_ALGORITHM = "MD5";
     private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;

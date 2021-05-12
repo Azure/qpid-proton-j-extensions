@@ -31,9 +31,15 @@ import java.util.stream.Collectors;
 
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
-import static com.microsoft.azure.proton.transport.proxy.impl.ProxyHandlerImpl.NEW_LINE;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
+/**
+ * Implementation class that handles connecting to, the status of, and passing bytes through the web socket after the
+ * proxy is created.
+ *
+ * @see Proxy
+ * @see ProxyHandler
+ */
 public class ProxyImpl implements Proxy, TransportLayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
     private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
@@ -78,11 +84,27 @@ public class ProxyImpl implements Proxy, TransportLayer {
         proxyConfiguration = configuration;
     }
 
+    /**
+     * Adds the proxy in the transport layer chain.
+     *
+     * @param input The input to the transport layer.
+     * @param output The output from the transport layer.
+     *
+     * @return A transport layer containing the proxy.
+     */
     @Override
     public TransportWrapper wrap(TransportInput input, TransportOutput output) {
         return new ProxyTransportWrapper(input, output);
     }
 
+    /**
+     * Configures the AMQP broker {@code host} with the given proxy handler and transport.
+     *
+     * @param host AMQP broker.
+     * @param headers Additional headers to add to the proxy request.
+     * @param proxyHandler Handler for the proxy.
+     * @param underlyingTransport Actual transport layer.
+     */
     @Override
     public void configure(
             String host,
@@ -94,6 +116,15 @@ public class ProxyImpl implements Proxy, TransportLayer {
         this.proxyHandler = proxyHandler;
         this.underlyingTransport = (TransportImpl) underlyingTransport;
         isProxyConfigured = true;
+    }
+
+    /**
+     * Gets headers for the proxy request.
+     *
+     * @return Headers for the proxy request.
+     */
+    public Map<String, String> getProxyRequestHeaders() {
+        return this.headers;
     }
 
     protected ByteBuffer getInputBuffer() {
@@ -141,10 +172,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
     protected ProxyState getProxyState() {
         return this.proxyState;
-    }
-
-    public Map<String, String> getProxyRequestHeaders() {
-        return this.headers;
     }
 
     private class ProxyTransportWrapper implements TransportWrapper {
