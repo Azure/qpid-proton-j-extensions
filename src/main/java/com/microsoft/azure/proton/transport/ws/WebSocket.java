@@ -12,7 +12,10 @@ import java.util.Map;
  * Provides interface for WebSocket.
  */
 public interface WebSocket {
-    public enum WebSocketState {
+    /**
+     * States that the web socket can be in.
+     */
+    enum WebSocketState {
         /**
          * WebSocket.
          */
@@ -43,7 +46,10 @@ public interface WebSocket {
         PN_WS_FAILED
     }
 
-    public enum WebSocketFrameReadState {
+    /**
+     * States for the web socket when reading from the underlying buffer.
+     */
+    enum WebSocketFrameReadState {
         /**
          * The initial read.
          */
@@ -149,7 +155,7 @@ public interface WebSocket {
     ByteBuffer getPingBuffer();
 
     /**
-     * Access the websocket input buffer (read only).
+     * Access the web socket input buffer (read only).
      *
      * @return The wsInputBuffer input buffer.
      */

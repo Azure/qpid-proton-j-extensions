@@ -5,6 +5,7 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 
 import java.nio.ByteBuffer;
@@ -12,9 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
+/**
+ * Implementation class that handles connecting to the proxy.
+ *
+ * @see Proxy
+ * @see ProxyHandler
+ */
 public class ProxyHandlerImpl implements ProxyHandler {
     /**
      * CONNECT request format string initiated by ProxyHandler.
@@ -24,7 +31,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
     static final String NEW_LINE = "\r\n";
     private final Pattern successStatusLine = Pattern.compile("^http/1\\.(0|1) (?<statusCode>2[0-9]{2})", Pattern.CASE_INSENSITIVE);
     private final Predicate<String> successStatusLinePredicate = successStatusLine.asPredicate();
-    
+
     /**
      * {@inheritDoc}
      */

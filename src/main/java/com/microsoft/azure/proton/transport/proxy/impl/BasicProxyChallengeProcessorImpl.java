@@ -10,6 +10,12 @@ import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Implementation to support basic authentication for proxies.
+ *
+ * @see <a href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Proxy-Authenticate">Proxy-Authenticate</a>
+ * @see <a href="https://developer.mozilla.org/docs/Web/HTTP/Authentication#basic_authentication_scheme">Basic Authentication Scheme</a>
+ */
 public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
 
     private final ProxyAuthenticator proxyAuthenticator;
@@ -28,7 +34,7 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
     @Override
     public Map<String, String> getHeader() {
         PasswordAuthentication passwordAuthentication =
-                proxyAuthenticator.getPasswordAuthentication(Constants.BASIC_LOWERCASE, host);
+            proxyAuthenticator.getPasswordAuthentication(Constants.BASIC_LOWERCASE, host);
 
         if (!ProxyAuthenticator.isPasswordAuthenticationHasValues(passwordAuthentication)) {
             return null;
@@ -39,8 +45,8 @@ public class BasicProxyChallengeProcessorImpl implements ProxyChallengeProcessor
         final String usernamePasswordPair = String.join(":", proxyUserName, proxyPassword);
 
         headers.put(
-                Constants.PROXY_AUTHORIZATION,
-                String.join(" ", Constants.BASIC, Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes(UTF_8))));
+            Constants.PROXY_AUTHORIZATION,
+            String.join(" ", Constants.BASIC, Base64.getEncoder().encodeToString(usernamePasswordPair.getBytes(UTF_8))));
         return headers;
     }
 }

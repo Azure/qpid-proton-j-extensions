@@ -8,6 +8,9 @@ package com.microsoft.azure.proton.transport.proxy;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+/**
+ * Creates and validates proxy requests and responses.
+ */
 public interface ProxyHandler {
 
     class ProxyResponseResult {

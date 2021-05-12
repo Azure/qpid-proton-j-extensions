@@ -88,7 +88,7 @@ class ProxyAuthenticator {
         java.net.Proxy.Type proxyType = null;
         if (isProxyAddressLegal(proxies)) {
             // will be only one element in the proxy list
-            proxyAddr = ((InetSocketAddress)proxies.get(0).address()).getAddress();
+            proxyAddr = ((InetSocketAddress) proxies.get(0).address()).getAddress();
             proxyType = proxies.get(0).type();
         }
 
