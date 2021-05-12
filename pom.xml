@@ -181,9 +181,9 @@
             </dependency>
           </dependencies>
           <configuration>
-            <configLocation>checkstyle.xml</configLocation>
-            <!-- <suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation> -->
-            <!-- <headerLocation>checkstyle/checkstyle/java.header</headerLocation> -->
+            <configLocation>eng/checkstyle/checkstyle.xml</configLocation>
+            <suppressionsLocation>eng/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+            <headerLocation>eng/checkstyle/checkstyle/java.header</headerLocation>
             <propertyExpansion>samedir=</propertyExpansion>
             <encoding>UTF-8</encoding>
             <consoleOutput>true</consoleOutput>
