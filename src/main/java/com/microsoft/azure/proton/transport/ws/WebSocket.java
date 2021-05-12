@@ -8,7 +8,7 @@ package com.microsoft.azure.proton.transport.ws;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-/*
+/**
  * Provides interface for WebSocket.
  */
 public interface WebSocket {

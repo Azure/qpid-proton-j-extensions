@@ -12,11 +12,15 @@ what the following rules do, please see the checkstyle configuration
 page at http://checkstyle.sourceforge.net/config.html -->
 
 <module name="Checker">
+  <module name="SuppressionFilter">
+    <property name="file" value="eng/checkstyle-suppressions.xml" />
+  </module>
 
   <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
   <module name="SuppressWarningsFilter"/>
 
   <module name="FileTabCharacter"/>
+
 
   <module name="NewlineAtEndOfFile"/>
 

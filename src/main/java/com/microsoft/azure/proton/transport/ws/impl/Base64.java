@@ -3,6 +3,9 @@
 
 package com.microsoft.azure.proton.transport.ws.impl;
 
+/**
+ * Class to encode to base 64.
+ */
 public final class Base64 {
     private static final byte BYTE_START_UPPERCASE = 'A';
     private static final byte BYTE_END_UPPERCASE = 'Z';

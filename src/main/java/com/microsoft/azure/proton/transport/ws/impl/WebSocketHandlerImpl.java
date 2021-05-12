@@ -15,6 +15,9 @@ import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Implementation for {@link WebSocketHandler}.
+ */
 public class WebSocketHandlerImpl implements WebSocketHandler {
     private WebSocketUpgrade webSocketUpgrade = null;
 
