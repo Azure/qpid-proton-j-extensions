@@ -232,7 +232,7 @@
             </links>
             <detectJavaApiLink>false</detectJavaApiLink>
             <excludePackageNames>
-              *impl*:
+              *.impl*
             </excludePackageNames>
           </configuration>
         </plugin>
