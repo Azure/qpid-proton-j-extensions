@@ -3,6 +3,8 @@
 
 package com.microsoft.azure.proton.transport.ws.impl;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Class to encode to base 64.
  */
@@ -251,12 +253,12 @@ public final class Base64 {
 
         /* Codes_SRS_BASE64_21_010: [If the `dataValues` is empty, the encodeBase64StringLocal shall return a empty string.] */
         if (dataValues.length == 0) {
-            return new String();
+            return "";
         }
 
         /* Codes_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues`
         in a string using the Base64 format define in the RFC2045.] */
-        return new String(encodeBase64Internal(dataValues));
+        return new String(encodeBase64Internal(dataValues), StandardCharsets.US_ASCII);
     }
 
     private static byte[] encodeBase64Internal(byte[] dataValues) throws IllegalArgumentException {

@@ -153,6 +153,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
             LOGGER.info("Writing proxy request:{}{}", System.lineSeparator(), request);
         }
 
+        //TODO (conniey): HTTP headers are encoded using StandardCharsets.ISO_8859_1. update proxyHandler.createProxyRequest to return bytes instead
+        // of String because encoding is not UTF-16. https://stackoverflow.com/a/655948/4220757
+        // See https://datatracker.ietf.org/doc/html/rfc2616#section-3.7.1
         outputBuffer.put(request.getBytes());
     }
 

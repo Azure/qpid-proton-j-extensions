@@ -207,6 +207,10 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     protected void writeUpgradeRequest() {
         outputBuffer.clear();
+
+        //TODO (conniey): HTTP headers are encoded using StandardCharsets.ISO_8859_1. update webSocketHandler.createProxyRequest to return bytes
+        //  instead of String because encoding is not UTF-16. https://stackoverflow.com/a/655948/4220757
+        // See https://datatracker.ietf.org/doc/html/rfc2616#section-3.7.1
         String request = webSocketHandler.createUpgradeRequest(host, path, query, port, protocol, additionalHeaders);
         outputBuffer.put(request.getBytes());
     }
