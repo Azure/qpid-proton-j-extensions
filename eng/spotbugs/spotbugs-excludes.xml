@@ -15,6 +15,7 @@
     <Bug pattern="UC_USELESS_CONDITION"/>
   </Match>
 
+  <!-- It is not needed to make this inner class into a static one. Requires more refactoring than needed. -->
   <Match>
     <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl$WebSocketSnifferTransportWrapper"/>
     <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS"/>
