@@ -326,6 +326,23 @@
               </sourceFileExcludes>
             </configuration>
           </plugin>
+
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.2.0</version>
+            <configuration>
+              <effort>max</effort>
+              <threshold>Low</threshold>
+              <xmlOutput>true</xmlOutput>
+              <xmlOutputDirectory>target/site</xmlOutputDirectory>
+              <failOnError>true</failOnError>
+              <fork>true</fork>
+
+              <!-- Enable spotbugs for tests after https://github.com/issues/ -->
+              <includeTests>false</includeTests>
+            </configuration>
+          </plugin>
         </plugins>
       </reporting>
     </profile>
