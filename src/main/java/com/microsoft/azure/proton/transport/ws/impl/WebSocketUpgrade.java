@@ -64,7 +64,7 @@ public class WebSocketUpgrade {
         byte[] key = new byte[16];
 
         for (int i = 0; i < 16; i++) {
-            key[i] = (byte) (int) (Math.random() * 256);
+            key[i] = (byte) (int) (Utils.getSecureRandom().nextDouble() * 256);
         }
 
         return Base64.encodeBase64StringLocal(key).trim();
