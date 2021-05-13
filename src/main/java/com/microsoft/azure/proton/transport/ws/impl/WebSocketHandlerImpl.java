@@ -176,7 +176,8 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
             // Read the second byte
             byte secondByte = srcBuffer.get();
-            byte maskBit = (byte) (secondByte & WebSocketHeader.MASKBIT_MASK);
+            // The MASK bit is never used.
+            // byte maskBit = (byte) (secondByte & WebSocketHeader.MASKBIT_MASK);
             byte payloadLength = (byte) (secondByte & WebSocketHeader.PAYLOAD_MASK);
 
             long finalPayloadLength = -1;
