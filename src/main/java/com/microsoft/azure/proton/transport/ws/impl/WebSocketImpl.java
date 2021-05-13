@@ -90,12 +90,7 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
 
     @Override
     public TransportWrapper wrap(final TransportInput input, final TransportOutput output) {
-        return new WebSocketSniffer(new WebSocketTransportWrapper(input, output), new PlainTransportWrapper(output, input)) {
-            protected boolean isDeterminationMade() {
-                _selectedTransportWrapper = _wrapper1;
-                return true;
-            }
-        };
+        return new WebSocketSnifferTransportWrapper(input, output);
     }
 
     @Override
@@ -665,6 +660,17 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
             bb.duplicate().get(data);
 
             return convertToBinary(data);
+        }
+    }
+
+    private class WebSocketSnifferTransportWrapper extends WebSocketSniffer {
+        public WebSocketSnifferTransportWrapper(TransportInput input, TransportOutput output) {
+            super(new WebSocketTransportWrapper(input, output), new PlainTransportWrapper(output, input));
+        }
+
+        protected boolean isDeterminationMade() {
+            _selectedTransportWrapper = _wrapper1;
+            return true;
         }
     }
 }
