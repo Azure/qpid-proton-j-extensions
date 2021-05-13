@@ -20,11 +20,9 @@ import org.mockito.stubbing.Answer;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1072,8 +1070,7 @@ public class WebSocketImplTest {
     private byte[] createMessage(int size) {
         byte[] data = new byte[size];
 
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        Utils.getSecureRandom().nextBytes(data);
 
         byte finbit = (byte) (WebSocketHeader.FINBIT_MASK & 0xFF);
         byte opcode = WebSocketHeader.OPCODE_MASK & 0x2;

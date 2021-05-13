@@ -9,15 +9,12 @@ import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
 import java.io.ByteArrayOutputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.security.SecureRandom;
 import java.util.Map;
 
 /**
  * Implementation for {@link WebSocketHandler}.
  */
 public class WebSocketHandlerImpl implements WebSocketHandler {
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
     private WebSocketUpgrade webSocketUpgrade = null;
 
     @Override
@@ -235,7 +232,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
     protected byte[] createRandomMaskingKey() {
         final byte[] maskingKey = new byte[4];
-        SECURE_RANDOM.nextBytes(maskingKey);
+        Utils.getSecureRandom().nextBytes(maskingKey);
 
         return maskingKey;
     }

@@ -12,7 +12,6 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Scanner;
 
 import static org.junit.Assert.assertEquals;
@@ -25,6 +24,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class WebSocketHandlerImplTest {
+    private static SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Test
     public void testCreateUpgradeRequest() {
         String hostName = "host_XXX";
@@ -291,8 +292,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(payloadLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -346,8 +346,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(payloadLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -401,8 +400,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(payloadLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -456,8 +454,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(payloadLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -518,8 +515,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -580,8 +576,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -642,8 +637,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -716,8 +710,7 @@ public class WebSocketHandlerImplTest {
         byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 
         byte[] data = new byte[payloadLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
         ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -791,8 +784,7 @@ public class WebSocketHandlerImplTest {
 //        byte[] maskingKey = new byte[]{0x01, 0x02, 0x03, 0x04};
 //
 //        byte[] data = new byte[payloadLength];
-//        Random random = new SecureRandom();
-//        //random.nextBytes(data);
+//        SECURE_RANDOM.nextBytes(data);
 //
 //        ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
 //        ByteBuffer dstBuffer = ByteBuffer.allocate(messageLength);
@@ -915,8 +907,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MIN_HEADER_LENGTH;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_PING);
         data[1] = (byte) (payloadLength);
@@ -942,8 +933,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MIN_HEADER_LENGTH;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_CLOSE);
         data[1] = (byte) (payloadLength);
@@ -969,8 +959,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MIN_HEADER_LENGTH;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = (byte) (payloadLength);
@@ -996,8 +985,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MIN_HEADER_LENGTH;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = (byte) (payloadLength);
@@ -1023,8 +1011,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MIN_HEADER_LENGTH;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = (byte) (payloadLength);
@@ -1050,8 +1037,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MED_HEADER_LENGTH_NOMASK;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_16;
@@ -1079,8 +1065,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MED_HEADER_LENGTH_NOMASK;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_16;
@@ -1108,8 +1093,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MED_HEADER_LENGTH_NOMASK;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_16;
@@ -1137,8 +1121,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = payloadLength + WebSocketHeader.MAX_HEADER_LENGTH_NOMASK;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_64;
@@ -1206,8 +1189,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = WebSocketHeader.MIN_HEADER_LENGTH + 1;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_16;
@@ -1228,8 +1210,7 @@ public class WebSocketHandlerImplTest {
         int messageLength = WebSocketHeader.MED_HEADER_LENGTH_NOMASK + 1;
 
         byte[] data = new byte[messageLength];
-        Random random = new SecureRandom();
-        random.nextBytes(data);
+        SECURE_RANDOM.nextBytes(data);
 
         data[0] = (byte) (WebSocketHeader.FINBIT_MASK | WebSocketHeader.OPCODE_BINARY);
         data[1] = WebSocketHeader.PAYLOAD_EXTENDED_64;
