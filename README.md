@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="event-hubs.png" alt="Microsoft Azure Event Hubs" width="100"/>
 </p>
@@ -23,8 +22,8 @@ built atop [qpid-proton-j library][proton-j] are hosted here.
 
 ## Issues
 
-Currently, this library is used only in conjunction with [Azure IOT SDK][azure-iot] or [Azure Event Hubs client
-library][azure-sdk-for-java]. File the issues directly on the respective projects.
+Currently, this library is used only in conjunction with [Azure IOT SDK][azure-iot] or
+[Azure Event Hubs client library][azure-sdk-for-java]. File the issues directly on the respective projects.
 
 ## Contributing
 
@@ -32,6 +31,7 @@ This project welcomes contributions and suggestions. Please refer to our [Contri
 for more details.
 
 <!-- Links -->
+
 [amqp-spec]: http://docs.oasis-open.org/amqp/core/v1.0/amqp-core-overview-v1.0.html
 [azure-iot]: https://github.com/Azure/azure-iot-sdk-java
 [azure-sdk-for-java]: https://github.com/Azure/azure-sdk-for-java

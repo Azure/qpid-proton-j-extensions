@@ -18,32 +18,32 @@ To build and test this locally, make sure you install:
 ### Building and packaging
 
 Open a command prompt/terminal:
-1. Execute `git clone https://github.com/Azure/azure-sdk-for-java.git`.
-1. Traverse to the repository root.
-1. Execute `mvn package`.
 
-This should successfully run all unit/integration tests and build the qpid-proton-j-extensions JAR.
+1. Execute `git clone https://github.com/Azure/qpid-proton-j-extensions.git`.
+1. Traverse to the repository root.
+1. Execute `mvn install`.
+
+This should successfully run all unit/integration tests, build the qpid-proton-j-extensions JAR, and install it to your
+local Maven repository.
 
 ## Filing issues
 
-You can find all of the issues that have been filed in the [Issues](https://github.com/Azure/proton-extensions/issues)
+You can find the issues that have been filed in the [Issues](https://github.com/Azure/qpid-proton-j-extensions/issues)
 section of the repository.
 
-If you encounter any bugs, would like to request a feature, or have general
-questions/concerns/comments, feel free to file an issue [here](https://github.com/Azure/proton-extensions/issues/new).
+If you encounter any bugs, would like to request a feature, or have general questions/concerns/comments, feel free to
+file an issue [here](https://github.com/Azure/qpid-proton-j-extensions/issues/new).
 
 ## Pull requests
 
 ### Required guidelines
 
-When filing a pull request, the following must be true:
+When filing a pull request, it must pass our CI build.
 
-- Tests have been added (if needed) to validate changes.
-- Zero CheckStyle violations.
-    - `mvn checkstyle:check` has no violations.
-    - `mvn compile` will fail if there are any Checkstyle violations.
-- All the tests pass.
-    - Execute `mvn clean test` to recompile and run the tests.
+- Tests have been added to validate changes.
+- All tests pass.
+- Zero CheckStyle and Spotbugs violations.
+    - `mvn verify` has no violations.
 
 ### General guidelines
 
@@ -56,7 +56,7 @@ If you're new to opening pull requests - or would like some additional guidance 
 best practices!
 
 - Title of the pull request is clear and informative.
-- There are a small number of commits that each have an informative message.
+- Commits are small and each have an informative message.
 - A description of the changes the pull request makes is included, and a reference to the bug/issue the pull request
   fixes is included, if applicable.
 - Pull request includes comprehensive test coverage for the included changes.
