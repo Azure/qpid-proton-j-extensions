@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FindBugsFilter>
+  <!-- This was written a while ago and the byte shifts work for outputting the data. -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl"/>
+    <Method name="wrapBuffer"/>
+    <Bug pattern="ICAST_BAD_SHIFT_AMOUNT"/>
+  </Match>
+
+  <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/42 -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.proxy.impl.ProxyImpl"/>
+    <Method name="writeProxyRequest" />
+    <Bug pattern="DM_DEFAULT_ENCODING"/>
+  </Match>
+
+  <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/43 -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl"/>
+    <Method name="writeUpgradeRequest"/>
+    <Bug pattern="DM_DEFAULT_ENCODING"/>
+  </Match>
+</FindBugsFilter>

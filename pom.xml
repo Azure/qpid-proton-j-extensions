@@ -262,6 +262,17 @@
               <version>${spotbugs.version}</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <effort>max</effort>
+            <threshold>Low</threshold>
+            <xmlOutput>true</xmlOutput>
+            <excludeFilterFile>eng/spotbugs/spotbugs-excludes.xml</excludeFilterFile>
+            <failOnError>true</failOnError>
+            <fork>true</fork>
+
+            <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/44 -->
+            <includeTests>false</includeTests>
+          </configuration>
         </plugin>
 
         <plugin>
@@ -292,15 +303,7 @@
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>${maven-spotbugs-plugin.version}</version>
         <configuration>
-          <effort>max</effort>
-          <threshold>Low</threshold>
-          <xmlOutput>true</xmlOutput>
           <xmlOutputDirectory>target/site</xmlOutputDirectory>
-          <failOnError>true</failOnError>
-          <fork>true</fork>
-
-          <!-- Enable spotbugs for tests after https://github.com/issues/ -->
-          <includeTests>false</includeTests>
         </configuration>
       </plugin>
     </plugins>
