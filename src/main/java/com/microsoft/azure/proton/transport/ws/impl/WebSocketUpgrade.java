@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -17,6 +18,7 @@ public class WebSocketUpgrade {
     private static final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
     private static final char QUESTION_MARK = '?';
     private static final char SLASH = '/';
+
     private final String query;
     private final String host;
     private final String path;
@@ -126,34 +128,35 @@ public class WebSocketUpgrade {
 
         while (scanner.hasNextLine()) {
             final String line = scanner.nextLine();
+            final String lowercase = line.toLowerCase(Locale.ROOT);
 
-            if ((line.toLowerCase().contains("http/1.1"))
+            if ((lowercase.contains("http/1.1"))
                     && (line.contains("101"))
-                    && (line.toLowerCase().contains("switching protocols"))) {
+                    && (lowercase.contains("switching protocols"))) {
                 isStatusLineOk = true;
 
                 continue;
             }
 
-            if ((line.toLowerCase().contains("upgrade")) && (line.toLowerCase().contains("websocket"))) {
+            if ((lowercase.contains("upgrade")) && (lowercase.contains("websocket"))) {
                 isUpgradeHeaderOk = true;
 
                 continue;
             }
 
-            if ((line.toLowerCase().contains("connection")) && (line.toLowerCase().contains("upgrade"))) {
+            if ((lowercase.contains("connection")) && (lowercase.contains("upgrade"))) {
                 isConnectionHeaderOk = true;
 
                 continue;
             }
 
-            if (line.toLowerCase().contains("sec-websocket-protocol") && (line.toLowerCase().contains(this.protocol.toLowerCase()))) {
+            if (lowercase.contains("sec-websocket-protocol") && (lowercase.contains(protocol.toLowerCase(Locale.ROOT)))) {
                 isProtocolHeaderOk = true;
 
                 continue;
             }
 
-            if (line.toLowerCase().contains("sec-websocket-accept")) {
+            if (lowercase.contains("sec-websocket-accept")) {
                 MessageDigest messageDigest = null;
 
                 try {
@@ -163,8 +166,8 @@ public class WebSocketUpgrade {
                     break;
                 }
 
-                final String expectedKey = Base64.encodeBase64StringLocal(
-                        messageDigest.digest((this.webSocketKey + RFC_GUID).getBytes())).trim();
+                final byte[] bytes = (this.webSocketKey + RFC_GUID).getBytes(StandardCharsets.ISO_8859_1);
+                final String expectedKey = Base64.encodeBase64StringLocal(messageDigest.digest(bytes)).trim();
 
                 if (line.contains(expectedKey)) {
                     isAcceptHeaderOk = true;
