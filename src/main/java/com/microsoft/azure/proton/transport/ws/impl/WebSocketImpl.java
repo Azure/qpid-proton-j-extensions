@@ -620,47 +620,6 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         public void close_head() {
             underlyingOutput.close_head();
         }
-
-        private final char[] hexDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-        private String convertToHex(byte[] bb) {
-            final int lgt = bb.length;
-
-            final char[] out = new char[5 * lgt];
-            for (int i = 0, j = 0; i < lgt; i++) {
-                out[j++] = '0';
-                out[j++] = 'x';
-                out[j++] = hexDigits[(0xF0 & bb[i]) >>> 4];
-                out[j++] = hexDigits[0x0F & bb[i]];
-                out[j++] = '|';
-            }
-            return new String(out);
-        }
-
-        private String convertToHex(ByteBuffer bb) {
-            final byte[] data = new byte[bb.remaining()];
-            bb.duplicate().get(data);
-
-            return convertToHex(data);
-        }
-
-        private String convertToBinary(byte[] bb) {
-            StringBuilder sb = new StringBuilder();
-
-            for (byte b : bb) {
-                sb.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-                sb.append('|');
-            }
-
-            return sb.toString();
-        }
-
-        private String convertToBinary(ByteBuffer bb) {
-            final byte[] data = new byte[bb.remaining()];
-            bb.duplicate().get(data);
-
-            return convertToBinary(data);
-        }
     }
 
     private class WebSocketSnifferTransportWrapper extends WebSocketSniffer {
