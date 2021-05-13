@@ -181,10 +181,8 @@
             </dependency>
           </dependencies>
           <configuration>
-            <configLocation>checkstyle.xml</configLocation>
-            <!-- <suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation> -->
-            <!-- <headerLocation>checkstyle/checkstyle/java.header</headerLocation> -->
-            <propertyExpansion>samedir=</propertyExpansion>
+            <configLocation>eng/checkstyle/checkstyle.xml</configLocation>
+            <suppressionsLocation>eng/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
             <encoding>UTF-8</encoding>
             <consoleOutput>true</consoleOutput>
             <!-- Remove when https://github.com/Azure/qpid-proton-j-extensions/issues/39 is fixed. -->

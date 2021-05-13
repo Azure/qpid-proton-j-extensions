@@ -12,15 +12,8 @@ what the following rules do, please see the checkstyle configuration
 page at http://checkstyle.sourceforge.net/config.html -->
 
 <module name="Checker">
-  <module name="SuppressionFilter">
-    <property name="file" value="eng/checkstyle-suppressions.xml" />
-  </module>
-
-  <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
-  <module name="SuppressWarningsFilter"/>
 
   <module name="FileTabCharacter"/>
-
 
   <module name="NewlineAtEndOfFile"/>
 
@@ -31,6 +24,12 @@ page at http://checkstyle.sourceforge.net/config.html -->
   <module name="LineLength">
     <property name="max" value="150"/>
     <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+  </module>
+
+  <!-- Validate that we have the MIT license at the top of the file -->
+  <module name="Header">
+    <property name="headerFile" value="eng/checkstyle/java.header"/>
+    <property name="fileExtensions" value="java"/>
   </module>
 
   <!-- All Java AST specific tests live under TreeWalker module. -->
