@@ -622,8 +622,8 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         }
     }
 
-    private class WebSocketSnifferTransportWrapper extends WebSocketSniffer {
-        public WebSocketSnifferTransportWrapper(TransportInput input, TransportOutput output) {
+    private final class WebSocketSnifferTransportWrapper extends WebSocketSniffer {
+        private WebSocketSnifferTransportWrapper(TransportInput input, TransportOutput output) {
             super(new WebSocketTransportWrapper(input, output), new PlainTransportWrapper(output, input));
         }
 
