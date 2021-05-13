@@ -61,6 +61,8 @@ public class ProxyConfigurationTest {
 
     /**
      * Verify that if the user has not provided a username or password, we cannot construct valid credentials from that.
+     *
+     * @param configuration Configuration to test out.
      */
     @Theory
     public void userDefinedConfigurationMissingData(@FromDataPoints("userConfigurations") ProxyConfiguration configuration) {

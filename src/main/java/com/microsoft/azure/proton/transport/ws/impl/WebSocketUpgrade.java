@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -14,9 +15,10 @@ import java.util.Scanner;
  * Represents a web socket upgrade request.
  */
 public class WebSocketUpgrade {
-    private final String rfcGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private final char questionMark = '?';
-    private final char slash = '/';
+    private static final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    private static final char QUESTION_MARK = '?';
+    private static final char SLASH = '/';
+
     private final String query;
     private final String host;
     private final String path;
@@ -44,12 +46,12 @@ public class WebSocketUpgrade {
             String webSocketProtocol,
             Map<String, String> additionalHeaders) {
         this.host = hostName;
-        this.path = webSocketPath.isEmpty() || webSocketPath.charAt(0) == this.slash
+        this.path = webSocketPath.isEmpty() || webSocketPath.charAt(0) == SLASH
                 ? webSocketPath
-                : this.slash + webSocketPath;
-        this.query = webSocketQuery.isEmpty() || webSocketQuery.charAt(0) == this.questionMark
+                : SLASH + webSocketPath;
+        this.query = webSocketQuery.isEmpty() || webSocketQuery.charAt(0) == QUESTION_MARK
                 ? webSocketQuery
-                : this.questionMark + webSocketQuery;
+                : QUESTION_MARK + webSocketQuery;
         this.port = webSocketPort == 0 ? "" : String.valueOf(webSocketPort);
         this.protocol = webSocketProtocol;
         this.additionalHeaders = additionalHeaders;
@@ -62,7 +64,7 @@ public class WebSocketUpgrade {
         byte[] key = new byte[16];
 
         for (int i = 0; i < 16; i++) {
-            key[i] = (byte) (int) (Math.random() * 256);
+            key[i] = (byte) (int) (Utils.getSecureRandom().nextDouble() * 256);
         }
 
         return Base64.encodeBase64StringLocal(key).trim();
@@ -99,7 +101,7 @@ public class WebSocketUpgrade {
 
         if (additionalHeaders != null) {
             for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
-                stringBuilder.append(entry.getKey() + ": " + entry.getValue()).append(endOfLine);
+                stringBuilder.append(entry.getKey()).append(": ").append(entry.getValue()).append(endOfLine);
             }
         }
 
@@ -116,44 +118,45 @@ public class WebSocketUpgrade {
     public Boolean validateUpgradeReply(byte[] responseBytes) {
         final String httpString = new String(responseBytes, StandardCharsets.UTF_8);
 
-        Boolean isStatusLineOk = false;
-        Boolean isUpgradeHeaderOk = false;
-        Boolean isConnectionHeaderOk = false;
-        Boolean isProtocolHeaderOk = false;
-        Boolean isAcceptHeaderOk = false;
+        boolean isStatusLineOk = false;
+        boolean isUpgradeHeaderOk = false;
+        boolean isConnectionHeaderOk = false;
+        boolean isProtocolHeaderOk = false;
+        boolean isAcceptHeaderOk = false;
 
         final Scanner scanner = new Scanner(httpString);
 
         while (scanner.hasNextLine()) {
             final String line = scanner.nextLine();
+            final String lowercase = line.toLowerCase(Locale.ROOT);
 
-            if ((line.toLowerCase().contains("http/1.1"))
+            if ((lowercase.contains("http/1.1"))
                     && (line.contains("101"))
-                    && (line.toLowerCase().contains("switching protocols"))) {
+                    && (lowercase.contains("switching protocols"))) {
                 isStatusLineOk = true;
 
                 continue;
             }
 
-            if ((line.toLowerCase().contains("upgrade")) && (line.toLowerCase().contains("websocket"))) {
+            if ((lowercase.contains("upgrade")) && (lowercase.contains("websocket"))) {
                 isUpgradeHeaderOk = true;
 
                 continue;
             }
 
-            if ((line.toLowerCase().contains("connection")) && (line.toLowerCase().contains("upgrade"))) {
+            if ((lowercase.contains("connection")) && (lowercase.contains("upgrade"))) {
                 isConnectionHeaderOk = true;
 
                 continue;
             }
 
-            if (line.toLowerCase().contains("sec-websocket-protocol") && (line.toLowerCase().contains(this.protocol.toLowerCase()))) {
+            if (lowercase.contains("sec-websocket-protocol") && (lowercase.contains(protocol.toLowerCase(Locale.ROOT)))) {
                 isProtocolHeaderOk = true;
 
                 continue;
             }
 
-            if (line.toLowerCase().contains("sec-websocket-accept")) {
+            if (lowercase.contains("sec-websocket-accept")) {
                 MessageDigest messageDigest = null;
 
                 try {
@@ -163,14 +166,12 @@ public class WebSocketUpgrade {
                     break;
                 }
 
-                final String expectedKey = Base64.encodeBase64StringLocal(
-                        messageDigest.digest((this.webSocketKey + this.rfcGuid).getBytes())).trim();
+                final byte[] bytes = (this.webSocketKey + RFC_GUID).getBytes(StandardCharsets.ISO_8859_1);
+                final String expectedKey = Base64.encodeBase64StringLocal(messageDigest.digest(bytes)).trim();
 
                 if (line.contains(expectedKey)) {
                     isAcceptHeaderOk = true;
                 }
-
-                continue;
             }
         }
 
@@ -197,7 +198,7 @@ public class WebSocketUpgrade {
             builder.append(", additionalHeaders=");
 
             for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
-                builder.append(entry.getKey() + ":" + entry.getValue()).append(", ");
+                builder.append(entry.getKey()).append(":").append(entry.getValue()).append(", ");
             }
 
             final int lastIndex = builder.lastIndexOf(", ");

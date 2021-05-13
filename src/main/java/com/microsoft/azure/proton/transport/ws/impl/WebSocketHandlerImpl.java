@@ -9,9 +9,7 @@ import com.microsoft.azure.proton.transport.ws.WebSocketHeader;
 import java.io.ByteArrayOutputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.security.SecureRandom;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Implementation for {@link WebSocketHandler}.
@@ -175,11 +173,13 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
             // Read the second byte
             byte secondByte = srcBuffer.get();
-            byte maskBit = (byte) (secondByte & WebSocketHeader.MASKBIT_MASK);
+            // The MASK bit is never used.
+            // byte maskBit = (byte) (secondByte & WebSocketHeader.MASKBIT_MASK);
             byte payloadLength = (byte) (secondByte & WebSocketHeader.PAYLOAD_MASK);
 
             long finalPayloadLength = -1;
 
+            // We want to be explicit about the WebSocket payload length because the RFC specifies these ranges.
             if (payloadLength <= WebSocketHeader.PAYLOAD_SHORT_MAX) {
                 finalPayloadLength = payloadLength;
             } else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_16) {
@@ -232,8 +232,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
     protected byte[] createRandomMaskingKey() {
         final byte[] maskingKey = new byte[4];
-        Random random = new SecureRandom();
-        random.nextBytes(maskingKey);
+        Utils.getSecureRandom().nextBytes(maskingKey);
 
         return maskingKey;
     }

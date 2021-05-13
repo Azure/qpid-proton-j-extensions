@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FindBugsFilter>
+  <!-- This was written a while ago and the byte shifts work for outputting the data. -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl"/>
+    <Method name="wrapBuffer"/>
+    <Bug pattern="ICAST_BAD_SHIFT_AMOUNT"/>
+  </Match>
+
+  <!-- We want to be explicit about the WebSocket payload length because the RFC specifies these ranges. -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl"/>
+    <Method name="unwrapBuffer"/>
+    <Bug pattern="UC_USELESS_CONDITION"/>
+  </Match>
+
+  <!-- It is not needed to make this inner class into a static one. Requires more refactoring than needed. -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl$WebSocketSnifferTransportWrapper"/>
+    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS"/>
+  </Match>
+
+  <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/42 -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.proxy.impl.ProxyImpl"/>
+    <Method name="writeProxyRequest" />
+    <Bug pattern="DM_DEFAULT_ENCODING"/>
+  </Match>
+
+  <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/43 -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketImpl"/>
+    <Method name="writeUpgradeRequest"/>
+    <Bug pattern="DM_DEFAULT_ENCODING"/>
+  </Match>
+</FindBugsFilter>
