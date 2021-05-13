@@ -182,6 +182,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
             long finalPayloadLength = -1;
 
+            // We want to be explicit about the WebSocket payload length because the RFC specifies these ranges.
             if (payloadLength <= WebSocketHeader.PAYLOAD_SHORT_MAX) {
                 finalPayloadLength = payloadLength;
             } else if (payloadLength == WebSocketHeader.PAYLOAD_EXTENDED_16) {

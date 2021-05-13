@@ -102,7 +102,7 @@ public interface WebSocketHeader {
     byte FINAL_OPCODE_BINARY = FINBIT_MASK | OPCODE_BINARY;
 
     /**
-     * Maximum size in bytes for the payload when using 7 bits to represent the size.
+     * Maximum size (125) in bytes for the payload when using 7 bits to represent the size.
      */
     byte PAYLOAD_SHORT_MAX = 0x7D;
     /**
@@ -113,6 +113,12 @@ public interface WebSocketHeader {
      * Maximum size in bytes for the payload when using 7 + 64 bits to represent the size.
      */
     int PAYLOAD_LARGE_MAX = 0x7FFFFFFF;
+    /**
+     * Size is 126.
+     */
     byte PAYLOAD_EXTENDED_16 = 0x7E;
+    /**
+     * Size is 127.
+     */
     byte PAYLOAD_EXTENDED_64 = 0x7F;
 }

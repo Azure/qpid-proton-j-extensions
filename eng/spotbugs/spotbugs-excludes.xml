@@ -8,6 +8,13 @@
     <Bug pattern="ICAST_BAD_SHIFT_AMOUNT"/>
   </Match>
 
+  <!-- We want to be explicit about the WebSocket payload length because the RFC specifies these ranges. -->
+  <Match>
+    <Class name="com.microsoft.azure.proton.transport.ws.impl.WebSocketHandlerImpl"/>
+    <Method name="unwrapBuffer"/>
+    <Bug pattern="UC_USELESS_CONDITION"/>
+  </Match>
+
   <!-- TODO (conniey): https://github.com/Azure/qpid-proton-j-extensions/issues/42 -->
   <Match>
     <Class name="com.microsoft.azure.proton.transport.proxy.impl.ProxyImpl"/>
