@@ -30,6 +30,7 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
     static final String DEFAULT_ALGORITHM = "MD5";
     private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;
     private static final char[] HEX_CODE = "0123456789ABCDEF".toCharArray();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final Logger logger = LoggerFactory.getLogger(DigestProxyChallengeProcessorImpl.class);
     private final AtomicInteger nonceCounter = new AtomicInteger(0);
@@ -134,13 +135,12 @@ public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcesso
             final String qop = challengeQuestionValues.get("qop");
 
             final MessageDigest md5 = MessageDigest.getInstance(DEFAULT_ALGORITHM);
-            final SecureRandom secureRandom = new SecureRandom();
 
             final String a1 = printHexBinary(md5.digest(String.format("%s:%s:%s", proxyUserName, realm, proxyPassword).getBytes(UTF_8)));
             final String a2 = printHexBinary(md5.digest(String.format("%s:%s", Constants.CONNECT, uri).getBytes(UTF_8)));
 
             final byte[] cnonceBytes = new byte[16];
-            secureRandom.nextBytes(cnonceBytes);
+            SECURE_RANDOM.nextBytes(cnonceBytes);
             final String cnonce = printHexBinary(cnonceBytes);
 
             String response;

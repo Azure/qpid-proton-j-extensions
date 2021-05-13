@@ -11,12 +11,13 @@ import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Implementation for {@link WebSocketHandler}.
  */
 public class WebSocketHandlerImpl implements WebSocketHandler {
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private WebSocketUpgrade webSocketUpgrade = null;
 
     @Override
@@ -232,8 +233,7 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
 
     protected byte[] createRandomMaskingKey() {
         final byte[] maskingKey = new byte[4];
-        Random random = new SecureRandom();
-        random.nextBytes(maskingKey);
+        SECURE_RANDOM.nextBytes(maskingKey);
 
         return maskingKey;
     }
