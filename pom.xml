@@ -58,11 +58,15 @@
     <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     <maven-jar-plugin.version>3.1.2</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
+    <maven-project-info-reports-plugin.version>3.1.2</maven-project-info-reports-plugin.version>
+    <maven-site-plugin.version>3.9.1</maven-site-plugin.version>
+    <maven-spotbugs-plugin.version>4.2.0</maven-spotbugs-plugin.version>
     <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
     <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
 
     <!-- Build tools -->
     <checkstyle.version>8.42</checkstyle.version>
+    <spotbugs.version>4.2.3</spotbugs.version>
   </properties>
 
   <build>
@@ -72,6 +76,21 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven-checkstyle-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Configure spotbugs to run in verify -->
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${maven-spotbugs-plugin.version}</version>
         <executions>
           <execution>
             <phase>verify</phase>
@@ -137,7 +156,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version> <!-- {x-version-update;org.apache.maven.plugins:maven-compiler-plugin;external_dependency} -->
+          <version>${maven-compiler-plugin.version}</version>
           <configuration>
             <showWarnings>true</showWarnings>
             <failOnWarning>true</failOnWarning>
@@ -212,6 +231,9 @@
               <link>https://docs.oracle.com/javase/8/docs/api/</link>
             </links>
             <detectJavaApiLink>false</detectJavaApiLink>
+            <excludePackageNames>
+              *impl*:
+            </excludePackageNames>
           </configuration>
         </plugin>
 
@@ -227,9 +249,62 @@
             <testFailureIgnore>false</testFailureIgnore>
           </configuration>
         </plugin>
+
+        <!-- Spotbugs -->
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${maven-spotbugs-plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.github.spotbugs</groupId>
+              <artifactId>spotbugs</artifactId>
+              <version>${spotbugs.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${maven-site-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>${maven-project-info-reports-plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc-plugin.version}</version>
+      </plugin>
+
+      <!-- This plugin runs spotbugs. -->
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${maven-spotbugs-plugin.version}</version>
+        <configuration>
+          <effort>max</effort>
+          <threshold>Low</threshold>
+          <xmlOutput>true</xmlOutput>
+          <xmlOutputDirectory>target/site</xmlOutputDirectory>
+          <failOnError>true</failOnError>
+          <fork>true</fork>
+
+          <!-- Enable spotbugs for tests after https://github.com/issues/ -->
+          <includeTests>false</includeTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <dependencies>
     <!-- Product dependencies -->
@@ -324,23 +399,6 @@
               <sourceFileExcludes>
                 <sourceFileExclude>module-info.java</sourceFileExclude>
               </sourceFileExcludes>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-maven-plugin</artifactId>
-            <version>4.2.0</version>
-            <configuration>
-              <effort>max</effort>
-              <threshold>Low</threshold>
-              <xmlOutput>true</xmlOutput>
-              <xmlOutputDirectory>target/site</xmlOutputDirectory>
-              <failOnError>true</failOnError>
-              <fork>true</fork>
-
-              <!-- Enable spotbugs for tests after https://github.com/issues/ -->
-              <includeTests>false</includeTests>
             </configuration>
           </plugin>
         </plugins>
