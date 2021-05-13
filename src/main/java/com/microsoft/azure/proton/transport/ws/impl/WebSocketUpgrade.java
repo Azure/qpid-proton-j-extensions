@@ -14,9 +14,9 @@ import java.util.Scanner;
  * Represents a web socket upgrade request.
  */
 public class WebSocketUpgrade {
-    private final String rfcGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-    private final char questionMark = '?';
-    private final char slash = '/';
+    private static final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    private static final char QUESTION_MARK = '?';
+    private static final char SLASH = '/';
     private final String query;
     private final String host;
     private final String path;
@@ -44,12 +44,12 @@ public class WebSocketUpgrade {
             String webSocketProtocol,
             Map<String, String> additionalHeaders) {
         this.host = hostName;
-        this.path = webSocketPath.isEmpty() || webSocketPath.charAt(0) == this.slash
+        this.path = webSocketPath.isEmpty() || webSocketPath.charAt(0) == this.SLASH
                 ? webSocketPath
-                : this.slash + webSocketPath;
-        this.query = webSocketQuery.isEmpty() || webSocketQuery.charAt(0) == this.questionMark
+                : this.SLASH + webSocketPath;
+        this.query = webSocketQuery.isEmpty() || webSocketQuery.charAt(0) == this.QUESTION_MARK
                 ? webSocketQuery
-                : this.questionMark + webSocketQuery;
+                : this.QUESTION_MARK + webSocketQuery;
         this.port = webSocketPort == 0 ? "" : String.valueOf(webSocketPort);
         this.protocol = webSocketProtocol;
         this.additionalHeaders = additionalHeaders;
@@ -164,7 +164,7 @@ public class WebSocketUpgrade {
                 }
 
                 final String expectedKey = Base64.encodeBase64StringLocal(
-                        messageDigest.digest((this.webSocketKey + this.rfcGuid).getBytes())).trim();
+                        messageDigest.digest((this.webSocketKey + this.RFC_GUID).getBytes())).trim();
 
                 if (line.contains(expectedKey)) {
                     isAcceptHeaderOk = true;
