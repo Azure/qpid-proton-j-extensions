@@ -19,3 +19,6 @@ max_line_length = 240
 # ij_continuation_indent_size is non-standard and only works in IntelliJ. Currently continuation_indent_size is not part of the
 # .editorconfig standard.
 ij_continuation_indent_size = 4
+
+[*.md]
+max_line_length = 120
