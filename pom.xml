@@ -204,8 +204,7 @@
             <suppressionsLocation>eng/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
             <encoding>UTF-8</encoding>
             <consoleOutput>true</consoleOutput>
-            <!-- Remove when https://github.com/Azure/qpid-proton-j-extensions/issues/39 is fixed. -->
-            <!-- <includeTestSourceDirectory>true</includeTestSourceDirectory>-->
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
             <linkXRef>true</linkXRef>
             <failsOnError>true</failsOnError>
             <failOnViolation>true</failOnViolation>
