@@ -14,7 +14,8 @@ import static org.junit.Assert.assertEquals;
  * 100% methods, 98% lines covered
  */
 public class Base64Test {
-    /* Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array
+     *  using the Base64 format define in the RFC2045.] */
     @Test
     public void decodeBase64WithMultipleOf4CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -28,7 +29,8 @@ public class Base64Test {
         assertEquals(expectedTextResult, new String(result));
     }
 
-    /* Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void decodeBase64WithMultipleOf4Minus1CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -42,7 +44,8 @@ public class Base64Test {
         assertEquals(expectedTextResult, new String(result));
     }
 
-    /* Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_001: [The decodeBase64Local shall decode the provided `base64Values` in a byte array
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void decodeBase64WithMultipleOf4Minus2CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -121,7 +124,8 @@ public class Base64Test {
     }
 
 
-    /* Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64WithMultipleOf4CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -135,7 +139,8 @@ public class Base64Test {
         assertEquals(expectedBase64Result, new String(result));
     }
 
-    /* Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64MultipleOf4Minus1CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -149,7 +154,8 @@ public class Base64Test {
         assertEquals(expectedBase64Result, new String(result));
     }
 
-    /* Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_005: [The encodeBase64Local shall encoded the provided `dataValues` in a byte array
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64MultipleOf4Minus2CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -188,7 +194,8 @@ public class Base64Test {
     }
 
 
-    /* Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64StringMultipleOf4CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -202,7 +209,8 @@ public class Base64Test {
         assertEquals(expectedBase64Result, result);
     }
 
-    /* Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64StringMultipleOf4Minus1CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange
@@ -216,7 +224,8 @@ public class Base64Test {
         assertEquals(expectedBase64Result, result);
     }
 
-    /* Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string using the Base64 format define in the RFC2045.] */
+    /** Tests_SRS_BASE64_21_008: [The encodeBase64StringLocal shall encoded the provided `dataValues` in a string
+     * using the Base64 format define in the RFC2045.] */
     @Test
     public void encodeBase64StringMultipleOf4Minus2CharactersSuccess() throws UnsupportedEncodingException, IllegalArgumentException {
         // arrange

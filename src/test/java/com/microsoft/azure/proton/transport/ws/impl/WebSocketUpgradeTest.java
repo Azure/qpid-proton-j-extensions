@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WebSocketUpgradeTest {
+
     final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     @Test
@@ -33,7 +34,8 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol,
+            additionalHeaders);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -130,7 +132,8 @@ public class WebSocketUpgradeTest {
         String queryKey = "?iothub-no-client-cert=";
         String queryValue = "true";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol,
+            null);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -208,7 +211,8 @@ public class WebSocketUpgradeTest {
         String queryKey = "?iothub-no-client-cert=";
         String queryValue = "true";
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath,queryKey + queryValue, webSocketPort, webSocketProtocol, null);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol,
+            null);
 
         String actual = webSocketUpgrade.createUpgradeRequest();
 
@@ -288,7 +292,7 @@ public class WebSocketUpgradeTest {
         additionalHeaders.put("header2", "content2");
         additionalHeaders.put("header3", "content3");
 
-        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath,"", webSocketPort, webSocketProtocol, additionalHeaders);
+        WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         webSocketUpgrade.createUpgradeRequest();
     }
 
@@ -316,7 +320,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -328,7 +333,9 @@ public class WebSocketUpgradeTest {
                 "Sec-WebSocket-Protocol: " + webSocketProtocol,
                 "Connection: Upgrade",
                 "Sec-WebSocket-Accept: " + serverKey,
-                "Date: Thu, 03 Mar 2016 22:46:15 GMT","Sec-WebSocket-Protocol: \" + webSocketProtocol" + "\n");
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "\n");
 
             assertTrue(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -345,7 +352,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
         // Generate new key
         webSocketUpgrade.createUpgradeRequest();
 
@@ -397,7 +405,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -424,7 +433,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -452,7 +462,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -479,7 +490,8 @@ public class WebSocketUpgradeTest {
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-        String keyBase64 = upgradeRequest.substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
+        String keyBase64 = upgradeRequest
+            .substring(upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 19, upgradeRequest.lastIndexOf("Sec-WebSocket-Key: ") + 43);
 
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -548,7 +560,6 @@ public class WebSocketUpgradeTest {
         webSocketUpgrade.createUpgradeRequest();
 
         String actual = webSocketUpgrade.toString();
-
 
         String expexted1 = "WebSocketUpgrade [host=" + hostName
             + ", path=/" + webSocketPath

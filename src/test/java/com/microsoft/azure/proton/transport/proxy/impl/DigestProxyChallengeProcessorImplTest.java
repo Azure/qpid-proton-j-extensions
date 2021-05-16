@@ -61,15 +61,17 @@ public class DigestProxyChallengeProcessorImplTest {
 
             @Override
             public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-                System.out.format("PROXY CONNECTION FAILED: URI = %s, Socket Address = %s, IO Exception = %s\n", uri.toString(), sa.toString(), ioe.toString());
+                System.out.format("PROXY CONNECTION FAILED: URI = %s, Socket Address = %s, IO Exception = %s\n", uri.toString(), sa.toString(),
+                    ioe.toString());
             }
         });
 
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                if (getRequestorType() == Authenticator.RequestorType.PROXY) {
                     return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
+                }
                 return super.getPasswordAuthentication();
             }
         });
@@ -147,8 +149,9 @@ public class DigestProxyChallengeProcessorImplTest {
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                if (getRequestorType() == Authenticator.RequestorType.PROXY) {
                     return null;
+                }
 
                 Assert.fail("Should always be type of ProxyRequest.");
                 throw new RuntimeException("Should be of type ProxyRequest");

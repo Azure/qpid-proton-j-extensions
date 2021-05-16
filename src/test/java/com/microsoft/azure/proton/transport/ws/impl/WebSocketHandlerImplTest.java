@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class WebSocketHandlerImplTest {
+
     private static SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Test
@@ -41,7 +42,8 @@ public class WebSocketHandlerImplTest {
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
-        String actual = webSocketHandler.createUpgradeRequest(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, additionalHeaders);
+        String actual = webSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, queryKey + queryValue, webSocketPort, webSocketProtocol, additionalHeaders);
 
         Boolean isLineCountOk = false;
         Boolean isStatusLineOk = false;
@@ -143,9 +145,11 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler)
+            .createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
-        verify(spyWebSocketHandler, times(1)).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        verify(spyWebSocketHandler, times(1))
+            .createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         verify(mockWebSocketUpgrade, times(1)).createUpgradeRequest();
     }
 
@@ -230,7 +234,8 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler)
+            .createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         doReturn(true).when(mockWebSocketUpgrade).validateUpgradeReply(data);
 
         spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
@@ -259,7 +264,8 @@ public class WebSocketHandlerImplTest {
 
         WebSocketUpgrade mockWebSocketUpgrade = mock(WebSocketUpgrade.class);
 
-        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler).createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
+        doReturn(mockWebSocketUpgrade).when(spyWebSocketHandler)
+            .createWebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
         doReturn(true).when(mockWebSocketUpgrade).validateUpgradeReply(data);
 
         spyWebSocketHandler.createUpgradeRequest(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, additionalHeaders);
@@ -1152,16 +1158,16 @@ public class WebSocketHandlerImplTest {
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
         byte[] data = {
-                0b00001111,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
+            0b00001111,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
         };
 
         ByteBuffer srcBuffer = ByteBuffer.wrap(data);
@@ -1199,7 +1205,8 @@ public class WebSocketHandlerImplTest {
         srcBuffer.put(data);
         srcBuffer.flip();
 
-        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK, spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
+        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK,
+            spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
     }
 
     @Test
@@ -1220,7 +1227,8 @@ public class WebSocketHandlerImplTest {
         srcBuffer.put(data);
         srcBuffer.flip();
 
-        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK, spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
+        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK,
+            spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -1243,23 +1251,23 @@ public class WebSocketHandlerImplTest {
     public void testCalculateHeaderSize_small_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
-                WebSocketHeader.PAYLOAD_SHORT_MAX),
-                WebSocketHeader.MIN_HEADER_LENGTH_MASKED);
+            WebSocketHeader.PAYLOAD_SHORT_MAX),
+            WebSocketHeader.MIN_HEADER_LENGTH_MASKED);
     }
 
     @Test
     public void testCalculateHeaderSize_medium_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
-                WebSocketHeader.PAYLOAD_MEDIUM_MAX),
-                WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+            WebSocketHeader.PAYLOAD_MEDIUM_MAX),
+            WebSocketHeader.MED_HEADER_LENGTH_MASKED);
     }
 
     @Test
     public void testCalculateHeaderSize_large_payload() {
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         assertEquals(webSocketHandler.calculateHeaderSize(
-                WebSocketHeader.PAYLOAD_LARGE_MAX),
-                WebSocketHeader.MAX_HEADER_LENGTH_MASKED);
+            WebSocketHeader.PAYLOAD_LARGE_MAX),
+            WebSocketHeader.MAX_HEADER_LENGTH_MASKED);
     }
 }

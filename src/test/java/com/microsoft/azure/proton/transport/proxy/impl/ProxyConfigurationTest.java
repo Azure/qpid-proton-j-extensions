@@ -28,9 +28,9 @@ public class ProxyConfigurationTest {
     @DataPoints("userConfigurations")
     public static ProxyConfiguration[] userConfigurations() {
         return new ProxyConfiguration[]{
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, PASSWORD),
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, USERNAME, null),
-                new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, null),
+            new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, PASSWORD),
+            new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, USERNAME, null),
+            new ProxyConfiguration(AUTHENTICATION_TYPE, PROXY, null, null),
         };
     }
 

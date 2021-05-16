@@ -97,8 +97,9 @@ public class ProxyImplTest {
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                if (getRequestorType() == Authenticator.RequestorType.PROXY) {
                     return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
+                }
                 return super.getPasswordAuthentication();
             }
         });

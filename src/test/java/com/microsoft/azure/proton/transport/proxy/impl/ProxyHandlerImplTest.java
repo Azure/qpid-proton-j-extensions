@@ -28,7 +28,8 @@ public class ProxyHandlerImplTest {
             "Host: testHostName",
             "Connection: Keep-Alive",
             "header2: headervalue2",
-            "header1: headervalue1","\r\n");
+            "header1: headervalue1",
+            "\r\n");
 
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
