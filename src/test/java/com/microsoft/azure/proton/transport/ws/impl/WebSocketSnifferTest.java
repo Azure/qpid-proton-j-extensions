@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 
 public class WebSocketSnifferTest {
     @Test
-    public void testMakeDetermination_wrapper1() {
+    public void testMakeDeterminationWrapper1() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 
@@ -28,7 +28,7 @@ public class WebSocketSnifferTest {
     }
 
     @Test
-    public void testMakeDetermination_wrapper2() {
+    public void testMakeDeterminationWrapper2() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 
@@ -44,7 +44,7 @@ public class WebSocketSnifferTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMakeDetermination_insufficient_bytes() {
+    public void testMakeDeterminationInsufficientBytes() {
         TransportWrapper mockTransportWrapper1 = mock(TransportWrapper.class);
         TransportWrapper mockTransportWrapper2 = mock(TransportWrapper.class);
 

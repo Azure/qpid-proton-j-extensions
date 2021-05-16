@@ -18,10 +18,10 @@ import static org.junit.Assert.assertTrue;
 
 public class WebSocketUpgradeTest {
 
-    final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    static final String RFC_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     @Test
-    public void testCreateUpgradeRequest_all_param() {
+    public void testCreateUpgradeRequestAllParam() {
 
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
@@ -124,7 +124,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testCreateUpgradeRequest_no_additonal_headers() {
+    public void testCreateUpgradeRequestNoAdditonalHeaders() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -203,7 +203,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testCreateUpgradeRequest_path_start_with_slash() {
+    public void testCreateUpgradeRequestPathStartWithSlash() {
         String hostName = "host_XXX";
         String webSocketPath = "/path1/path2";
         int webSocketPort = 1234567890;
@@ -282,7 +282,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test(expected = InvalidParameterException.class)
-    public void testCreateUpgradeRequest_empty_host() {
+    public void testCreateUpgradeRequestEmptyHost() {
         String hostName = "";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -297,7 +297,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test(expected = InvalidParameterException.class)
-    public void testCreateUpgradeRequest_empty_protocol() {
+    public void testCreateUpgradeRequestEmptyProtocol() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -312,7 +312,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply() {
+    public void testValidateUpgradeReply() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -344,7 +344,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_invalid_key() {
+    public void testValidateUpgradeReplyInvalidKey() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -376,7 +376,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_plain_key() {
+    public void testValidateUpgradeReplyPlainKey() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -397,7 +397,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_status_line() {
+    public void testValidateUpgradeReplyMissingStatusLine() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -425,7 +425,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_upgrade_header() {
+    public void testValidateUpgradeReplyMissingUpgradeHeader() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -454,7 +454,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_protocol_header() {
+    public void testValidateUpgradeReplyMissingProtocolHeader() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -482,7 +482,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_connection_header() {
+    public void testValidateUpgradeReplyMissingConnectionHeader() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -510,7 +510,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_missing_accept_header() {
+    public void testValidateUpgradeReplyMissingAcceptHeader() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -528,7 +528,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testvalidateUpgradeReply_emptyResponse() {
+    public void testValidateUpgradeReplyEmptyResponse() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
@@ -575,7 +575,7 @@ public class WebSocketUpgradeTest {
     }
 
     @Test
-    public void testToString_no_additional_headers() {
+    public void testToStringNoAdditionalHeaders() {
         String hostName = "host_XXX";
         String webSocketPath = "path1/path2";
         int webSocketPort = 1234567890;
