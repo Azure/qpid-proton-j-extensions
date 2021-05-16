@@ -322,13 +322,13 @@ public class WebSocketUpgradeTest {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
-            String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                    "Upgrade: websocket\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                    "Connection: Upgrade\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+                "Upgrade: websocket",
+                "Server: XXXYYYZZZ",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "Connection: Upgrade",
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT","Sec-WebSocket-Protocol: \" + webSocketProtocol" + "\n");
 
             assertTrue(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -353,13 +353,13 @@ public class WebSocketUpgradeTest {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
-            String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                    "Upgrade: websocket\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                    "Connection: Upgrade\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+                "Upgrade: websocket",
+                "Server: XXXYYYZZZ",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "Connection: Upgrade",
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -377,13 +377,13 @@ public class WebSocketUpgradeTest {
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
         String serverKey = "ABCDEFGHIJKLM123";
 
-        String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                "Upgrade: websocket\n" +
-                "Server: XXXYYYZZZ\n" +
-                "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                "Connection: Upgrade\n" +
-                "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+        String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+            "Upgrade: websocket",
+            "Server: XXXYYYZZZ",
+            "Sec-WebSocket-Protocol: " + webSocketProtocol,
+            "Connection: Upgrade",
+            "Sec-WebSocket-Accept: " + serverKey,
+            "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
         assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
     }
@@ -402,13 +402,12 @@ public class WebSocketUpgradeTest {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
-
-            String responseStr = "Upgrade: websocket\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                    "Connection: Upgrade\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "Upgrade: websocket",
+                "Server: XXXYYYZZZ",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "Connection: Upgrade",
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -431,12 +430,12 @@ public class WebSocketUpgradeTest {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
 
-            String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                    "Connection: Upgrade\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+                "Server: XXXYYYZZZ",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "Connection: Upgrade",
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -458,13 +457,12 @@ public class WebSocketUpgradeTest {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
-
-            String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                    "Upgrade: websocket\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Connection: Upgrade\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+                "Upgrade: websocket",
+                "Server: XXXYYYZZZ",
+                "Connection: Upgrade",
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -486,13 +484,12 @@ public class WebSocketUpgradeTest {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             String serverKey = Base64.encodeBase64StringLocal(messageDigest.digest((keyBase64 + RFC_GUID).getBytes())).trim();
-
-            String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                    "Upgrade: websocket\n" +
-                    "Server: XXXYYYZZZ\n" +
-                    "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                    "Sec-WebSocket-Accept: " + serverKey + "\n" +
-                    "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+            String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+                "Upgrade: websocket",
+                "Server: XXXYYYZZZ",
+                "Sec-WebSocket-Protocol: " + webSocketProtocol,
+                "Sec-WebSocket-Accept: " + serverKey,
+                "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
             assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
         } catch (NoSuchAlgorithmException e) {
@@ -508,14 +505,12 @@ public class WebSocketUpgradeTest {
         String webSocketProtocol = "subprotocol_name";
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
-        String upgradeRequest = webSocketUpgrade.createUpgradeRequest();
-
-        String responseStr = "HTTP/1.1 101 Switching Protocols\n" +
-                "Upgrade: websocket\n" +
-                "Server: XXXYYYZZZ\n" +
-                "Sec-WebSocket-Protocol: " + webSocketProtocol + "\n" +
-                "Connection: Upgrade\n" +
-                "Date: Thu, 03 Mar 2016 22:46:15 GMT";
+        String responseStr = String.join("\n", "HTTP/1.1 101 Switching Protocols",
+            "Upgrade: websocket",
+            "Server: XXXYYYZZZ",
+            "Sec-WebSocket-Protocol: " + webSocketProtocol,
+            "Connection: Upgrade",
+            "Date: Thu, 03 Mar 2016 22:46:15 GMT");
 
         assertFalse(webSocketUpgrade.validateUpgradeReply(responseStr.getBytes()));
     }
@@ -554,11 +549,12 @@ public class WebSocketUpgradeTest {
 
         String actual = webSocketUpgrade.toString();
 
-        String expexted1 = "WebSocketUpgrade [host=" + hostName +
-                ", path=/" + webSocketPath +
-                ", port=" + webSocketPort +
-                ", protocol=" + webSocketProtocol +
-                ", webSocketKey=";
+
+        String expexted1 = "WebSocketUpgrade [host=" + hostName
+            + ", path=/" + webSocketPath
+            + ", port=" + webSocketPort
+            + ", protocol=" + webSocketProtocol
+            + ", webSocketKey=";
 
         String expected2 = ", additionalHeaders=header3:content3, header2:content2, header1:content1]";
 
@@ -575,14 +571,14 @@ public class WebSocketUpgradeTest {
         String webSocketProtocol = "subprotocol_name";
 
         WebSocketUpgrade webSocketUpgrade = new WebSocketUpgrade(hostName, webSocketPath, "", webSocketPort, webSocketProtocol, null);
+        String expected = String.join("", "WebSocketUpgrade [host=" + hostName,
+            ", path=/" + webSocketPath,
+            ", port=" + webSocketPort,
+            ", protocol=" + webSocketProtocol,
+            ", webSocketKey=]");
 
-        String expexted = "WebSocketUpgrade [host=" + hostName +
-                ", path=/" + webSocketPath +
-                ", port=" + webSocketPort +
-                ", protocol=" + webSocketProtocol +
-                ", webSocketKey=]";
         String actual = webSocketUpgrade.toString();
 
-        assertEquals("Unexpected value for toString()", expexted, actual);
+        assertEquals("Unexpected value for toString()", expected, actual);
     }
 }

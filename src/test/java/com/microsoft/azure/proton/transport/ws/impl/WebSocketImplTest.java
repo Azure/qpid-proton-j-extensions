@@ -471,8 +471,8 @@ public class WebSocketImplTest {
             // can't happen since SHA-1 is a known digest
         }
         // Assemble a response that the upgrade verifier will accept
-        byte[] fakeInput = ("http/1.1 101 switching protocols\nupgrade websocket\nconnection upgrade\nsec-websocket-protocol fakeprotocol\nsec-websocket-accept " +
-        		expectedKey).getBytes();
+        byte[] fakeInput = ("http/1.1 101 switching protocols\nupgrade websocket\nconnection upgrade\nsec-websocket-protocol fakeprotocol\nsec-websocket-accept "
+            + expectedKey).getBytes();
 
         // Feed the response to the verifier, adding one byte at a time to simulate a response broken into chunks.
         // This test inspired by an issue with the IBM JRE which for some reason returned the service's response in multiple pieces.
@@ -1961,18 +1961,17 @@ public class WebSocketImplTest {
 
         String actual = webSocketImpl.toString();
 
-        String expexted1 = "WebSocketImpl [isWebSocketEnabled=true" +
-                ", state=PN_WS_NOT_STARTED" +
-                ", protocol=" + _webSocketProtocol +
-                ", host=" + _hostName +
-                ", path=" + _webSocketPath +
-                ", query=" + _webSocketQuery +
-                ", port=" + _webSocketPort;
-
+        String expected1 = String.join("", "WebSocketImpl [isWebSocketEnabled=true",
+            ", state=PN_WS_NOT_STARTED",
+            ", protocol=" + _webSocketProtocol,
+            ", host=" + _hostName,
+            ", path=" + _webSocketPath,
+            ", query=" + _webSocketQuery,
+            ", port=" + _webSocketPort);
         String expected2 = ", additionalHeaders=header3:content3, header2:content2, header1:content1]";
 
-        assertTrue(actual.startsWith(expexted1));
-        actual = actual.substring(expexted1.length());
+        assertTrue(actual.startsWith(expected1));
+        actual = actual.substring(expected1.length());
         assertTrue(actual.equals(expected2));
     }
 
@@ -1989,14 +1988,15 @@ public class WebSocketImplTest {
 
         String actual = webSocketImpl.toString();
 
-        String expexted = "WebSocketImpl [isWebSocketEnabled=true" +
-                ", state=PN_WS_NOT_STARTED" +
-                ", protocol=" + _webSocketProtocol +
-                ", host=" + _hostName +
-                ", path=" + _webSocketPath +
-                ", query=" + _webSocketQuery +
-                ", port=" + _webSocketPort + "]";
+        String expected = String.join("", "WebSocketImpl [isWebSocketEnabled=true",
+            ", state=PN_WS_NOT_STARTED",
+            ", protocol=" + _webSocketProtocol,
+            ", host=" + _hostName,
+            ", path=" + _webSocketPath,
+            ", query=" + _webSocketQuery,
+            ", port=" + _webSocketPort,
+            "]");
 
-        assertEquals("Unexpected value for toString()", expexted, actual);
+        assertEquals("Unexpected value for toString()", expected, actual);
     }
 }
