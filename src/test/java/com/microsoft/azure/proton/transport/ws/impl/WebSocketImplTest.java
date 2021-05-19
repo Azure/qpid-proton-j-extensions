@@ -38,15 +38,15 @@ import static org.mockito.Mockito.when;
 
 public class WebSocketImplTest {
 
-    private int allocatedWebSocketBufferSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private static final int ALLOCATED_WEB_SOCKET_BUFFER_SIZE = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private static final int LENGTH_OF_UPGRADE_REQUEST = 284;
+
     private String hostName = "host_XXX";
     private String webSocketPath = "path1/path2";
     private String webSocketQuery = "";
     private int webSocketPort = 1234567890;
     private String webSocketProtocol = "subprotocol_name";
     private Map<String, String> additionalHeaders = new HashMap<String, String>();
-
-    private int lengthOfUpgradeRequest = 284;
 
     private void init() {
         additionalHeaders.put("header1", "content1");
@@ -68,9 +68,9 @@ public class WebSocketImplTest {
         assertNotNull(outputBuffer);
         assertNotNull(pingBuffer);
 
-        assertEquals(inputBuffer.capacity(), allocatedWebSocketBufferSize);
-        assertEquals(outputBuffer.capacity(), allocatedWebSocketBufferSize);
-        assertEquals(pingBuffer.capacity(), allocatedWebSocketBufferSize);
+        assertEquals(inputBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
+        assertEquals(outputBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
+        assertEquals(pingBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
 
         assertFalse(webSocketImpl.getEnabled());
     }
@@ -140,7 +140,7 @@ public class WebSocketImplTest {
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertEquals(lengthOfUpgradeRequest, outputBuffer.remaining());
+        assertEquals(LENGTH_OF_UPGRADE_REQUEST, outputBuffer.remaining());
     }
 
     @Test
@@ -310,7 +310,7 @@ public class WebSocketImplTest {
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertTrue(outputBuffer.remaining() == lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
@@ -356,7 +356,7 @@ public class WebSocketImplTest {
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertTrue(outputBuffer.remaining() == lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
@@ -383,7 +383,7 @@ public class WebSocketImplTest {
         outputBuffer.flip();
 
         transportWrapper.pending();
-        assertTrue(outputBuffer.remaining() == lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
@@ -1659,7 +1659,7 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
     }
 
@@ -1703,7 +1703,7 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
 
         verify(mockTransportOutput, times(1)).pop(message.getBytes().length - webSocketHeaderSize);
@@ -1758,7 +1758,7 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
 
         verify(mockTransportOutput, times(1)).pop(message.getBytes().length);

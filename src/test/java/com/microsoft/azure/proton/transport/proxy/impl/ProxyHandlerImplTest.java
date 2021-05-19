@@ -40,7 +40,7 @@ public class ProxyHandlerImplTest {
         final String validResponse = "HTTP/1.1 " + httpCode + "Connection Established\r\n"
             + "FiddlerGateway: Direct\r\n"
             + "StartTime: 13:08:21.574\r\n"
-            + "Connection: close\r\n\r\n";
+            + "Connection: close";
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
@@ -60,7 +60,7 @@ public class ProxyHandlerImplTest {
             "Connection: close",
             "Proxy-Authenticate: Basic realm=\\\"FiddlerProxy (user: 1, pass: 1)\\",
             "Content-Type: text/html",
-            "<html><body>[Fiddler] Proxy Authentication Required.<BR></body></html>\r\n", "\r\n");
+            "<html><body>[Fiddler] Proxy Authentication Required.<BR></body></html>\r\n");
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(failResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
@@ -80,7 +80,7 @@ public class ProxyHandlerImplTest {
             "HTTP/1.1 200 Connection Established",
             "FiddlerGateway: Direct",
             "StartTime: 13:08:21.574",
-            "Connection: close\r\n", "\r\n");
+            "Connection: close\r\n");
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(invalidResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
