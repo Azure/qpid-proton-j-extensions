@@ -41,15 +41,17 @@ public class BasicProxyChallengeProcessorImplTest {
 
             @Override
             public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-                System.out.format("PROXY CONNECTION FAILED: URI = %s, Socket Address = %s, IO Exception = %s\n", uri.toString(), sa.toString(), ioe.toString());
+                System.out.format("PROXY CONNECTION FAILED: URI = %s, Socket Address = %s, IO Exception = %s%n", uri.toString(), sa.toString(),
+                    ioe.toString());
             }
         });
 
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                if (getRequestorType() == Authenticator.RequestorType.PROXY) {
                     return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
+                }
                 return super.getPasswordAuthentication();
             }
         });
@@ -80,7 +82,7 @@ public class BasicProxyChallengeProcessorImplTest {
         final String base64Encoded = Base64.getEncoder().encodeToString(encoded);
         final String expectedAuthValue = String.join(" ", Constants.BASIC, base64Encoded);
 
-        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, proxy, username, password );
+        final ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.DIGEST, proxy, username, password);
         final ProxyAuthenticator authenticator = new ProxyAuthenticator(configuration);
         final BasicProxyChallengeProcessorImpl proxyChallengeProcessor = new BasicProxyChallengeProcessorImpl("something.com", authenticator);
 
@@ -96,8 +98,9 @@ public class BasicProxyChallengeProcessorImplTest {
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                if (getRequestorType() == Authenticator.RequestorType.PROXY)
+                if (getRequestorType() == Authenticator.RequestorType.PROXY) {
                     return null;
+                }
 
                 Assert.fail("Should always be type of ProxyRequest.");
                 throw new RuntimeException("Should be of type ProxyRequest");

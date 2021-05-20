@@ -37,20 +37,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class WebSocketImplTest {
-    private int _allocatedWebSocketBufferSize = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
-    private String _hostName = "host_XXX";
-    private String _webSocketPath = "path1/path2";
-    private String _webSocketQuery = "";
-    private int _webSocketPort = 1234567890;
-    private String _webSocketProtocol = "subprotocol_name";
-    private Map<String, String> _additionalHeaders = new HashMap<String, String>();
 
-    private int _lengthOfUpgradeRequest = 284;
+    private static final int ALLOCATED_WEB_SOCKET_BUFFER_SIZE = (4 * 1024) + (16 * WebSocketHeader.MED_HEADER_LENGTH_MASKED);
+    private static final int LENGTH_OF_UPGRADE_REQUEST = 284;
+
+    private String hostName = "host_XXX";
+    private String webSocketPath = "path1/path2";
+    private String webSocketQuery = "";
+    private int webSocketPort = 1234567890;
+    private String webSocketProtocol = "subprotocol_name";
+    private Map<String, String> additionalHeaders = new HashMap<String, String>();
 
     private void init() {
-        _additionalHeaders.put("header1", "content1");
-        _additionalHeaders.put("header2", "content2");
-        _additionalHeaders.put("header3", "content3");
+        additionalHeaders.put("header1", "content1");
+        additionalHeaders.put("header2", "content2");
+        additionalHeaders.put("header3", "content3");
     }
 
     @Test
@@ -67,9 +68,9 @@ public class WebSocketImplTest {
         assertNotNull(outputBuffer);
         assertNotNull(pingBuffer);
 
-        assertEquals(inputBuffer.capacity(), _allocatedWebSocketBufferSize);
-        assertEquals(outputBuffer.capacity(), _allocatedWebSocketBufferSize);
-        assertEquals(pingBuffer.capacity(), _allocatedWebSocketBufferSize);
+        assertEquals(inputBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
+        assertEquals(outputBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
+        assertEquals(pingBuffer.capacity(), ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
 
         assertFalse(webSocketImpl.getEnabled());
     }
@@ -97,25 +98,25 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testConfigure_handler_null() {
+    public void testConfigureHandlerNull() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
 
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, null);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, null);
 
         assertNotNull(webSocketImpl.getWebSocketHandler());
         assertTrue(webSocketImpl.getEnabled());
     }
 
     @Test
-    public void testConfigure_handler_not_null() {
+    public void testConfigureHandlerNotNull() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
         WebSocketHandler webSocketHandler = new WebSocketHandlerImpl();
 
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         Assert.assertEquals(webSocketHandler, webSocketImpl.getWebSocketHandler());
         assertTrue(webSocketImpl.getEnabled());
@@ -129,15 +130,17 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, spyWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, spyWebSocketHandler);
         webSocketImpl.writeUpgradeRequest();
 
-        verify(spyWebSocketHandler, times(1)).createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders);
+        verify(spyWebSocketHandler, times(1))
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders);
 
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertEquals(_lengthOfUpgradeRequest, outputBuffer.remaining());
+        assertEquals(LENGTH_OF_UPGRADE_REQUEST, outputBuffer.remaining());
     }
 
     @Test
@@ -148,7 +151,8 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, spyWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, spyWebSocketHandler);
 
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         ByteBuffer pingBuffer = webSocketImpl.getPingBuffer();
@@ -166,7 +170,8 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, spyWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, spyWebSocketHandler);
 
         String message = "Message";
 
@@ -182,13 +187,13 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testWrap_creates_sniffer() {
+    public void testWrapCreatesSniffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -198,14 +203,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testWrapBuffer_enabled() {
+    public void testWrapBufferEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(50);
         srcBuffer.clear();
@@ -219,14 +225,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testWrapBuffer_not_enabled() {
+    public void testWrapBufferNotEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(25);
         srcBuffer.clear();
@@ -245,14 +252,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testUnwrapBuffer_enabled() {
+    public void testUnwrapBufferEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(50);
         srcBuffer.clear();
@@ -264,14 +272,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testUnwrapBuffer_not_enabled() {
+    public void testUnwrapBufferNotEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         ByteBuffer srcBuffer = ByteBuffer.allocate(25);
         srcBuffer.clear();
@@ -285,13 +294,13 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_notStarted() {
+    public void testPendingStateNotStarted() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -301,17 +310,17 @@ public class WebSocketImplTest {
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertTrue(outputBuffer.remaining() == _lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
-    public void testPending_state_notStarted__output_not_empty() {
+    public void testPendingStateNotStartedOutputNotEmpty() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         String message = "Message";
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
@@ -328,13 +337,13 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_notStarted__head_closed() {
+    public void testPendingStateNotStartedHeadClosed() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -347,11 +356,11 @@ public class WebSocketImplTest {
         ByteBuffer outputBuffer = webSocketImpl.getOutputBuffer();
         outputBuffer.flip();
 
-        assertTrue(outputBuffer.remaining() == _lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
-    public void testPending_state_connecting() {
+    public void testPendingStateConnecting() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -362,7 +371,7 @@ public class WebSocketImplTest {
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
 
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
@@ -374,17 +383,17 @@ public class WebSocketImplTest {
         outputBuffer.flip();
 
         transportWrapper.pending();
-        assertTrue(outputBuffer.remaining() == _lengthOfUpgradeRequest);
+        assertTrue(outputBuffer.remaining() == LENGTH_OF_UPGRADE_REQUEST);
     }
 
     @Test
-    public void testPending_state_connecting_head_closed_empty_buffer() {
+    public void testPendingStateConnectingHeadClosedEmptyBuffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -403,14 +412,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_flow_empty_output() {
+    public void testPendingStateFlowEmptyOutput() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -418,7 +428,9 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -436,13 +448,13 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testChunked_connection() {
+    public void testChunkedConnection() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -457,22 +469,23 @@ public class WebSocketImplTest {
         String[] lines = request.split("\r\n");
         String extractedKey = null;
         for (String l : lines) {
-        	if (l.startsWith("Sec-WebSocket-Key: ")) {
-        		extractedKey = l.substring(19).trim();
-        		break;
-        	}
+            if (l.startsWith("Sec-WebSocket-Key: ")) {
+                extractedKey = l.substring(19).trim();
+                break;
+            }
         }
         String expectedKey = null;
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
             expectedKey = Base64.encodeBase64StringLocal(
-                    messageDigest.digest((extractedKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes())).trim();
+                messageDigest.digest((extractedKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes())).trim();
         } catch (NoSuchAlgorithmException e) {
             // can't happen since SHA-1 is a known digest
         }
         // Assemble a response that the upgrade verifier will accept
-        byte[] fakeInput = ("http/1.1 101 switching protocols\nupgrade websocket\nconnection upgrade\nsec-websocket-protocol fakeprotocol\nsec-websocket-accept " +
-        		expectedKey).getBytes();
+        byte[] fakeInput = (
+            "http/1.1 101 switching protocols\nupgrade websocket\nconnection upgrade\nsec-websocket-protocol fakeprotocol\nsec-websocket-accept "
+                + expectedKey).getBytes();
 
         // Feed the response to the verifier, adding one byte at a time to simulate a response broken into chunks.
         // This test inspired by an issue with the IBM JRE which for some reason returned the service's response in multiple pieces.
@@ -490,14 +503,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_flow_output_not_empty() {
+    public void testPendingStateFlowOutputNotEmpty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -505,7 +519,9 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -527,14 +543,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_pong_changes_to_flow() {
+    public void testPendingStatePongChangesToFlow() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -542,8 +559,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -570,14 +590,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_closing_changes_to_closed() {
+    public void testPendingStateClosingChangesToClosed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -585,8 +606,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -613,14 +637,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPending_state_closing_head_closed() {
+    public void testPendingStateClosingHeadClosed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -628,8 +653,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -660,13 +688,13 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_state_not_started() {
+    public void testProcessStateNotStarted() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, webSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, webSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -680,21 +708,24 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_state_changes_from_connecting_to_flow_on_valid_reply() {
+    public void testProcessStateChangesFromConnectingToFlowOnValidReply() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -712,15 +743,20 @@ public class WebSocketImplTest {
 //        WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 //
 //        WebSocketImpl webSocketImpl = new WebSocketImpl();
-//        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+//          webSocketImpl
+//              .configure(_hostName,_webSocketPath,_webSocketQuery,_webSocketPort,_webSocketProtocol,_additionalHeaders,mockWebSocketHandler);
 //
 //        TransportInput mockTransportInput = mock(TransportInput.class);
 //        TransportOutput mockTransportOutput = mock(TransportOutput.class);
 //
 //        TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 //
-//        when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-//        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+//        when(mockWebSocketHandler
+//        .validateUpgradeReply((ByteBuffer) any()))
+//        .thenReturn(true);
+//        when(mockWebSocketHandler
+//        .createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders))
+//        .thenReturn("Request");
 //
 //        assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
 //        transportWrapper.pending();
@@ -738,14 +774,15 @@ public class WebSocketImplTest {
 //    }
 
     @Test
-    public void testProcess_state_flow_calls_underlying_amqp() {
+    public void testProcessStateFlowCallsUnderlyingAmqp() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = spy(new TransportInput() {
             ByteBuffer bb = ByteBufferUtils.newWriteableBuffer(4224);
@@ -780,8 +817,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_AMQP));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_AMQP));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -808,7 +848,8 @@ public class WebSocketImplTest {
 //        WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 //
 //        WebSocketImpl webSocketImpl = new WebSocketImpl();
-//        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+//        webSocketImpl
+//            .configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
 //
 //        TransportInput mockTransportInput = mock(TransportInput.class);
 //        TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -816,8 +857,12 @@ public class WebSocketImplTest {
 //        TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 //
 //        when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-//        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-//        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN));
+//        when(mockWebSocketHandler
+//        .createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders))
+//        .thenReturn("Request");
+//        when(mockWebSocketHandler
+//        .unwrapBuffer((ByteBuffer) any()))
+//        .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN));
 //
 //        assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
 //        transportWrapper.pending();
@@ -843,7 +888,8 @@ public class WebSocketImplTest {
 //        WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 //
 //        WebSocketImpl webSocketImpl = new WebSocketImpl();
-//        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+//        webSocketImpl
+//           .configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
 //
 //        TransportInput mockTransportInput = mock(TransportInput.class);
 //        TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -851,8 +897,12 @@ public class WebSocketImplTest {
 //        TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 //
 //        when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-//        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-//        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN));
+//        when(mockWebSocketHandler
+//        .createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders))
+//        .thenReturn("Request");
+//        when(mockWebSocketHandler
+//        .unwrapBuffer((ByteBuffer) any()))
+//        .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN));
 //
 //        assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
 //        transportWrapper.pending();
@@ -878,7 +928,8 @@ public class WebSocketImplTest {
 //        WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 //
 //        WebSocketImpl webSocketImpl = new WebSocketImpl();
-//        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+//        webSocketImpl
+//           .configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
 //
 //        TransportInput mockTransportInput = mock(TransportInput.class);
 //        TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -886,8 +937,12 @@ public class WebSocketImplTest {
 //        TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 //
 //        when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-//        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-//        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
+//        when(mockWebSocketHandler
+//        .createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders))
+//        .thenReturn("Request");
+//        when(mockWebSocketHandler
+//        .unwrapBuffer((ByteBuffer) any()))
+//        .thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
 //
 //        assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
 //        transportWrapper.pending();
@@ -913,7 +968,8 @@ public class WebSocketImplTest {
 //        WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 //
 //        WebSocketImpl webSocketImpl = new WebSocketImpl();
-//        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+//        webSocketImpl
+//           .configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
 //
 //        TransportInput mockTransportInput = mock(TransportInput.class);
 //        TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -921,8 +977,12 @@ public class WebSocketImplTest {
 //        TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 //
 //        when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-//        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-//        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
+//        when(mockWebSocketHandler
+//        .createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders))
+//        .thenReturn("Request");
+//        when(mockWebSocketHandler
+//        .unwrapBuffer((ByteBuffer) any()))
+//        .thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
 //
 //        assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
 //        transportWrapper.pending();
@@ -940,14 +1000,15 @@ public class WebSocketImplTest {
 //    }
 //
     @Test
-    public void testProcess_state_flow_changes_to_pong_after_ping_and_copies_the_buffer() {
+    public void testProcessStateFlowChangesToPongAfterPingAndCopiesTheBuffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -955,8 +1016,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -980,14 +1044,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_state_flow_changes_to_closing_after_close_and_copies_the_buffer() {
+    public void testProcessStateFlowChangesToClosingAfterCloseAndCopiesTheBuffer() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -995,8 +1060,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_CLOSE));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -1020,14 +1088,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_state_pong_changes_to_flow_head_closed() {
+    public void testProcessStatePongChangesToFlowHeadClosed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1035,8 +1104,11 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -1088,7 +1160,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_multiple_WS_requests_chunks() {
+    public void testProcessMultipleWSRequestsChunks() {
         byte[] message1 = createMessage(100);
         byte[] message2 = createMessage(100);
         byte[] message3 = createMessage(100);
@@ -1114,7 +1186,8 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = spy(new TransportInput() {
             ByteBuffer bb = ByteBufferUtils.newWriteableBuffer(4224);
@@ -1150,7 +1223,9 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
         when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>() {
             @Override
             public WebSocketHandler.WebsocketTuple answer(InvocationOnMock invocation) throws Throwable {
@@ -1188,7 +1263,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testProcess_small_chunks_one_byte_payload_no_mask() {
+    public void testProcessSmallChunksOneBytePayloadNoMask() {
         final int payloadLength = 125;
         int chunkSize = 10;
         int chunkCount = 1 + payloadLength / chunkSize;
@@ -1199,7 +1274,8 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = spy(new TransportInput() {
             ByteBuffer bb = ByteBufferUtils.newWriteableBuffer(4224);
@@ -1233,7 +1309,9 @@ public class WebSocketImplTest {
         TransportWrapper transportWrapper = webSocketImpl.wrap(mockTransportInput, mockTransportOutput);
 
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn("Request");
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn("Request");
         when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenAnswer(new Answer<WebSocketHandler.WebsocketTuple>() {
             @Override
             public WebSocketHandler.WebsocketTuple answer(InvocationOnMock invocation) throws Throwable {
@@ -1305,7 +1383,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_websocket_not_enabled() {
+    public void testHeadWebsocketNotEnabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1322,7 +1400,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_state_not_started() {
+    public void testHeadStateNotStarted() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1339,14 +1417,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_state_connecting() {
+    public void testHeadStateConnecting() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1355,7 +1434,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1370,14 +1451,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_state_flow_underlying_head_empty() {
+    public void testHeadStateFlowUnderlyingHeadEmpty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1386,7 +1468,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1404,14 +1488,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_state_flow_underlying_head_not_empty() {
+    public void testHeadStateFlowUnderlyingHeadNotEmpty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1420,7 +1505,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1441,14 +1528,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testHead_state_pong() {
+    public void testHeadStatePong() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1457,8 +1545,11 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -1488,7 +1579,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPop_websocket_not_enabled() {
+    public void testPopWebsocketNotEnabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1511,7 +1602,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPop_websocket_not_started() {
+    public void testPopWebsocketNotStarted() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1534,14 +1625,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPop_websocket_connecting() {
+    public void testPopWebsocketConnecting() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1550,7 +1642,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1565,19 +1659,20 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == _allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
     }
 
     @Test
-    public void testPop_state_connected_flow() {
+    public void testPopStateConnectedFlow() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1586,7 +1681,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1606,21 +1703,22 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == _allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
 
         verify(mockTransportOutput, times(1)).pop(message.getBytes().length - webSocketHeaderSize);
     }
 
     @Test
-    public void testPop_state_connected_pong() {
+    public void testPopStateConnectedPong() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1629,8 +1727,11 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
-        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
+        when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any()))
+            .thenReturn(new WebSocketHandler.WebsocketTuple(7, WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING));
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
         transportWrapper.pending();
@@ -1657,21 +1758,22 @@ public class WebSocketImplTest {
         transportWrapper.pop(message.getBytes().length);
 
         ByteBuffer actual = webSocketImpl.getOutputBuffer();
-        assertTrue(actual.limit() == _allocatedWebSocketBufferSize);
+        assertTrue(actual.limit() == ALLOCATED_WEB_SOCKET_BUFFER_SIZE);
         assertTrue(actual.position() == 0);
 
         verify(mockTransportOutput, times(1)).pop(message.getBytes().length);
     }
 
     @Test
-    public void testPop_websocket_connecting_outbut_buffer_is_not_empty() {
+    public void testPopWebsocketConnectingOutbutBufferIsNotEmpty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1680,7 +1782,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1698,14 +1802,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPop_state_connected_flow_outbut_buffer_is_not_empty() {
+    public void testPopStateConnectedFlowOutbutBufferIsNotEmpty() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1714,7 +1819,9 @@ public class WebSocketImplTest {
 
         String request = "Request";
         when(mockWebSocketHandler.validateUpgradeReply((ByteBuffer) any())).thenReturn(true);
-        when(mockWebSocketHandler.createUpgradeRequest(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders)).thenReturn(request);
+        when(mockWebSocketHandler
+            .createUpgradeRequest(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders))
+            .thenReturn(request);
         //when(mockWebSocketHandler.unwrapBuffer((ByteBuffer) any())).thenReturn(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_PING);
 
         assertTrue(webSocketImpl.getState() == WebSocket.WebSocketState.PN_WS_NOT_STARTED);
@@ -1736,14 +1843,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testCapacity_enabled() {
+    public void testCapacityEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1765,14 +1873,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testCapacity_enabled_tail_closed() {
+    public void testCapacityEnabledTailClosed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1795,14 +1904,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testCapacity_not_enabled() {
+    public void testCapacityNotEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1822,14 +1932,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPosition_enabled() {
+    public void testPositionEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1850,14 +1961,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPosition_enabled_tail_closed() {
+    public void testPositionEnabledTailClosed() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1879,14 +1991,15 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testPosition_not_enabled() {
+    public void testPositionNotEnabled() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
 
         TransportInput mockTransportInput = mock(TransportInput.class);
         TransportOutput mockTransportOutput = mock(TransportOutput.class);
@@ -1932,7 +2045,7 @@ public class WebSocketImplTest {
     }
 
     @Test
-    public void testTail_websocket_not_enabled() {
+    public void testTailWebsocketNotEnabled() {
         init();
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
@@ -1956,47 +2069,48 @@ public class WebSocketImplTest {
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, _additionalHeaders, mockWebSocketHandler);
+        webSocketImpl
+            .configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders, mockWebSocketHandler);
         webSocketImpl.isWebSocketEnabled = true;
 
         String actual = webSocketImpl.toString();
 
-        String expexted1 = "WebSocketImpl [isWebSocketEnabled=true" +
-                ", state=PN_WS_NOT_STARTED" +
-                ", protocol=" + _webSocketProtocol +
-                ", host=" + _hostName +
-                ", path=" + _webSocketPath +
-                ", query=" + _webSocketQuery +
-                ", port=" + _webSocketPort;
-
+        String expected1 = String.join("", "WebSocketImpl [isWebSocketEnabled=true",
+            ", state=PN_WS_NOT_STARTED",
+            ", protocol=" + webSocketProtocol,
+            ", host=" + hostName,
+            ", path=" + webSocketPath,
+            ", query=" + webSocketQuery,
+            ", port=" + webSocketPort);
         String expected2 = ", additionalHeaders=header3:content3, header2:content2, header1:content1]";
 
-        assertTrue(actual.startsWith(expexted1));
-        actual = actual.substring(expexted1.length());
+        assertTrue(actual.startsWith(expected1));
+        actual = actual.substring(expected1.length());
         assertTrue(actual.equals(expected2));
     }
 
     @Test
-    public void testToString_no_additional_headers() {
+    public void testToStringNoAdditionalHeaders() {
         init();
 
         WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
         WebSocketHandlerImpl mockWebSocketHandler = mock(webSocketHandler.getClass());
 
         WebSocketImpl webSocketImpl = new WebSocketImpl();
-        webSocketImpl.configure(_hostName, _webSocketPath, _webSocketQuery, _webSocketPort, _webSocketProtocol, null, mockWebSocketHandler);
+        webSocketImpl.configure(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, null, mockWebSocketHandler);
         webSocketImpl.isWebSocketEnabled = true;
 
         String actual = webSocketImpl.toString();
 
-        String expexted = "WebSocketImpl [isWebSocketEnabled=true" +
-                ", state=PN_WS_NOT_STARTED" +
-                ", protocol=" + _webSocketProtocol +
-                ", host=" + _hostName +
-                ", path=" + _webSocketPath +
-                ", query=" + _webSocketQuery +
-                ", port=" + _webSocketPort + "]";
+        String expected = String.join("", "WebSocketImpl [isWebSocketEnabled=true",
+            ", state=PN_WS_NOT_STARTED",
+            ", protocol=" + webSocketProtocol,
+            ", host=" + hostName,
+            ", path=" + webSocketPath,
+            ", query=" + webSocketQuery,
+            ", port=" + webSocketPort,
+            "]");
 
-        assertEquals("Unexpected value for toString()", expexted, actual);
+        assertEquals("Unexpected value for toString()", expected, actual);
     }
 }

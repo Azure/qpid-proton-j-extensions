@@ -24,23 +24,23 @@ public class ProxyHandlerImplTest {
         final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
         final String actualProxyRequest = proxyHandler.createProxyRequest(hostName, headers);
 
-        final String expectedProxyRequest = "CONNECT testHostName HTTP/1.1\r\n" +
-                "Host: testHostName\r\n" +
-                "Connection: Keep-Alive\r\n" +
-                "header2: headervalue2\r\n" +
-                "header1: headervalue1\r\n" +
-                "\r\n";
+        final String expectedProxyRequest = String.join("\r\n", "CONNECT testHostName HTTP/1.1",
+            "Host: testHostName",
+            "Connection: Keep-Alive",
+            "header2: headervalue2",
+            "header1: headervalue1",
+            "\r\n");
 
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
 
     @ParameterizedTest
-	@ValueSource(ints = {200, 201, 202, 203, 204, 205, 206})
+    @ValueSource(ints = {200, 201, 202, 203, 204, 205, 206})
     public void testValidateProxyResponseOnSuccess(int httpCode) {
-        final String validResponse = "HTTP/1.1 " + httpCode + "Connection Established\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
+        final String validResponse = "HTTP/1.1 " + httpCode + "Connection Established\r\n"
+            + "FiddlerGateway: Direct\r\n"
+            + "StartTime: 13:08:21.574\r\n"
+            + "Connection: close";
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(validResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
@@ -56,11 +56,11 @@ public class ProxyHandlerImplTest {
 
     @Test
     public void testValidateProxyResponseOnFailure() {
-        final String failResponse = "HTTP/1.1 407 Proxy Auth Required\r\n" +
-                "Connection: close\r\n" +
-                "Proxy-Authenticate: Basic realm=\"FiddlerProxy (user: 1, pass: 1)\"\r\n" +
-                "Content-Type: text/html\r\n" +
-                "<html><body>[Fiddler] Proxy Authentication Required.<BR></body></html>\r\n\r\n";
+        final String failResponse = String.join("\r\n", "HTTP/1.1 407 Proxy Auth Required",
+            "Connection: close",
+            "Proxy-Authenticate: Basic realm=\\\"FiddlerProxy (user: 1, pass: 1)\\",
+            "Content-Type: text/html",
+            "<html><body>[Fiddler] Proxy Authentication Required.<BR></body></html>\r\n");
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(failResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
@@ -76,11 +76,11 @@ public class ProxyHandlerImplTest {
 
     @Test
     public void testValidateProxyResponseOnInvalidResponse() {
-        final String invalidResponse = "HTTP/1.1 abc Connection Established\r\n" +
-                "HTTP/1.1 200 Connection Established\r\n" +
-                "FiddlerGateway: Direct\r\n" +
-                "StartTime: 13:08:21.574\r\n" +
-                "Connection: close\r\n\r\n";
+        final String invalidResponse = String.join("\r\n", "HTTP/1.1 abc Connection Established",
+            "HTTP/1.1 200 Connection Established",
+            "FiddlerGateway: Direct",
+            "StartTime: 13:08:21.574",
+            "Connection: close\r\n");
         final ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(invalidResponse.getBytes(StandardCharsets.UTF_8));
         buffer.flip();
