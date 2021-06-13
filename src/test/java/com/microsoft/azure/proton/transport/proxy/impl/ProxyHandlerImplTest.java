@@ -109,4 +109,26 @@ public class ProxyHandlerImplTest {
 
         Assert.assertEquals(0, buffer.remaining());
     }
+
+    @Test
+    public void testCreateProxyRequestStream() {
+        final String hostName = "testHostName";
+        final HashMap<String, String> headers = new HashMap<>();
+        headers.put("header1", "headervalue1");
+        headers.put("header2", "headervalue2");
+
+        final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
+        final byte[] actualProxyRequest = proxyHandler.createProxyRequestStream(hostName, headers);
+
+        final String actualProxyRequestString = new String(actualProxyRequest,StandardCharsets.ISO_8859_1);
+
+        final String expectedProxyRequest = String.join("\r\n", "CONNECT testHostName HTTP/1.1",
+            "Host: testHostName",
+            "Connection: Keep-Alive",
+            "header2: headervalue2",
+            "header1: headervalue1",
+            "\r\n");
+
+        Assert.assertEquals(expectedProxyRequest, actualProxyRequestString);
+    }
 }
