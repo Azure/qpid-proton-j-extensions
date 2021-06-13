@@ -120,7 +120,7 @@ public class ProxyHandlerImplTest {
         final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
         final byte[] actualProxyRequest = proxyHandler.createProxyRequestStream(hostName, headers);
 
-        final String actualProxyRequestString = new String(actualProxyRequest,StandardCharsets.ISO_8859_1);
+        final String actualProxyRequestString = new String(actualProxyRequest, StandardCharsets.ISO_8859_1);
 
         final String expectedProxyRequest = String.join("\r\n", "CONNECT testHostName HTTP/1.1",
             "Host: testHostName",

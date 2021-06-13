@@ -43,7 +43,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
      */
     @Override
     public byte[] createProxyRequestStream(String hostName, Map<String, String> additionalHeaders) {
-       return getConnectionRequest(hostName, additionalHeaders).getBytes(StandardCharsets.ISO_8859_1);
+        return getConnectionRequest(hostName, additionalHeaders).getBytes(StandardCharsets.ISO_8859_1);
     }
 
     private String getConnectionRequest(String hostName, Map<String, String> additionalHeaders) {
