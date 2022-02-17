@@ -1,8 +1,5 @@
-/*
- * Copyright (c) Microsoft. All rights reserved.
- * Licensed under the MIT license. See LICENSE file in the project root for full license information.
- */
-
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 package com.microsoft.azure.proton.transport.proxy.impl;
 
 import java.nio.ByteBuffer;
@@ -12,7 +9,7 @@ import java.util.Map;
 
 import static com.microsoft.azure.proton.transport.proxy.impl.StringUtils.NEW_LINE;
 
-class TestUtils {
+final class TestUtils {
     /**
      * Encoding for the HTTP proxy response.
      */
@@ -38,8 +35,8 @@ class TestUtils {
     }
 
     /**
-     * Creates a proxy HTTP response and returns it as a string. If there is content, {@link #CONTENT_LENGTH} and {@link
-     * #CONTENT_TYPE} headers are added to the {@code headers} parameter.
+     * Creates a proxy HTTP response and returns it as a string. If there is content, {@link #CONTENT_LENGTH} and
+     * {@link #CONTENT_TYPE} headers are added to the {@code headers} parameter.
      *
      * @param statusLine HTTP status line to create the proxy response with.
      * @param headers A set of headers to add to the proxy response.

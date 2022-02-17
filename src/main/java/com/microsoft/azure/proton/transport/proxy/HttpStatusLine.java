@@ -1,7 +1,5 @@
-/*
- * Copyright (c) Microsoft. All rights reserved.
- * Licensed under the MIT license. See LICENSE file in the project root for full license information.
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 package com.microsoft.azure.proton.transport.proxy;
 
@@ -14,7 +12,7 @@ import java.util.Objects;
  *
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC 2616</a>
  */
-public class HttpStatusLine {
+public final class HttpStatusLine {
     private final String httpVersion;
     private final int statusCode;
     private final String reason;

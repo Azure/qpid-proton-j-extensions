@@ -1,7 +1,5 @@
-/*
- * Copyright (c) Microsoft. All rights reserved.
- * Licensed under the MIT license. See LICENSE file in the project root for full license information.
- */
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
@@ -17,7 +15,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -25,7 +22,7 @@ import java.util.Map;
  *
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
  */
-public class ProxyResponseImpl implements ProxyResponse {
+public final class ProxyResponseImpl implements ProxyResponse {
     private static final String CONTENT_LENGTH = "Content-Length";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyResponseImpl.class);
 
@@ -47,9 +44,9 @@ public class ProxyResponseImpl implements ProxyResponse {
         int size = buffer.remaining();
 
         if (size <= 0) {
-            throw new IllegalArgumentException(String.format(Locale.ROOT,
-                    "Cannot create a buffer with no items in it. Limit: %s. Position: %s. Cap: %s",
-                    buffer.limit(), buffer.position(), buffer.capacity()));
+            LOGGER.warn("Cannot create a buffer with no items in it. Limit: {}. Position: {}. Cap: {}",
+                    buffer.limit(), buffer.position(), buffer.capacity());
+            return null;
         }
 
         final byte[] responseBytes = new byte[size];

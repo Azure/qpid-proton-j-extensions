@@ -42,6 +42,7 @@ public class ProxyHandlerImplTest {
 
     @ParameterizedTest
     @ValueSource(ints = {200, 201, 202, 203, 204, 205, 206})
+    public void testValidateProxyResponseOnSuccess(int httpCode) {
         // Arrange
         final HttpStatusLine statusLine = HttpStatusLine.create("HTTP/1.1 200 Connection Established");
         final ProxyResponse response = mock(ProxyResponse.class);
@@ -103,5 +104,4 @@ public class ProxyHandlerImplTest {
         Assert.assertEquals(emptyResponse, responseResult.getError());
         Assert.assertSame(buffer, response.getContents());
     }
-
 }
