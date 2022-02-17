@@ -22,9 +22,9 @@ public interface ProxyHandler {
          * Creates a new response.
          *
          * @param isSuccess {@code true} if it was successful; {@code false} otherwise.
-         * @param error The error from the proxy. Or {@code null} if there was none.
+         * @param response The response from the proxy.
          */
-        public ProxyResponseResult(final Boolean isSuccess, final String error) {
+        public ProxyResponseResult(final Boolean isSuccess, final ProxyResponse response) {
             this.isSuccess = isSuccess;
             this.response = Objects.requireNonNull(response, "'response' cannot be null.");
         }

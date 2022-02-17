@@ -180,10 +180,10 @@ public class DigestProxyChallengeProcessorImplTest {
     }
 
     private static String generateProxyChallenge(String realm, String nonce, String qop) {
-        final String digest = String.format("%s %s realm=\"%s\", nonce=\"%s\", qop=\"%s\", stale=false",
-                Constants.PROXY_AUTHENTICATE_HEADER, Constants.DIGEST, realm, nonce, qop);
-        final String basic = String.format("%s %s realm=\"%s\"",
-                Constants.PROXY_AUTHENTICATE_HEADER, Constants.BASIC, realm);
+        final String digest = String.format("%s realm=\"%s\", nonce=\"%s\", qop=\"%s\", stale=false",
+                Constants.DIGEST, realm, nonce, qop);
+        final String basic = String.format("%s realm=\"%s\"",
+                Constants.BASIC, realm);
 
         return String.join(NEW_LINE,
                 "HTTP/1.1 407 Proxy Authentication Required",
