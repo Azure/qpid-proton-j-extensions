@@ -10,7 +10,6 @@ import java.util.Locale;
  */
 class Constants {
     static final String PROXY_AUTHENTICATE = "Proxy-Authenticate";
-    static final String PROXY_AUTHENTICATE_HEADER = PROXY_AUTHENTICATE + ":";
     static final String PROXY_AUTHORIZATION = "Proxy-Authorization";
 
     static final String DIGEST = "Digest";

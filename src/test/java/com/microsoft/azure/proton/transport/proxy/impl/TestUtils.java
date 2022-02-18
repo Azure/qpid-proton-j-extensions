@@ -5,6 +5,7 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import static com.microsoft.azure.proton.transport.proxy.impl.StringUtils.NEW_LINE;
@@ -30,7 +31,7 @@ final class TestUtils {
      * @param headers A set of headers to add to the proxy response.
      * @return A string representing the contents of the HTTP response.
      */
-    static String createProxyResponse(String[] statusLine, Map<String, String> headers) {
+    static String createProxyResponse(String[] statusLine, Map<String, List<String>> headers) {
         return createProxyResponse(statusLine, headers, null);
     }
 
@@ -43,21 +44,21 @@ final class TestUtils {
      * @param body Optional HTTP content body.
      * @return A string representing the contents of the HTTP response.
      */
-    static String createProxyResponse(String[] statusLine, Map<String, String> headers, String body) {
+    static String createProxyResponse(String[] statusLine, Map<String, List<String>> headers, String body) {
         final ByteBuffer encoded;
         if (body != null) {
             encoded = ENCODING.encode(body);
             encoded.flip();
             final int size = encoded.remaining();
 
-            headers.put(CONTENT_TYPE, CONTENT_TYPE_TEXT);
-            headers.put(CONTENT_LENGTH, Integer.toString(size));
+            headers.put(CONTENT_TYPE, List.of(CONTENT_TYPE_TEXT));
+            headers.put(CONTENT_LENGTH, List.of(Integer.toString(size)));
         }
 
         final StringBuilder formattedHeaders = headers.entrySet()
                 .stream()
                 .collect(StringBuilder::new,
-                        (builder, entry) -> builder.append(String.format(HEADER_FORMAT, entry.getKey(), entry.getValue())),
+                        (builder, entry) -> entry.getValue().forEach(value -> builder.append(String.format(HEADER_FORMAT, entry.getKey(), value))),
                         StringBuilder::append);
 
         String response = String.join(NEW_LINE,

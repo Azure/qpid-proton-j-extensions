@@ -249,13 +249,13 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         LOGGER.warn("Request is missing content. Waiting for more bytes.");
                         break;
                     }
-
-                    final ProxyResponseResult result = proxyHandler.validateProxyResponse(current);
-                    //Clean up proxy auth response
+                    //Clean up response to prepare for challenge
                     proxyAuthResponse.set(null);
 
+                    final ProxyResponseResult result = proxyHandler.validateProxyResponse(current);
+
                     // When connecting to proxy, it does not challenge us for authentication. If the user has specified
-                    // a configuration and it is not NONE, then we fail due to misconfiguration.
+                    // a configuration, and it is not NONE, then we fail due to misconfiguration.
                     if (result.isSuccess()) {
                         if (proxyConfiguration == null || proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
@@ -306,6 +306,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         LOGGER.warn("Request is missing content. Waiting for more bytes.");
                         break;
                     }
+                    //Clean up
+                    proxyAuthResponse.set(null);
 
                     final ProxyResponseResult challengeResult = proxyHandler.validateProxyResponse(response);
 
@@ -482,7 +484,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
          *
          * @param headers HTTP proxy response headers from service call.
          * @return The supported proxy authentication methods. Or, an empty set if the value of {@code error} is {@code
-         *         null}, an empty string. Or, if it does not contain{@link Constants#PROXY_AUTHENTICATE_HEADER} with
+         *         null}, an empty string. Or, if it does not contain{@link Constants#PROXY_AUTHENTICATE} with
          *         {@link Constants#BASIC_LOWERCASE} or {@link Constants#DIGEST_LOWERCASE}.
          */
         private Set<ProxyAuthenticationType> getAuthenticationTypes(Map<String, List<String>> headers) {

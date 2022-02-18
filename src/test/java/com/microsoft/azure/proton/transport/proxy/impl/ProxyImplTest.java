@@ -45,9 +45,7 @@ import java.util.Optional;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.DIGEST;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHENTICATE;
-import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHENTICATE_HEADER;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHORIZATION;
-import static com.microsoft.azure.proton.transport.proxy.impl.StringUtils.NEW_LINE;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.isA;
@@ -369,7 +367,9 @@ public class ProxyImplTest {
         when(mockHandler.createProxyRequest(any(), any())).thenReturn("proxy request");
 
         when(mockResponse.isSuccess()).thenReturn(false);
-        when(mockResponse.getResponse()).thenReturn(getProxyResponse(false, false));
+
+        final String[] statusLine = new String[]{"HTTP/1.1", "500", "Internal Server Error"};
+        when(mockResponse.getResponse()).thenReturn(getProxyResponse(statusLine, false, false));
         when(mockHandler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -698,7 +698,8 @@ public class ProxyImplTest {
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         when(mockResponse.isSuccess()).thenReturn(false);
-        when(mockResponse.getResponse()).thenReturn(getProxyResponse(true, false));
+        final String[] statusLine = new String[]{"HTTP/1.1", "407", "Proxy Authentication Required"};
+        when(mockResponse.getResponse()).thenReturn(getProxyResponse(statusLine, true, false));
 
         // Act and Assert
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -766,7 +767,8 @@ public class ProxyImplTest {
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         when(mockResponse.isSuccess()).thenReturn(false, true);
-        when(mockResponse.getResponse()).thenReturn(getProxyResponse(true, false));
+        final String[] statusLine = new String[]{"HTTP/1.1", "407", "Proxy Authentication Required"};
+        when(mockResponse.getResponse()).thenReturn(getProxyResponse(statusLine, true, true));
 
         // Act and Assert
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -822,7 +824,8 @@ public class ProxyImplTest {
         when(handler.validateProxyResponse(any())).thenReturn(mockResponse);
 
         when(mockResponse.isSuccess()).thenReturn(false, true);
-        when(mockResponse.getResponse()).thenReturn(getProxyResponse(false, true));
+        final String[] statusLine = new String[]{"HTTP/1.1", "407", "Proxy Authentication Required"};
+        when(mockResponse.getResponse()).thenReturn(getProxyResponse(statusLine, true, true));
 
         // Act and Assert
         Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
@@ -902,46 +905,25 @@ public class ProxyImplTest {
         }
     }
 
-    private static ProxyResponse getProxyResponse(boolean includeBasic, boolean includeDigest) {
-        final String[] statusLine = new String[]{"HTTP/1.1", "200", "Connection Established"};
-        final Map<String, String> headers = new HashMap<>();
 
-        final String response = TestUtils.createProxyResponse(statusLine, headers);
-        final ByteBuffer contents = TestUtils.ENCODING.encode(response);
-
-        ProxyResponse proxyResponse = ProxyResponseImpl.create(contents);
+    private static ProxyResponse getProxyResponse(String[] statusLine, boolean includeBasic, boolean includeDigest) {
+        final Map<String, List<String>> headers = new HashMap<>();
         List<String> authorizationTypes = new ArrayList<>();
-
         if (includeBasic) {
             authorizationTypes.add(BASIC);
         }
         if (includeDigest) {
-            authorizationTypes.add(DIGEST);
+            authorizationTypes.add(String.format("%s realm=\"%s\", nonce=\"A randomly set nonce.\", qop=\"auth\", stale=false",
+                DIGEST, PROXY));
         }
 
-        proxyResponse.getHeaders().put(PROXY_AUTHENTICATE, authorizationTypes);
-        return proxyResponse;
-    }
-
-    private static String getProxyChallenge(boolean includeBasic, boolean includeDigest) {
-        StringBuilder builder = new StringBuilder("HTTP/1.1 407 Proxy Authentication Required");
-        builder.append(NEW_LINE);
-        builder.append("Date: Sun, 05 May 2019 07:28:00 GMT");
-        builder.append(NEW_LINE);
-
-        if (includeBasic) {
-            builder.append(String.join(" ", PROXY_AUTHENTICATE_HEADER, BASIC));
-            builder.append(NEW_LINE);
+        if (!authorizationTypes.isEmpty()) {
+            headers.put(PROXY_AUTHENTICATE, authorizationTypes);
         }
 
-        if (includeDigest) {
-            builder.append(String.format("%s %s realm=\"%s\", nonce=\"A randomly set nonce.\", qop=\"auth\", stale=false",
-                    PROXY_AUTHENTICATE_HEADER, DIGEST, PROXY));
-            builder.append(NEW_LINE);
-        }
+        final String response = TestUtils.createProxyResponse(statusLine, headers);
+        final ByteBuffer contents = TestUtils.ENCODING.encode(response);
 
-        builder.append(NEW_LINE);
-
-        return builder.toString();
+        return ProxyResponseImpl.create(contents);
     }
 }

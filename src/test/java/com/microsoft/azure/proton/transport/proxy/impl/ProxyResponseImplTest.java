@@ -23,10 +23,10 @@ public class ProxyResponseImplTest {
     public void validResponse() {
         // Arrange
         final String[] statusLine = new String[]{"HTTP/1.1", "200", "Connection Established"};
-        final Map<String, String> headers = new HashMap<>();
-        headers.put("FiddlerGateway", "Direct");
-        headers.put("StartTime", "13:08:21.574");
-        headers.put("Connection", "close");
+        final Map<String, List<String>> headers = new HashMap<>();
+        headers.put("FiddlerGateway", List.of("Direct"));
+        headers.put("StartTime", List.of("13:08:21.574"));
+        headers.put("Connection", List.of("close"));
 
         final String response = TestUtils.createProxyResponse(statusLine, headers);
         final ByteBuffer contents = TestUtils.ENCODING.encode(response);
@@ -53,7 +53,7 @@ public class ProxyResponseImplTest {
             Assert.assertTrue(actualHeaders.containsKey(key));
             Assert.assertNotNull(actualValue);
             Assert.assertEquals(1, actualValue.size());
-            Assert.assertEquals(value, actualValue.get(0));
+            Assert.assertEquals(value.get(0), actualValue.get(0));
         });
     }
 
@@ -64,10 +64,10 @@ public class ProxyResponseImplTest {
     public void invalidHeader() {
         // Arrange
         final String[] statusLine = new String[]{"HTTP/1.1", "abc", "Connection Established"};
-        final Map<String, String> headers = new HashMap<>();
-        headers.put("FiddlerGateway", "Direct");
-        headers.put("StartTime", "13:08:21.574");
-        headers.put("Connection", "close");
+        final Map<String, List<String>> headers = new HashMap<>();
+        headers.put("FiddlerGateway", List.of("Direct"));
+        headers.put("StartTime", List.of("13:08:21.574"));
+        headers.put("Connection", List.of("close"));
 
         final String response = TestUtils.createProxyResponse(statusLine, headers);
         final ByteBuffer contents = TestUtils.ENCODING.encode(response);
