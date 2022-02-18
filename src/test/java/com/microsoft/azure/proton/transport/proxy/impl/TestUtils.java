@@ -5,6 +5,7 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,8 +52,8 @@ final class TestUtils {
             encoded.flip();
             final int size = encoded.remaining();
 
-            headers.put(CONTENT_TYPE, List.of(CONTENT_TYPE_TEXT));
-            headers.put(CONTENT_LENGTH, List.of(Integer.toString(size)));
+            headers.put(CONTENT_TYPE, Collections.singletonList(CONTENT_TYPE_TEXT));
+            headers.put(CONTENT_LENGTH, Collections.singletonList(Integer.toString(size)));
         }
 
         final StringBuilder formattedHeaders = headers.entrySet()

@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,9 @@ public class ProxyResponseImplTest {
         // Arrange
         final String[] statusLine = new String[]{"HTTP/1.1", "200", "Connection Established"};
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("FiddlerGateway", List.of("Direct"));
-        headers.put("StartTime", List.of("13:08:21.574"));
-        headers.put("Connection", List.of("close"));
+        headers.put("FiddlerGateway", Collections.singletonList("Direct"));
+        headers.put("StartTime", Collections.singletonList("13:08:21.574"));
+        headers.put("Connection", Collections.singletonList("close"));
 
         final String response = TestUtils.createProxyResponse(statusLine, headers);
         final ByteBuffer contents = TestUtils.ENCODING.encode(response);
@@ -65,9 +66,9 @@ public class ProxyResponseImplTest {
         // Arrange
         final String[] statusLine = new String[]{"HTTP/1.1", "abc", "Connection Established"};
         final Map<String, List<String>> headers = new HashMap<>();
-        headers.put("FiddlerGateway", List.of("Direct"));
-        headers.put("StartTime", List.of("13:08:21.574"));
-        headers.put("Connection", List.of("close"));
+        headers.put("FiddlerGateway", Collections.singletonList("Direct"));
+        headers.put("StartTime", Collections.singletonList("13:08:21.574"));
+        headers.put("Connection", Collections.singletonList("close"));
 
         final String response = TestUtils.createProxyResponse(statusLine, headers);
         final ByteBuffer contents = TestUtils.ENCODING.encode(response);
