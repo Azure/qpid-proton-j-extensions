@@ -4,7 +4,6 @@
 package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.HttpStatusLine;
-import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import com.microsoft.azure.proton.transport.proxy.ProxyResponse;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,12 +50,11 @@ public class ProxyHandlerImplTest {
         final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
 
         // Act
-        final ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(response);
+        final boolean result = proxyHandler.validateProxyResponse(response);
 
         // Assert
-        Assert.assertTrue(responseResult.isSuccess());
-        Assert.assertSame(response, responseResult.getResponse());
-        Assert.assertNull(responseResult.getError());
+        Assert.assertTrue(result);
+
     }
 
     @Test
@@ -74,11 +72,10 @@ public class ProxyHandlerImplTest {
         final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
 
         // Act
-        final ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(response);
+        final boolean result = proxyHandler.validateProxyResponse(response);
 
         // Assert
-        Assert.assertFalse(responseResult.isSuccess());
-        Assert.assertEquals(contents, responseResult.getError());
+        Assert.assertFalse(result);
     }
 
     @Test
@@ -97,11 +94,9 @@ public class ProxyHandlerImplTest {
         final ProxyHandlerImpl proxyHandler = new ProxyHandlerImpl();
 
         // Act
-        ProxyHandler.ProxyResponseResult responseResult = proxyHandler.validateProxyResponse(response);
+        final boolean result = proxyHandler.validateProxyResponse(response);
 
         // Assert
-        Assert.assertFalse(responseResult.isSuccess());
-        Assert.assertEquals(emptyResponse, responseResult.getError());
-        Assert.assertSame(buffer, response.getContents());
+        Assert.assertFalse(result);
     }
 }

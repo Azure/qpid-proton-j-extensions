@@ -59,19 +59,17 @@ public class ProxyHandlerImpl implements ProxyHandler {
      * {@inheritDoc}
      */
     @Override
-    public ProxyResponseResult validateProxyResponse(ProxyResponse response) {
+    public boolean validateProxyResponse(ProxyResponse response) {
         Objects.requireNonNull(response, "'response' cannot be null.");
 
         final HttpStatusLine status = response.getStatus();
         if (status == null) {
-            logger.warn("Response does not contain a status line. {}", response);
-            return new ProxyResponseResult(false, response);
+            logger.error("Response does not contain a status line. {}", response);
+            return false;
         }
 
-        final boolean isSuccessful = status.getStatusCode() == 200
+        return status.getStatusCode() == 200
                 && SUPPORTED_VERSIONS.contains(status.getProtocolVersion())
                 && CONNECTION_ESTABLISHED.equalsIgnoreCase(status.getReason());
-
-        return new ProxyResponseResult(isSuccessful, response);
     }
 }

@@ -8,7 +8,6 @@ import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
 import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
-import com.microsoft.azure.proton.transport.proxy.ProxyHandler.ProxyResponseResult;
 import com.microsoft.azure.proton.transport.proxy.ProxyResponse;
 import org.apache.qpid.proton.engine.Transport;
 import org.apache.qpid.proton.engine.TransportException;
@@ -186,7 +185,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
         private final ByteBuffer head;
 
         // Represents a response from a CONNECT request.
-        private final AtomicReference<ProxyResponse> proxyAuthResponse = new AtomicReference<>();
+        private final AtomicReference<ProxyResponse> proxyResponse = new AtomicReference<>();
 
         /**
          * Creates a transport wrapper that wraps the WebSocket transport input and output.
@@ -244,19 +243,19 @@ public class ProxyImpl implements Proxy, TransportLayer {
                 case PN_PROXY_CONNECTING:
                     inputBuffer.flip();
 
-                    final ProxyResponse current = readProxyResponse(inputBuffer);
-                    if (current != null && current.isMissingContent()) {
+                    final ProxyResponse connectResponse = readProxyResponse(inputBuffer);
+
+                    if (connectResponse == null || connectResponse.isMissingContent()) {
                         LOGGER.warn("Request is missing content. Waiting for more bytes.");
                         break;
                     }
                     //Clean up response to prepare for challenge
-                    proxyAuthResponse.set(null);
+                    proxyResponse.set(null);
 
-                    final ProxyResponseResult result = proxyHandler.validateProxyResponse(current);
-
+                    final boolean isSuccess = proxyHandler.validateProxyResponse(connectResponse);
                     // When connecting to proxy, it does not challenge us for authentication. If the user has specified
                     // a configuration, and it is not NONE, then we fail due to misconfiguration.
-                    if (result.isSuccess()) {
+                    if (isSuccess) {
                         if (proxyConfiguration == null || proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
                             proxyState = ProxyState.PN_PROXY_CONNECTED;
                         } else {
@@ -269,7 +268,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         break;
                     }
 
-                    final Map<String, List<String>> headers = result.getResponse().getHeaders();
+                    final Map<String, List<String>> headers = connectResponse.getHeaders();
                     final Set<ProxyAuthenticationType> supportedTypes = getAuthenticationTypes(headers);
 
                     // The proxy did not successfully connect, user has specified that they want a particular
@@ -281,7 +280,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                                 supportedTypes.stream().map(type -> type.toString()).collect(Collectors.joining(",")));
                         }
                         closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED
-                                + result.getResponse().toString());
+                                + connectResponse);
                         break;
                     }
 
@@ -300,21 +299,21 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     break;
                 case PN_PROXY_CHALLENGE_RESPONDED:
                     inputBuffer.flip();
-                    final ProxyResponse response = readProxyResponse(inputBuffer);
+                    final ProxyResponse challengeResponse = readProxyResponse(inputBuffer);
 
-                    if (response != null && response.isMissingContent()) {
+                    if (challengeResponse == null || challengeResponse.isMissingContent()) {
                         LOGGER.warn("Request is missing content. Waiting for more bytes.");
                         break;
                     }
                     //Clean up
-                    proxyAuthResponse.set(null);
+                    proxyResponse.set(null);
 
-                    final ProxyResponseResult challengeResult = proxyHandler.validateProxyResponse(response);
+                    final boolean result = proxyHandler.validateProxyResponse(challengeResponse);
 
-                    if (challengeResult.isSuccess()) {
+                    if (result) {
                         proxyState = ProxyState.PN_PROXY_CONNECTED;
                     } else {
-                        closeTailProxyError(PROXY_CONNECT_FAILED + challengeResult.getResponse());
+                        closeTailProxyError(PROXY_CONNECT_FAILED + challengeResponse);
                     }
                     break;
                 default:
@@ -526,19 +525,19 @@ public class ProxyImpl implements Proxy, TransportLayer {
             int size = buffer.remaining();
             if (size <= 0) {
                 LOGGER.warn("InputBuffer is empty. Not reading any contents from it. Returning current response.");
-                return proxyAuthResponse.get();
+                return proxyResponse.get();
             }
 
-            ProxyResponse current = proxyAuthResponse.get();
+            ProxyResponse current = proxyResponse.get();
             if (current == null) {
-                proxyAuthResponse.set(ProxyResponseImpl.create(buffer));
+                proxyResponse.set(ProxyResponseImpl.create(buffer));
             } else {
                 current.addContent(buffer);
             }
 
             buffer.compact();
 
-            return proxyAuthResponse.get();
+            return proxyResponse.get();
         }
     }
 }

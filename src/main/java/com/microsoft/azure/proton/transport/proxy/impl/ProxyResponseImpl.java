@@ -28,15 +28,12 @@ public final class ProxyResponseImpl implements ProxyResponse {
 
     private final HttpStatusLine status;
     private final Map<String, List<String>> headers;
-    private ByteBuffer contents;
-    private WebSocketFrameReadState frameReadState;
+    private final ByteBuffer contents;
 
-    private ProxyResponseImpl(HttpStatusLine status, Map<String, List<String>> headers, ByteBuffer contents,
-                              WebSocketFrameReadState frameReadState) {
+    private ProxyResponseImpl(HttpStatusLine status, Map<String, List<String>> headers, ByteBuffer contents) {
         this.status = status;
         this.headers = headers;
         this.contents = contents;
-        this.frameReadState = frameReadState;
     }
 
     static ProxyResponse create(ByteBuffer buffer) {
@@ -60,6 +57,7 @@ public final class ProxyResponseImpl implements ProxyResponse {
         HttpStatusLine statusLine = null;
         ByteBuffer contents = ByteBuffer.allocate(0);
 
+        //Assume the full header message is in the first frame
         for (String line : lines) {
             switch (frameReadState) {
                 case INIT_READ:
@@ -79,7 +77,7 @@ public final class ProxyResponseImpl implements ProxyResponse {
                         boolean hasBody = length > 0;
                         if (!hasBody) {
                             LOGGER.info("There is no content in the response. Response: {}", response);
-                            return new ProxyResponseImpl(statusLine, headers, contents, WebSocketFrameReadState.INIT_READ);
+                            return new ProxyResponseImpl(statusLine, headers, contents);
                         }
 
                         contents = ByteBuffer.allocate(length);
@@ -111,11 +109,8 @@ public final class ProxyResponseImpl implements ProxyResponse {
             }
         }
 
-        frameReadState = contents.hasRemaining()
-                ? WebSocketFrameReadState.CONTINUED_FRAME_READ
-                : WebSocketFrameReadState.INIT_READ;
 
-        return new ProxyResponseImpl(statusLine, headers, contents, frameReadState);
+        return new ProxyResponseImpl(statusLine, headers, contents);
     }
 
     /**

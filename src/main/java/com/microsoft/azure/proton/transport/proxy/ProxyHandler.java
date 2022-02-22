@@ -4,43 +4,11 @@
 package com.microsoft.azure.proton.transport.proxy;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Creates and validates proxy requests and responses.
  */
 public interface ProxyHandler {
-
-    /**
-     * Represents a response from the proxy.
-     */
-    class ProxyResponseResult {
-        private final boolean isSuccess;
-        private final ProxyResponse response;
-
-        /**
-         * Creates a new response.
-         *
-         * @param isSuccess {@code true} if it was successful; {@code false} otherwise.
-         * @param response The response from the proxy.
-         */
-        public ProxyResponseResult(final Boolean isSuccess, final ProxyResponse response) {
-            this.isSuccess = isSuccess;
-            this.response = Objects.requireNonNull(response, "'response' cannot be null.");
-        }
-
-        public boolean isSuccess() {
-            return isSuccess;
-        }
-
-        public ProxyResponse getResponse() {
-            return response;
-        }
-
-        public String getError() {
-            return isSuccess ? null : response.getError();
-        }
-    }
 
     /**
      * Creates a CONNECT request to the provided {@code hostName} and adds {@code additionalHeaders} to the request.
@@ -55,8 +23,8 @@ public interface ProxyHandler {
      * Verifies that {@code httpResponse} contains a successful CONNECT response.
      *
      * @param httpResponse HTTP response to validate for a successful CONNECT response.
-     * @return Indicates if CONNECT response contained a success. If not, contains an error indicating why the call was
-     *         not successful.
+     * @return {@code true} if the HTTP response is successful and correct, and {@code false} otherwise.
+     *
      */
-    ProxyResponseResult validateProxyResponse(ProxyResponse httpResponse);
+    boolean validateProxyResponse(ProxyResponse httpResponse);
 }
