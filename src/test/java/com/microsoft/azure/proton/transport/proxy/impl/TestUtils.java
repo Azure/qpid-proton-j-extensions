@@ -48,8 +48,10 @@ final class TestUtils {
     static String createProxyResponse(String[] statusLine, Map<String, List<String>> headers, String body) {
         final ByteBuffer encoded;
         if (body != null) {
+            //Add empty line to end body
+            body += NEW_LINE;
+
             encoded = ENCODING.encode(body);
-            encoded.flip();
             final int size = encoded.remaining();
 
             headers.put(CONTENT_TYPE, Collections.singletonList(CONTENT_TYPE_TEXT));
@@ -59,7 +61,8 @@ final class TestUtils {
         final StringBuilder formattedHeaders = headers.entrySet()
                 .stream()
                 .collect(StringBuilder::new,
-                        (builder, entry) -> entry.getValue().forEach(value -> builder.append(String.format(HEADER_FORMAT, entry.getKey(), value))),
+                        (builder, entry) -> entry.getValue()
+                            .forEach(value -> builder.append(String.format(HEADER_FORMAT, entry.getKey(), value))),
                         StringBuilder::append);
 
         String response = String.join(NEW_LINE,
@@ -68,9 +71,10 @@ final class TestUtils {
                 NEW_LINE); // The empty new line that ends the HTTP headers.
 
         if (body != null) {
-            response += body + NEW_LINE;
+            response += body;
         }
 
         return response;
     }
+
 }

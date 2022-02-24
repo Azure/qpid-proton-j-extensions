@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static com.microsoft.azure.proton.transport.proxy.impl.Constants.CONTENT_LENGTH;
 
 /**
  * Represents an HTTP response from a proxy.
@@ -23,7 +26,6 @@ import java.util.Map;
  * @see <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html">RFC2616</a>
  */
 public final class ProxyResponseImpl implements ProxyResponse {
-    private static final String CONTENT_LENGTH = "Content-Length";
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyResponseImpl.class);
 
     private final HttpStatusLine status;
@@ -36,14 +38,20 @@ public final class ProxyResponseImpl implements ProxyResponse {
         this.contents = contents;
     }
 
-    static ProxyResponse create(ByteBuffer buffer) {
+    /**
+     * Create a proxy response from a given {@code buffer}. Assumes that the {@code buffer} has been flipped.
+     *
+     * @param buffer Buffer which could parse to a proxy response.
+     * @return A new instance of {@link ProxyResponseImpl} representing the given buffer.
+     * @throws IllegalArgumentException if {@code buffer} have no content to read.
+     */
+    public static ProxyResponse create(ByteBuffer buffer) {
         // Because we've flipped the buffer, position = 0, and the limit = size of the content.
         int size = buffer.remaining();
 
         if (size <= 0) {
-            LOGGER.warn("Cannot create a buffer with no items in it. Limit: {}. Position: {}. Cap: {}",
-                    buffer.limit(), buffer.position(), buffer.capacity());
-            return null;
+            throw new IllegalArgumentException(String.format("Cannot create response with buffer have no content. "
+                + "Limit: %s. Position: %s. Cap: %s", buffer.limit(), buffer.position(), buffer.capacity()));
         }
 
         final byte[] responseBytes = new byte[size];
@@ -113,6 +121,16 @@ public final class ProxyResponseImpl implements ProxyResponse {
         return new ProxyResponseImpl(statusLine, headers, contents);
     }
 
+    private static Map.Entry<String, String> parseHeader(String contents) {
+        final String[] split = contents.split(":", 2);
+
+        if (split.length != 2) {
+            throw new IllegalStateException("Line is not a valid header. Contents: " + contents);
+        }
+
+        return new AbstractMap.SimpleEntry<>(split[0].trim(), split[1].trim());
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -157,13 +175,16 @@ public final class ProxyResponseImpl implements ProxyResponse {
      * Adds additional content to the HTTP response's body. Assumes that the {@code content} has been flipped.
      *
      * @param content Content to add to the body of the HTTP response.
+     * @throws NullPointerException if {@code content} is {@code null}.
+     * @throws IllegalArgumentException if {@code content} have no content to read.
      */
     public void addContent(ByteBuffer content) {
+        Objects.requireNonNull(content, "'content' cannot be null.");
+
         int size = content.remaining();
 
         if (size <= 0) {
-            LOGGER.warn("There was no content to add to current HTTP response.");
-            return;
+            throw new IllegalArgumentException("There was no content to add to current HTTP response.");
         }
 
         final byte[] responseBytes = new byte[content.remaining()];
@@ -172,13 +193,4 @@ public final class ProxyResponseImpl implements ProxyResponse {
         this.contents.put(responseBytes);
     }
 
-    private static Map.Entry<String, String> parseHeader(String contents) {
-        final String[] split = contents.split(":", 2);
-
-        if (split.length != 2) {
-            throw new IllegalStateException("Line is not a valid header. Contents: " + contents);
-        }
-
-        return new AbstractMap.SimpleEntry<>(split[0].trim(), split[1].trim());
-    }
 }

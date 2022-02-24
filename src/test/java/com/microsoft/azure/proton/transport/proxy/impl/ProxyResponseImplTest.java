@@ -59,7 +59,20 @@ public class ProxyResponseImplTest {
     }
 
     /**
-     * Verifies that an exception is thrown when the header is invalid. successfully parses a valid HTTP response.
+     * Verifies that an exception is thrown when buffer is empty
+     */
+    @Test
+    public void invalidBuffer() {
+        // Arrange
+        final ByteBuffer contents = ByteBuffer.allocate(0);
+
+        // Act & Assert
+        Assert.assertThrows(IllegalArgumentException.class, () -> ProxyResponseImpl.create(contents));
+
+    }
+
+    /**
+     * Verifies that an exception is thrown when the header is invalid.
      */
     @Test
     public void invalidHeader() {
@@ -74,12 +87,10 @@ public class ProxyResponseImplTest {
         final ByteBuffer contents = TestUtils.ENCODING.encode(response);
 
         // Act & Assert
-        try {
-            ProxyResponseImpl.create(contents);
-        } catch (IllegalArgumentException e) {
-            Assert.assertNotNull(e.getCause());
-            Assert.assertEquals(NumberFormatException.class, e.getCause().getClass());
-        }
+        IllegalArgumentException thrown = Assert.assertThrows(IllegalArgumentException.class,
+            () -> ProxyResponseImpl.create(contents));
+        Assert.assertEquals(NumberFormatException.class, thrown.getCause().getClass());
+
     }
 
     /**

@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
 public class ProxyImplTest {
     private static final InetSocketAddress PROXY_ADDRESS = InetSocketAddress.createUnresolved("my.host.name", 8888);
     private static final java.net.Proxy PROXY = new java.net.Proxy(java.net.Proxy.Type.HTTP, PROXY_ADDRESS);
-    private static final int BUFFER_SIZE = 8 * 1024;
+    private static final int BUFFER_SIZE = Constants.PROXY_HANDSHAKE_BUFFER_SIZE;
     private static final String USERNAME = "test-user";
     private static final String PASSWORD = "test-password!";
     private static final String BASIC_HEADER = BASIC;
@@ -872,6 +872,77 @@ public class ProxyImplTest {
         Assert.assertTrue(matching.isPresent());
     }
 
+
+    /**
+     * Verifies that when proxy authentication response are transfer in multiple frames.
+     */
+    @Test
+    public void authenticationResponseWithMultipleFrames() {
+        // Arrange
+        ProxyImpl proxyImpl = new ProxyImpl();
+        ProxyHandler handler = mock(ProxyHandler.class);
+        TransportImpl underlyingTransport = mock(TransportImpl.class);
+        TransportOutput output = mock(TransportOutput.class);
+        TransportInput transportInput = mock(TransportInput.class);
+        proxyImpl.configure(PROXY_ADDRESS.getHostName(), headers, handler, underlyingTransport);
+        TransportWrapper transportWrapper = proxyImpl.wrap(transportInput, output);
+
+        when(handler.createProxyRequest(any(), any())).thenReturn("proxy request", "proxy request2");
+        when(handler.validateProxyResponse(any())).thenReturn(false, true);
+
+        String[] statusLine = new String[]{"HTTP/1.1", "407", "Proxy Authentication Required"};
+        List<String> authentications = new ArrayList<>();
+        authentications.add(BASIC_HEADER);
+        authentications.add(DIGEST_HEADER);
+        //Create a body which over buffer size so that it could be cut into multiple frames
+        //Here body is (buffer size * 2) bytes, and consider header size,
+        //it will create 3 frames for proxy response
+        String body = new String(new char[BUFFER_SIZE]).replace('\0', 't');
+        List<String> responses = getProxyResponseFrames(statusLine, authentications, body);
+
+        // Act and Assert
+        Assert.assertEquals(3, responses.size());
+
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_NOT_STARTED, proxyImpl.getProxyState());
+        transportWrapper.pending();
+
+        for (String response : responses) {
+            setInputBuffer(proxyImpl, response);
+            Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
+            Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTING, proxyImpl.getProxyState());
+            transportWrapper.process();
+        }
+
+
+        // At this point, we've gotten the correct challenger and set the header we want to respond with. We want to
+        // zero out the output buffer so that it'll write the headers when getting the request from the proxy handler.
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE, proxyImpl.getProxyState());
+        clearOutputBuffer(proxyImpl);
+        transportWrapper.pending();
+
+        statusLine = new String[]{"HTTP/1.1", "200", "Connection Established"};
+        String response = getProxyResponse(statusLine, new ArrayList<>());
+        setInputBuffer(proxyImpl, response);
+
+        Assert.assertTrue(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CHALLENGE_RESPONDED, proxyImpl.getProxyState());
+        transportWrapper.process();
+
+        Assert.assertFalse(proxyImpl.getIsHandshakeInProgress());
+        Assert.assertEquals(Proxy.ProxyState.PN_PROXY_CONNECTED, proxyImpl.getProxyState());
+
+        verify(handler, times(2)).createProxyRequest(
+            argThat(string -> string != null && string.equals(PROXY_ADDRESS.getHostName())), additionalHeaders.capture());
+
+        final Optional<Map<String, String>> matching = additionalHeaders.getAllValues()
+            .stream()
+            .filter(map -> map.containsKey(PROXY_AUTHORIZATION)
+                && map.get(PROXY_AUTHORIZATION).trim().startsWith(DIGEST))
+            .findFirst();
+
+        Assert.assertTrue(matching.isPresent());
+    }
+
     private static int getConnectRequestLength(String host, Map<String, String> headers) {
         StringBuilder builder = new StringBuilder(String.format(Locale.ROOT, ProxyHandlerImpl.CONNECT_REQUEST, host, ProxyHandlerImpl.NEW_LINE));
 
@@ -946,5 +1017,24 @@ public class ProxyImplTest {
 
         return TestUtils.createProxyResponse(statusLine, headers);
     }
+
+    private List<String> getProxyResponseFrames(String[] statusLine, List<String> authentications, String body) {
+        final Map<String, List<String>> headers = new HashMap<>();
+
+        if (!authentications.isEmpty()) {
+            headers.put(PROXY_AUTHENTICATE, authentications);
+        }
+
+        String response = TestUtils.createProxyResponse(statusLine, headers, body);
+
+        //Split response into frames base on buffer in characters size
+        int characters = BUFFER_SIZE / 2;
+        List<String> frames = new ArrayList<>();
+        for (int i = 0; i < response.length(); i += characters) {
+            frames.add(response.substring(i, Math.min(i + characters, response.length())));
+        }
+        return frames;
+    }
+
 
 }

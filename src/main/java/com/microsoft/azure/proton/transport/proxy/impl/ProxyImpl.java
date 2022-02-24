@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType.DIGEST;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHENTICATE;
+import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_CONNECT_FAILED;
+import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_CONNECT_USER_ERROR;
+import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_HANDSHAKE_BUFFER_SIZE;
 import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuffer;
 
 /**
@@ -45,9 +48,6 @@ import static org.apache.qpid.proton.engine.impl.ByteBufferUtils.newWriteableBuf
  */
 public class ProxyImpl implements Proxy, TransportLayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProxyImpl.class);
-    private static final String PROXY_CONNECT_FAILED = "Proxy connect request failed with error: ";
-    private static final String PROXY_CONNECT_USER_ERROR = "User configuration error. Using non-matching proxy authentication.";
-    private static final int PROXY_HANDSHAKE_BUFFER_SIZE = 8 * 1024; // buffers used only for proxy-handshake
 
     private final ByteBuffer inputBuffer;
     private final ByteBuffer outputBuffer;
@@ -246,7 +246,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     final ProxyResponse connectResponse = readProxyResponse(inputBuffer);
 
                     if (connectResponse == null || connectResponse.isMissingContent()) {
-                        LOGGER.warn("Request is missing content. Waiting for more bytes.");
+                        LOGGER.info("Request is missing content. Waiting for more bytes.");
                         break;
                     }
                     //Clean up response to prepare for challenge
