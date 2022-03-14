@@ -28,7 +28,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class DigestProxyChallengeProcessorImpl implements ProxyChallengeProcessor {
     static final String DEFAULT_ALGORITHM = "MD5";
-    private static final String PROXY_AUTH_DIGEST = Constants.PROXY_AUTHENTICATE_HEADER + " " + Constants.DIGEST;
+    private static final String PROXY_AUTH_DIGEST = Constants.DIGEST;
     private static final char[] HEX_CODE = "0123456789ABCDEF".toCharArray();
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
