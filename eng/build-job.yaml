@@ -1,0 +1,68 @@
+parameters:
+  - name: ArtifactName
+    type: string
+    default: 'artefact-name-not-specified'
+
+  - name: ProfileFlag
+    type: string
+    default: 'profile-flag-not-specified'
+
+  - name: JavaVersion
+    type: string
+    default: 'version-not-specified'
+
+variables:
+  DefaultOptions: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
+  LoggingOptions: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+  MemoryOptions: '-Xmx3072m'
+
+jobs:
+  - job: 'Build'
+    pool:
+      vmImage: 'ubuntu-22.04'
+    strategy:
+      matrix:
+        Java 8:
+          ArtifactName: 'java8-packages'
+          ProfileFlag: '-Djava8'
+          JavaVersion: '1.8'
+        # We name this 'packages' because it is the default version we want to ship with.
+        Java LTS:
+          ArtifactName: 'packages'
+          ProfileFlag: '-Djava-lts'
+          JavaVersion: '1.11'
+    steps:
+    - task: Maven@3
+      displayName: 'Build and Package'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'deploy'
+        options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dcheckstyle.skip=true -Dspotbugs.skip=true -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
+        mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: $(JavaVersion)
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: false
+
+    - task: Maven@3
+      displayName: 'Run SpotBugs and Checkstyle'
+      inputs:
+          mavenPomFile: pom.xml
+          options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
+          mavenOptions: '$(MemoryOptions)'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: $(JavaVersion)
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: false
+          goals: 'verify'
+
+    - script: |
+        ls output/com/microsoft/azure/qpid-proton-j-extensions/
+        cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
+        rm $(Build.ArtifactStagingDirectory)/*.sha1
+        rm $(Build.ArtifactStagingDirectory)/*.md5
+      displayName: Flatten and copy build outputs
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: $(ArtifactName)
+      displayName: 'Publish outputs to $(ArtifactName) artifact'

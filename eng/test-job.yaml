@@ -1,0 +1,56 @@
+jobs:
+- job: 'Test'
+  strategy:
+    matrix:
+      Linux - Java 8:
+        OSName: 'Linux'
+        OSVmImage: 'ubuntu-22.04'
+        ProfileFlag: '-Djava8'
+        JavaVersion: '1.8'
+      macOS - Java 8:
+        OSName: 'macOS'
+        OSVmImage: 'macOS-13'
+        ProfileFlag: '-Djava8'
+        JavaVersion: '1.8'
+      Windows - Java 8:
+        OSName: 'Windows'
+        OSVmImage: 'windows-2022'
+        ProfileFlag: '-Djava8'
+        JavaVersion: '1.8'
+      Linux - Java LTS:
+        OSName: 'Linux'
+        OSVmImage: 'ubuntu-22.04'
+        ProfileFlag: '-Djava-lts'
+        JavaVersion: '1.11'
+      macOS - Java LTS:
+        OSName: 'macOS'
+        OSVmImage: 'macOS-13'
+        ProfileFlag: '-Djava-lts'
+        JavaVersion: '1.11'
+      Windows - Java LTS:
+        OSName: 'Windows'
+        OSVmImage: 'windows-2022'
+        ProfileFlag: '-Djava-lts'
+        JavaVersion: '1.11'
+
+  pool:
+    vmImage: $(OSVmImage)
+
+  steps:
+    - task: Maven@3
+      displayName: 'Run Tests'
+      inputs:
+        mavenPomFile: 'pom.xml'
+        options: '$(DefaultOptions) $(ProfileFlag) --settings eng/settings.xml'
+        mavenOptions: '-Xmx3072m $(LoggingOptions)'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: $(JavaVersion)
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: false
+        goals: 'test'
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        mergeTestResults: true
+        testRunTitle: '$(OSName) on Java $(JavaVersion)'
