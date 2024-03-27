@@ -6,6 +6,9 @@ pr:
       - release/*
       - hotfix/*
 
+variables:
+  - template: eng/variables.yaml
+
 jobs:
   - template: eng/build-job.yaml
     parameters:
