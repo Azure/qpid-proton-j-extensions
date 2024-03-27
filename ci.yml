@@ -1,9 +1,3 @@
-resources:
-  repositories:
-    - repository: azure-sdk-build-tools
-      type: git
-      name: internal/azure-sdk-build-tools
-
 trigger:
   branches:
     include:
@@ -30,7 +24,7 @@ stages:
     jobs:
       - job: 'Build'
         pool:
-          vmImage: 'ubuntu-18.04'
+          vmImage: 'ubuntu-22.04'
         strategy:
           matrix:
             Java 8:
@@ -83,32 +77,32 @@ stages:
           matrix:
             Linux - Java 8:
               OSName: 'Linux'
-              OSVmImage: 'ubuntu-18.04'
+              OSVmImage: 'ubuntu-22.04'
               ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             macOS - Java 8:
               OSName: 'macOS'
-              OSVmImage: 'macOS-10.15'
+              OSVmImage: 'macOS-13'
               ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             Windows - Java 8:
               OSName: 'Windows'
-              OSVmImage: 'vs2017-win2016'
+              OSVmImage: 'windows-2022'
               ProfileFlag: '-Djava8'
               JavaVersion: '1.8'
             Linux - Java LTS:
               OSName: 'Linux'
-              OSVmImage: 'ubuntu-18.04'
+              OSVmImage: 'ubuntu-22.04'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             macOS - Java LTS:
               OSName: 'macOS'
-              OSVmImage: 'macOS-10.15'
+              OSVmImage: 'macOS-13'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
             Windows - Java LTS:
               OSName: 'Windows'
-              OSVmImage: 'vs2017-win2016'
+              OSVmImage: 'windows-2022'
               ProfileFlag: '-Djava-lts'
               JavaVersion: '1.11'
 
