@@ -14,116 +14,140 @@ pr:
       - release/*
       - hotfix/*
 
-variables:
-  DefaultOptions: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
-  LoggingOptions: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
-  MemoryOptions: '-Xmx3072m'
+extends:
+  template: /eng/templates/1es-redirect.yml
+  parameters:
+    stages:
+      - stage: Build
+        variables:
+          - name: DefaultOptions
+            value: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
+          - name: LoggingOptions
+            value: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+          - name: MemoryOptions
+            value: '-Xmx3072m'
+          - template: /eng/templates/image.yml
+        jobs:
+          - job: 'Build'
+            pool:
+              name: $(LINUXPOOL)
+              image: $(LINUXVMIMAGE)
+              os: linux
 
-stages:
-  - stage: Build
-    jobs:
-      - job: 'Build'
-        pool:
-          vmImage: 'ubuntu-22.04'
-        strategy:
-          matrix:
-            Java 8:
-              ArtifactName: 'java8-packages'
-              ProfileFlag: '-Djava8'
-              JavaVersion: '1.8'
-            # We name this 'packages' because it is the default version we want to ship with.
-            Java LTS:
-              ArtifactName: 'packages'
-              ProfileFlag: '-Djava-lts'
-              JavaVersion: '1.11'
+            strategy:
+              matrix:
+                Java 8:
+                  ArtifactName: 'java8-packages'
+                  ProfileFlag: '-Djava8'
+                  JavaVersion: '1.8'
+                # We name this 'packages' because it is the default version we want to ship with.
+                Java LTS:
+                  ArtifactName: 'packages'
+                  ProfileFlag: '-Djava-lts'
+                  JavaVersion: '1.11'
 
-        steps:
-          - task: Maven@3
-            displayName: 'Build and Package'
-            inputs:
-              mavenPomFile: 'pom.xml'
-              goals: 'deploy'
-              options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
-              mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: $(JavaVersion)
-              jdkArchitectureOption: 'x64'
-              publishJUnitResults: false
+            steps:
+              - task: Maven@3
+                displayName: 'Build and Package'
+                inputs:
+                  mavenPomFile: 'pom.xml'
+                  goals: 'deploy'
+                  options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
+                  mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
+                  javaHomeOption: 'JDKVersion'
+                  jdkVersionOption: $(JavaVersion)
+                  jdkArchitectureOption: 'x64'
+                  publishJUnitResults: false
 
-          - task: Maven@3
-            displayName: 'Run SpotBugs, Checkstyle, and Javadoc'
-            inputs:
-                mavenPomFile: pom.xml
-                options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
-                mavenOptions: '$(MemoryOptions)'
-                javaHomeOption: 'JDKVersion'
-                jdkVersionOption: $(JavaVersion)
-                jdkArchitectureOption: 'x64'
-                publishJUnitResults: false
-                goals: 'verify'
+              - task: Maven@3
+                displayName: 'Run SpotBugs, Checkstyle, and Javadoc'
+                inputs:
+                    mavenPomFile: pom.xml
+                    options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
+                    mavenOptions: '$(MemoryOptions)'
+                    javaHomeOption: 'JDKVersion'
+                    jdkVersionOption: $(JavaVersion)
+                    jdkArchitectureOption: 'x64'
+                    publishJUnitResults: false
+                    goals: 'verify'
 
-          - script: |
-              cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
-              rm $(Build.ArtifactStagingDirectory)/*.sha1
-              rm $(Build.ArtifactStagingDirectory)/*.md5
-            displayName: Flatten and copy build outputs
+              - script: |
+                  cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
+                  rm $(Build.ArtifactStagingDirectory)/*.sha1
+                  rm $(Build.ArtifactStagingDirectory)/*.md5
+                displayName: Flatten and copy build outputs
 
-          - publish: $(Build.ArtifactStagingDirectory)
-            artifact: $(ArtifactName)
-            displayName: 'Publish outputs to $(ArtifactName) artifact'
+              - task: 1ES.PublishPipelineArtifact@1
+                displayName: 'Publish outputs to $(ArtifactName) artifact'
+                inputs:
+                  artifactName: $(ArtifactName)
+                  targetPath: $(Build.ArtifactStagingDirectory)
 
-      - job: 'Test'
-        strategy:
-          matrix:
-            Linux - Java 8:
-              OSName: 'Linux'
-              OSVmImage: 'ubuntu-22.04'
-              ProfileFlag: '-Djava8'
-              JavaVersion: '1.8'
-            macOS - Java 8:
-              OSName: 'macOS'
-              OSVmImage: 'macOS-13'
-              ProfileFlag: '-Djava8'
-              JavaVersion: '1.8'
-            Windows - Java 8:
-              OSName: 'Windows'
-              OSVmImage: 'windows-2022'
-              ProfileFlag: '-Djava8'
-              JavaVersion: '1.8'
-            Linux - Java LTS:
-              OSName: 'Linux'
-              OSVmImage: 'ubuntu-22.04'
-              ProfileFlag: '-Djava-lts'
-              JavaVersion: '1.11'
-            macOS - Java LTS:
-              OSName: 'macOS'
-              OSVmImage: 'macOS-13'
-              ProfileFlag: '-Djava-lts'
-              JavaVersion: '1.11'
-            Windows - Java LTS:
-              OSName: 'Windows'
-              OSVmImage: 'windows-2022'
-              ProfileFlag: '-Djava-lts'
-              JavaVersion: '1.11'
+          - job:
+            displayName: 'Test'
+            strategy:
+              matrix:
+                Linux - Java 8:
+                  OSName: 'Linux'
+                  OSVmImage: 'ubuntu-22.04'
+                  ProfileFlag: '-Djava8'
+                  JavaVersion: '1.8'
+                Linux - Java LTS:
+                  OSName: 'Linux'
+                  OSVmImage: 'ubuntu-22.04'
+                  ProfileFlag: '-Djava-lts'
+                  JavaVersion: '1.11'
 
-        pool:
-          vmImage: $(OSVmImage)
+            pool:
+              name:  $(LINUXPOOL)
+              image: $(LINUXVMIMAGE)
+              os: linux
 
-        steps:
-          - task: Maven@3
-            displayName: 'Run Tests'
-            inputs:
-              mavenPomFile: 'pom.xml'
-              options: '$(DefaultOptions) $(ProfileFlag) --settings eng/settings.xml'
-              mavenOptions: '-Xmx3072m $(LoggingOptions)'
-              javaHomeOption: 'JDKVersion'
-              jdkVersionOption: $(JavaVersion)
-              jdkArchitectureOption: 'x64'
-              publishJUnitResults: false
-              goals: 'test'
+            steps:
+              - template: /eng/templates/test-steps.yml
 
-          - task: PublishTestResults@2
-            condition: succeededOrFailed()
-            inputs:
-              mergeTestResults: true
-              testRunTitle: '$(OSName) on Java $(JavaVersion)'
+          - job:
+            displayName: 'Test'
+            strategy:
+              matrix:
+                Windows - Java 8:
+                  OSName: 'Windows'
+                  OSVmImage: 'windows-2022'
+                  ProfileFlag: '-Djava8'
+                  JavaVersion: '1.8'
+                Windows - Java LTS:
+                  OSName: 'Windows'
+                  OSVmImage: 'windows-2022'
+                  ProfileFlag: '-Djava-lts'
+                  JavaVersion: '1.11'
+
+            pool:
+              name:  $(WINDOWSPOOL)
+              image: $(WINDOWSVMIMAGE)
+              os: windows
+
+            steps:
+              - template: /eng/templates/test-steps.yml
+
+          - job:
+            displayName: 'Test'
+            strategy:
+              matrix:
+                macOS - Java 8:
+                  OSName: 'macOS'
+                  OSVmImage: 'macOS-13'
+                  ProfileFlag: '-Djava8'
+                  JavaVersion: '1.8'
+                macOS - Java LTS:
+                  OSName: 'macOS'
+                  OSVmImage: 'macOS-13'
+                  ProfileFlag: '-Djava-lts'
+                  JavaVersion: '1.11'
+
+            pool:
+              name:  $(MACPOOL)
+              vmImage: $(MACVMIMAGE)
+              os: macOS
+
+            steps:
+              - template: /eng/templates/test-steps.yml
