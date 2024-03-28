@@ -20,11 +20,11 @@ extends:
     stages:
       - stage: Build
         variables:
-          - name: DefaultOptions:
+          - name: DefaultOptions
             value: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
-          - name: LoggingOptions:
+          - name: LoggingOptions
             value: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
-          - name: MemoryOptions:
+          - name: MemoryOptions
             value: '-Xmx3072m'
           - template: eng/templates/image.yml
         jobs:
