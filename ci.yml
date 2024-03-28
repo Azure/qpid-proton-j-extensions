@@ -104,7 +104,7 @@ extends:
               os: $(LINUXOS)
 
             steps:
-              - template: eng/templates/test-steps.yml
+              - template: /eng/templates/test-steps.yml
 
           - job:
             displayName: 'Test'
@@ -127,7 +127,7 @@ extends:
               os: $(WINDOWSOS)
 
             steps:
-              - template: eng/templates/test-steps.yml
+              - template: /eng/templates/test-steps.yml
 
           - job:
             displayName: 'Test'
@@ -150,4 +150,4 @@ extends:
               os: $(MACOS)
 
             steps:
-              - template: eng/templates/test-steps.yml
+              - template: /eng/templates/test-steps.yml
