@@ -52,7 +52,7 @@ extends:
                 inputs:
                   mavenPomFile: 'pom.xml'
                   goals: 'deploy'
-                  options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
+                  options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
                   mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
                   javaHomeOption: 'JDKVersion'
                   jdkVersionOption: $(JavaVersion)
