@@ -14,6 +14,10 @@ pr:
       - release/*
       - hotfix/*
 
+variables:
+- name: TargetFolderName
+  value: $(Build.ArtifactStagingDirectory)/artifacts
+
 extends:
   template: /eng/templates/1es-redirect.yml
   parameters:
@@ -47,6 +51,7 @@ extends:
                   JavaVersion: '1.11'
 
             steps:
+              # Build and deploy into "${project.basedir}/output" folder.
               - task: Maven@3
                 displayName: 'Build and Package'
                 inputs:
@@ -72,9 +77,10 @@ extends:
                     goals: 'verify'
 
               - script: |
-                  cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(Build.ArtifactStagingDirectory)
-                  rm $(Build.ArtifactStagingDirectory)/*.sha1
-                  rm $(Build.ArtifactStagingDirectory)/*.md5
+                  mkdir $(TargetFolderName)
+                  cp output/com/microsoft/azure/qpid-proton-j-extensions/**/* $(TargetFolderName)
+                  rm $(TargetFolderName)/*.sha1
+                  rm $(TargetFolderName)/*.md5
                 displayName: Flatten and copy build outputs
 
               - task: 1ES.PublishPipelineArtifact@1
