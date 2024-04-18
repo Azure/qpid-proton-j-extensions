@@ -20,6 +20,7 @@ public class ProxyConfiguration implements AutoCloseable {
 
     private final java.net.Proxy proxyAddress;
     private final ProxyAuthenticationType authentication;
+    private final ProxyAuthenticator authenticator;
     private final PasswordAuthentication credentials;
 
     /**
@@ -32,6 +33,7 @@ public class ProxyConfiguration implements AutoCloseable {
      */
     private ProxyConfiguration() {
         this.authentication = null;
+        this.authenticator = null;
         this.credentials = null;
         this.proxyAddress = null;
     }
@@ -65,6 +67,21 @@ public class ProxyConfiguration implements AutoCloseable {
 
             this.credentials = null;
         }
+        this.authenticator = null;
+    }
+
+    /**
+     * Creates a proxy configuration that uses the {@code proxyAddress} and authenticates with provided {@code authenticator}.
+     *
+     * @param authenticator the proxy authenticator to use.
+     * @param proxyAddress Proxy to use.
+     * @throws NullPointerException if {@code proxyAddress} or {@code proxyAuthenticator} is {@code null}.
+     */
+    public ProxyConfiguration(ProxyAuthenticator authenticator, java.net.Proxy proxyAddress) {
+        this.authenticator = Objects.requireNonNull(authenticator, "'authenticator' cannot be null.");
+        this.proxyAddress = Objects.requireNonNull(proxyAddress, "'proxyAddress' cannot be null.");
+        this.authentication = null;
+        this.credentials = null;
     }
 
     /**
@@ -95,6 +112,19 @@ public class ProxyConfiguration implements AutoCloseable {
      */
     public ProxyAuthenticationType authentication() {
         return authentication;
+    }
+
+    /**
+     * Gets the proxy authenticator to set up the web socket connection to the AMQP broker via a proxy.
+     * <p>
+     * The authenticator is responsible for selecting one of the authorization schemes that the proxy presents, identify
+     * the credentials for the scheme it selects then compute and return the authorization value to be sent through
+     * the 'Proxy-Authorization' Header.
+     * </p>
+     * @return the proxy authenticator.
+     */
+    public ProxyAuthenticator getAuthenticator() {
+        return this.authenticator;
     }
 
     /**
