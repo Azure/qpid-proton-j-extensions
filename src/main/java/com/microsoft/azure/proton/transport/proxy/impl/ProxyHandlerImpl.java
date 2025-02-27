@@ -31,7 +31,6 @@ public class ProxyHandlerImpl implements ProxyHandler {
     static final String HEADER_FORMAT = "%s: %s";
     static final String NEW_LINE = "\r\n";
 
-    private static final String CONNECTION_ESTABLISHED = "connection established";
     private static final Set<String> SUPPORTED_VERSIONS = Stream.of("1.1", "1.0").collect(Collectors.toSet());
     private final Logger logger = LoggerFactory.getLogger(ProxyHandlerImpl.class);
 
@@ -71,8 +70,7 @@ public class ProxyHandlerImpl implements ProxyHandler {
         // Any successful 2xx status code is allowed.
         // https://developer.mozilla.org/docs/Web/HTTP/Methods/CONNECT
         if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
-            return SUPPORTED_VERSIONS.contains(status.getProtocolVersion())
-                && CONNECTION_ESTABLISHED.equalsIgnoreCase(status.getReason());
+            return SUPPORTED_VERSIONS.contains(status.getProtocolVersion());
         } else {
             return false;
         }
