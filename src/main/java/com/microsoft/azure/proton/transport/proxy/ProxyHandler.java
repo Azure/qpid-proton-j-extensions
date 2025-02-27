@@ -3,40 +3,12 @@
 
 package com.microsoft.azure.proton.transport.proxy;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
  * Creates and validates proxy requests and responses.
  */
 public interface ProxyHandler {
-
-    /**
-     * Represents a response from the proxy.
-     */
-    class ProxyResponseResult {
-        private final Boolean isSuccess;
-        private final String error;
-
-        /**
-         * Creates a new response.
-         *
-         * @param isSuccess {@code true} if it was successful; {@code false} otherwise.
-         * @param error The error from the proxy. Or {@code null} if there was none.
-         */
-        public ProxyResponseResult(final Boolean isSuccess, final String error) {
-            this.isSuccess = isSuccess;
-            this.error = error;
-        }
-
-        public Boolean getIsSuccess() {
-            return isSuccess;
-        }
-
-        public String getError() {
-            return error;
-        }
-    }
 
     /**
      * Creates a CONNECT request to the provided {@code hostName} and adds {@code additionalHeaders} to the request.
@@ -57,11 +29,11 @@ public interface ProxyHandler {
     byte[] createProxyRequestStream(String hostName, Map<String, String> additionalHeaders);
 
     /**
-     * Verifies that {@code buffer} contains a successful CONNECT response.
+     * Verifies that {@code httpResponse} contains a successful CONNECT response.
      *
-     * @param buffer Buffer containing the HTTP response.
-     * @return Indicates if CONNECT response contained a success. If not, contains an error indicating why the call was
-     *         not successful.
+     * @param httpResponse HTTP response to validate for a successful CONNECT response.
+     * @return {@code true} if the HTTP response is successful and correct, and {@code false} otherwise.
+     *
      */
-    ProxyResponseResult validateProxyResponse(ByteBuffer buffer);
+    boolean validateProxyResponse(ProxyResponse httpResponse);
 }

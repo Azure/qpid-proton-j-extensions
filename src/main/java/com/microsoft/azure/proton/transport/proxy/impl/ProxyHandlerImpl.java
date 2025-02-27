@@ -3,16 +3,19 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
+import com.microsoft.azure.proton.transport.proxy.HttpStatusLine;
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
+import com.microsoft.azure.proton.transport.proxy.ProxyResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Implementation class that handles connecting to the proxy.
@@ -27,8 +30,9 @@ public class ProxyHandlerImpl implements ProxyHandler {
     static final String CONNECT_REQUEST = "CONNECT %1$s HTTP/1.1%2$sHost: %1$s%2$sConnection: Keep-Alive%2$s";
     static final String HEADER_FORMAT = "%s: %s";
     static final String NEW_LINE = "\r\n";
-    private final Pattern successStatusLine = Pattern.compile("^http/1\\.(0|1) (?<statusCode>2[0-9]{2})", Pattern.CASE_INSENSITIVE);
-    private final Predicate<String> successStatusLinePredicate = successStatusLine.asPredicate();
+
+    private static final Set<String> SUPPORTED_VERSIONS = Stream.of("1.1", "1.0").collect(Collectors.toSet());
+    private final Logger logger = LoggerFactory.getLogger(ProxyHandlerImpl.class);
 
     /**
      * {@inheritDoc}
@@ -66,23 +70,21 @@ public class ProxyHandlerImpl implements ProxyHandler {
      * {@inheritDoc}
      */
     @Override
-    public ProxyResponseResult validateProxyResponse(ByteBuffer buffer) {
-        int size = buffer.remaining();
-        String response = null;
+    public boolean validateProxyResponse(ProxyResponse response) {
+        Objects.requireNonNull(response, "'response' cannot be null.");
 
-        if (size > 0) {
-            byte[] responseBytes = new byte[buffer.remaining()];
-            buffer.get(responseBytes);
-            response = new String(responseBytes, StandardCharsets.UTF_8);
-            final Scanner responseScanner = new Scanner(response);
-            if (responseScanner.hasNextLine()) {
-                final String firstLine = responseScanner.nextLine();
-                if (successStatusLinePredicate.test(firstLine)) {
-                    return new ProxyResponseResult(true, null);
-                }
-            }
+        final HttpStatusLine status = response.getStatus();
+        if (status == null) {
+            logger.error("Response does not contain a status line. {}", response);
+            return false;
         }
 
-        return new ProxyResponseResult(false, response);
+        // Any successful 2xx status code is allowed.
+        // https://developer.mozilla.org/docs/Web/HTTP/Methods/CONNECT
+        if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
+            return SUPPORTED_VERSIONS.contains(status.getProtocolVersion());
+        } else {
+            return false;
+        }
     }
 }
