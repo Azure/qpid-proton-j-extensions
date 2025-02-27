@@ -249,7 +249,8 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         LOGGER.info("Request is missing content. Waiting for more bytes.");
                         break;
                     }
-                    //Clean up response to prepare for challenge
+
+                    // Clean up response to prepare for challenge
                     proxyResponse.set(null);
 
                     final boolean isSuccess = proxyHandler.validateProxyResponse(connectResponse);
