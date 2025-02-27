@@ -8,10 +8,13 @@ import com.microsoft.azure.proton.transport.proxy.ProxyResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 import static com.microsoft.azure.proton.transport.proxy.impl.StringUtils.NEW_LINE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,11 +42,21 @@ public class ProxyHandlerImplTest {
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
 
-    @ValueSource(ints = { 200, 201, 202, 226, 299 })
+    public static Stream<Arguments> testValidateProxyResponseOnSuccess() {
+        return Stream.of(
+            Arguments.of(200, "Connection Established"),
+            Arguments.of(201, "Created"),
+            Arguments.of(202, "Accepted"),
+            Arguments.of(226, "IM Used"),
+            Arguments.of(299, "")
+        );
+    }
+
+    @MethodSource
     @ParameterizedTest
-    public void testValidateProxyResponseOnSuccess(int statusCode) {
+    public void testValidateProxyResponseOnSuccess(int statusCode, String statusReason) {
         // Arrange
-        final HttpStatusLine statusLine = HttpStatusLine.create("HTTP/1.1 " + statusCode + " Connection Established");
+        final HttpStatusLine statusLine = HttpStatusLine.create("HTTP/1.1 " + statusCode + " " + statusReason);
         final ProxyResponse response = mock(ProxyResponse.class);
         when(response.isMissingContent()).thenReturn(false);
         when(response.getStatus()).thenReturn(statusLine);
