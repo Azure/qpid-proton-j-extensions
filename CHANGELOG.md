@@ -8,7 +8,7 @@
 
 ### Bugs Fixed
 
-* Fixes status check for CONNECT.
+* Fixes status check for CONNECT. ([#65](https://github.com/Azure/qpid-proton-j-extensions/pull/65/))
 
 ### Other Changes
 
