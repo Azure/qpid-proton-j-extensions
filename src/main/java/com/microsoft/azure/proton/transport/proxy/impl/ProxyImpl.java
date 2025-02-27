@@ -129,26 +129,54 @@ public class ProxyImpl implements Proxy, TransportLayer {
         return this.headers;
     }
 
+    /**
+     * Buffer to read responses from.
+     *
+     * @return Buffer to read responses from.
+     */
     protected ByteBuffer getInputBuffer() {
         return this.inputBuffer;
     }
 
+    /**
+     * Buffer to write responses and requests to.
+     *
+     * @return Buffer to write responses and requests to.
+     */
     protected ByteBuffer getOutputBuffer() {
         return this.outputBuffer;
     }
 
+    /**
+     * Whether settings to connect to a proxy are configured.
+     *
+     * @return true if settings are configured, false otherwise.
+     */
     protected boolean getIsProxyConfigured() {
         return this.isProxyConfigured;
     }
 
+    /**
+     * Gets the handler to respond to challenges from the proxy.
+     *
+     * @return the handler to respond to challenges from the proxy.
+     */
     protected ProxyHandler getProxyHandler() {
         return this.proxyHandler;
     }
 
+    /**
+     * Gets the next transport layer in the chain qpid-proton-j uses.
+     *
+     * @return The next transport layer in the chain qpid-proton-j uses.
+     */
     protected Transport getUnderlyingTransport() {
         return this.underlyingTransport;
     }
 
+    /**
+     * Writes the CONNECT request.
+     */
     protected void writeProxyRequest() {
         outputBuffer.clear();
         final String request = proxyHandler.createProxyRequest(host, headers);
@@ -163,6 +191,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
         outputBuffer.put(request.getBytes());
     }
 
+    /**
+     * Whether handshake is in progress.
+     *
+     * @return True if handshake is in progress.
+     */
     protected boolean getIsHandshakeInProgress() {
         // if handshake is in progress
         // we do not engage the underlying transportInput/transportOutput.
@@ -175,6 +208,11 @@ public class ProxyImpl implements Proxy, TransportLayer {
         return isProxyConfigured && proxyState != ProxyState.PN_PROXY_CONNECTED;
     }
 
+    /**
+     * Gets the current state of the proxy.
+     *
+     * @return State of the proxy.
+     */
     protected ProxyState getProxyState() {
         return this.proxyState;
     }
