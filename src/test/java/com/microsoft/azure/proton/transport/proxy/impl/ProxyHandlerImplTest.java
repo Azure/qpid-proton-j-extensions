@@ -7,6 +7,8 @@ import com.microsoft.azure.proton.transport.proxy.HttpStatusLine;
 import com.microsoft.azure.proton.transport.proxy.ProxyResponse;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -37,10 +39,11 @@ public class ProxyHandlerImplTest {
         Assert.assertEquals(expectedProxyRequest, actualProxyRequest);
     }
 
-    @Test
-    public void testValidateProxyResponseOnSuccess() {
+    @ValueSource(ints = { 200, 201, 202, 226, 299 })
+    @ParameterizedTest
+    public void testValidateProxyResponseOnSuccess(int statusCode) {
         // Arrange
-        final HttpStatusLine statusLine = HttpStatusLine.create("HTTP/1.1 200 Connection Established");
+        final HttpStatusLine statusLine = HttpStatusLine.create("HTTP/1.1 " + statusCode + " Connection Established");
         final ProxyResponse response = mock(ProxyResponse.class);
         when(response.isMissingContent()).thenReturn(false);
         when(response.getStatus()).thenReturn(statusLine);
@@ -51,7 +54,6 @@ public class ProxyHandlerImplTest {
 
         // Assert
         Assert.assertTrue(result);
-
     }
 
     @Test

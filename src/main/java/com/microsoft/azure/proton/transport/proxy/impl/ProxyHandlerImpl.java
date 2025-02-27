@@ -68,8 +68,13 @@ public class ProxyHandlerImpl implements ProxyHandler {
             return false;
         }
 
-        return status.getStatusCode() == 200
-                && SUPPORTED_VERSIONS.contains(status.getProtocolVersion())
+        // Any successful 2xx status code is allowed.
+        // https://developer.mozilla.org/docs/Web/HTTP/Methods/CONNECT
+        if (status.getStatusCode() >= 200 && status.getStatusCode() < 300) {
+            return SUPPORTED_VERSIONS.contains(status.getProtocolVersion())
                 && CONNECTION_ESTABLISHED.equalsIgnoreCase(status.getReason());
+        } else {
+            return false;
+        }
     }
 }
