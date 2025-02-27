@@ -76,6 +76,7 @@ public class ProxyImplTest {
 
     @Captor
     private ArgumentCaptor<Map<String, String>> additionalHeaders;
+    private AutoCloseable closeable;
 
     private void initHeaders() {
         headers.put("header1", "value1");
@@ -85,7 +86,7 @@ public class ProxyImplTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
 
         originalProxy = ProxySelector.getDefault();
 
@@ -118,9 +119,11 @@ public class ProxyImplTest {
     }
 
     @After
-    public void teardown() {
-        Mockito.framework().clearInlineMocks();
+    public void tearDown() throws Exception {
         ProxySelector.setDefault(originalProxy);
+
+        Mockito.framework().clearInlineMocks();
+        closeable.close();
     }
 
     @Test
