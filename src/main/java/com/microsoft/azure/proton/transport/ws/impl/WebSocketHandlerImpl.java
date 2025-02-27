@@ -17,6 +17,9 @@ import java.util.Map;
 public class WebSocketHandlerImpl implements WebSocketHandler {
     private WebSocketUpgrade webSocketUpgrade = null;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String createUpgradeRequest(
             String hostName,
@@ -29,6 +32,9 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         return webSocketUpgrade.createUpgradeRequest();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void createPong(ByteBuffer ping, ByteBuffer pong) {
         if ((ping == null) || (pong == null)) {
@@ -51,6 +57,9 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Boolean validateUpgradeReply(ByteBuffer buffer) {
         Boolean retVal = false;
@@ -72,6 +81,9 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         return retVal;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void wrapBuffer(ByteBuffer srcBuffer, ByteBuffer dstBuffer) {
         if ((srcBuffer == null) || (dstBuffer == null)) {
@@ -154,6 +166,9 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public WebsocketTuple unwrapBuffer(ByteBuffer srcBuffer) {
         WebsocketTuple result = new WebsocketTuple(0, WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
@@ -220,6 +235,18 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         return result;
     }
 
+    /**
+     * Creates the initial Connection: upgrade request to use WebSocket.
+     *
+     * @param hostName host name to send the request to
+     * @param webSocketPath path on the request url where WebSocketUpgrade will be sent to
+     * @param webSocketQuery query on the request url where WebSocketUpgrade will be sent to
+     * @param webSocketPort port on the request url where WebSocketUpgrade will be sent to
+     * @param webSocketProtocol value for Sec-WebSocket-Protocol header on the WebSocketUpgrade request
+     * @param additionalHeaders any additional headers to be part of the WebSocketUpgrade request
+     *
+     * @return The upgrade request.
+     */
     protected WebSocketUpgrade createWebSocketUpgrade(
             String hostName,
             String webSocketPath,
@@ -230,6 +257,12 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
         return new WebSocketUpgrade(hostName, webSocketPath, webSocketQuery, webSocketPort, webSocketProtocol, additionalHeaders);
     }
 
+
+    /**
+     * Returns a set of random bytes.
+     *
+     * @return a random set of 4 bytes.
+     */
     protected byte[] createRandomMaskingKey() {
         final byte[] maskingKey = new byte[4];
         Utils.getSecureRandom().nextBytes(maskingKey);

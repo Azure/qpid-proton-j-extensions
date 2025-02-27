@@ -14,11 +14,29 @@ public interface WebSocketHandler {
      * States when parsing a frame.
      */
     enum WebSocketMessageType {
+        /**
+         * Unknown frame.
+         */
         WEB_SOCKET_MESSAGE_TYPE_UNKNOWN,
+        /**
+         * Frame received is part of a multi-framed message.
+         */
         WEB_SOCKET_MESSAGE_TYPE_CHUNK,
+        /**
+         * Header frame received is part of a multi-framed message.
+         */
         WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK,
+        /**
+         * Frame received is AMQP data.
+         */
         WEB_SOCKET_MESSAGE_TYPE_AMQP,
+        /**
+         * Received a PING from the endpoint.
+         */
         WEB_SOCKET_MESSAGE_TYPE_PING,
+        /**
+         * Receiving has completed because a close message was received.
+         */
         WEB_SOCKET_MESSAGE_TYPE_CLOSE,
     }
 
