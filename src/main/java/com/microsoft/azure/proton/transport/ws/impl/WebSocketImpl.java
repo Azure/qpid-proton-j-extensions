@@ -53,6 +53,9 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
     private String protocol = "";
     private Map<String, String> additionalHeaders = null;
 
+    /**
+     * Whether web sockets are enabled.
+     */
     protected Boolean isWebSocketEnabled;
 
     private WebSocketHandler.WebSocketMessageType lastType;
@@ -200,6 +203,9 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         return builder.toString();
     }
 
+    /**
+     * Writes the initial upgrade connection request.
+     */
     protected void writeUpgradeRequest() {
         outputBuffer.clear();
 
@@ -210,10 +216,16 @@ public class WebSocketImpl implements WebSocket, TransportLayer {
         outputBuffer.put(request.getBytes());
     }
 
+    /**
+     * Writes the response to a PING request.
+     */
     protected void writePong() {
         webSocketHandler.createPong(pingBuffer, outputBuffer);
     }
 
+    /**
+     * Writes the CLOSE frame.
+     */
     protected void writeClose() {
         outputBuffer.clear();
         pingBuffer.flip();

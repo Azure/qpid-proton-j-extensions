@@ -22,7 +22,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 public class ProxyAuthenticatorTests {
@@ -114,7 +114,7 @@ public class ProxyAuthenticatorTests {
         PasswordAuthentication authentication = proxyAuthenticator.getPasswordAuthentication(scheme, PROXY_ADDRESS);
 
         // Assert
-        verifyZeroInteractions(proxySelector);
+        verifyNoInteractions(proxySelector);
 
         Assert.assertNotNull(authentication);
         Assert.assertEquals(configuration.credentials().getUserName(), authentication.getUserName());
@@ -148,7 +148,7 @@ public class ProxyAuthenticatorTests {
         PasswordAuthentication authentication = proxyAuthenticator.getPasswordAuthentication(scheme, PROXY_ADDRESS);
 
         // Assert
-        verifyZeroInteractions(proxySelector);
+        verifyNoInteractions(proxySelector);
 
         Assert.assertNotNull(authentication);
         Assert.assertEquals(configuration.credentials().getUserName(), authentication.getUserName());

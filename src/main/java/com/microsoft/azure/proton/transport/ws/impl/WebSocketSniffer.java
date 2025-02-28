@@ -21,6 +21,11 @@ public class WebSocketSniffer extends HandshakeSniffingTransportWrapper<Transpor
         super(webSocket, other);
     }
 
+    /**
+     * Gets the layer in the proton-j transport chain to read web socket frames from.
+     *
+     * @return The layer in the proton-j transport chain to read web socket frames from.
+     */
     protected TransportWrapper getSelectedTransportWrapper() {
         return _selectedTransportWrapper;
     }

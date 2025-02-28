@@ -20,11 +20,20 @@ To build and test this locally, make sure you install:
 Open a command prompt/terminal:
 
 1. Execute `git clone https://github.com/Azure/qpid-proton-j-extensions.git`.
-1. Traverse to the repository root.
-1. Execute `mvn install`.
+2. Traverse to the repository root.
+3. Execute `mvn install`.
 
 This should successfully run all unit/integration tests, build the qpid-proton-j-extensions JAR, and install it to your
 local Maven repository.
+
+### Updating pom.xml dependencies
+
+To update pom.xml dependencies, we leverage the Azure SDKs for Java's update scripts.
+
+1. Install Python 3.
+2. Clone `https://github.com/Azure/azure-sdk-for-java`
+3. From the root of the `azure-sdk-for-java` repository, execute:
+    * `python ./eng/versioning/update_versions.py --ut external_dependency --bt client --tf ${PATH_TO_QPID_PROTON_J_EXTENSIONS_POM.XML}`
 
 ## Filing issues
 
