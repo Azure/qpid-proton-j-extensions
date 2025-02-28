@@ -151,3 +151,19 @@ extends:
 
             steps:
               - template: /eng/templates/test-steps.yml
+      - stage: Publish
+        dependsOn: Build
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+        jobs:
+          - job: 'Publish'
+            pool:
+              name:  $(LINUXPOOL)
+              image: $(LINUXVMIMAGE)
+              os: linux
+
+            steps:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download $(ArtifactName) artifact'
+                inputs:
+                  source: 'current'
+                  artifactName: '$(ArtifactName)'
