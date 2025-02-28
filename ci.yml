@@ -47,24 +47,26 @@ extends:
                   JavaVersion: '1.11'
 
             steps:
-              - task: Maven@3
+              - task: Maven@4
                 displayName: 'Build and Package'
                 inputs:
                   mavenPomFile: 'pom.xml'
                   goals: 'deploy'
                   options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
                   mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
+                  mavenVersionOption: 'Default'
                   javaHomeOption: 'JDKVersion'
                   jdkVersionOption: $(JavaVersion)
                   jdkArchitectureOption: 'x64'
                   publishJUnitResults: false
 
-              - task: Maven@3
+              - task: Maven@4
                 displayName: 'Run SpotBugs, Checkstyle, and Javadoc'
                 inputs:
                     mavenPomFile: pom.xml
                     options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
                     mavenOptions: '$(MemoryOptions)'
+                    mavenVersionOption: 'Default'
                     javaHomeOption: 'JDKVersion'
                     jdkVersionOption: $(JavaVersion)
                     jdkArchitectureOption: 'x64'
@@ -151,3 +153,27 @@ extends:
 
             steps:
               - template: /eng/templates/test-steps.yml
+      - stage: Publish
+        dependsOn: Build
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+        variables:
+          - name: DefaultOptions
+            value: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
+          - name: LoggingOptions
+            value: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+          - name: MemoryOptions
+            value: '-Xmx3072m'
+          - template: /eng/templates/image.yml
+        jobs:
+          - job: 'Publish'
+            pool:
+              name:  $(LINUXPOOL)
+              image: $(LINUXVMIMAGE)
+              os: linux
+
+            steps:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download $(ArtifactName) artifact'
+                inputs:
+                  source: 'current'
+                  artifactName: '$(ArtifactName)'
