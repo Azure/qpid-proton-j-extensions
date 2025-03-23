@@ -5,6 +5,7 @@ package com.microsoft.azure.proton.transport.proxy.impl;
 
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
+import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticator;
 import com.microsoft.azure.proton.transport.proxy.ProxyConfiguration;
 import com.microsoft.azure.proton.transport.proxy.ProxyHandler;
 import org.apache.qpid.proton.engine.Transport;
@@ -17,6 +18,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
@@ -35,6 +38,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +49,7 @@ import static com.microsoft.azure.proton.transport.proxy.impl.Constants.BASIC;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.DIGEST;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHENTICATE;
 import static com.microsoft.azure.proton.transport.proxy.impl.Constants.PROXY_AUTHORIZATION;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.isA;
@@ -721,10 +726,20 @@ public class ProxyImplTest {
     /**
      * Verifies that if we configure proxy authentication type but the proxy does not ask for verification then we fail.
      */
-    @Test
-    public void authenticationNoAuthMismatchClosesTail() {
+    @ParameterizedTest
+    @ValueSource(strings = { "true", "false" })
+    public void authenticationNoAuthMismatchClosesTail(boolean useAuthenticator) {
         // Arrange
-        ProxyConfiguration configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, PROXY, USERNAME, PASSWORD);
+        final ProxyConfiguration configuration;
+        if (useAuthenticator) {
+            final ProxyAuthenticator authenticator = response -> {
+                return "Basic" + " " + Base64.getEncoder().encodeToString((USERNAME + ":" + PASSWORD).getBytes(UTF_8));
+            };
+            configuration = new ProxyConfiguration(authenticator, PROXY);
+        } else {
+            configuration = new ProxyConfiguration(ProxyAuthenticationType.BASIC, PROXY, USERNAME, PASSWORD);
+        }
+
         ProxyImpl proxyImpl = new ProxyImpl(configuration);
         ProxyHandler handler = mock(ProxyHandler.class);
         TransportImpl underlyingTransport = mock(TransportImpl.class);

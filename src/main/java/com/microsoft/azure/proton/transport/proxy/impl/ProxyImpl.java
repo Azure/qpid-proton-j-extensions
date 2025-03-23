@@ -22,10 +22,12 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -292,45 +294,65 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     proxyResponse.set(null);
 
                     final boolean isSuccess = proxyHandler.validateProxyResponse(connectResponse);
-                    // When connecting to proxy, it does not challenge us for authentication. If the user has specified
-                    // a configuration, and it is not NONE, then we fail due to misconfiguration.
                     if (isSuccess) {
-                        if (proxyConfiguration == null || proxyConfiguration.authentication() == ProxyAuthenticationType.NONE) {
-                            proxyState = ProxyState.PN_PROXY_CONNECTED;
-                        } else {
+                        if (proxyConfiguration != null
+                            && (proxyConfiguration.getAuthenticator() != null
+                            || proxyConfiguration.authentication() != ProxyAuthenticationType.NONE)) {
+                            // The proxy didn't challenge client for authentication in response to CONNECT. Given the user has specified that an
+                            // authentication is required, we fail due to misconfiguration.
                             if (LOGGER.isErrorEnabled()) {
                                 LOGGER.error("ProxyConfiguration mismatch. User configured: '{}', but authentication is not required",
-                                    proxyConfiguration.authentication());
+                                    proxyConfiguration.getAuthenticator() != null ? "ProxyAuthenticator" : proxyConfiguration.authentication());
                             }
                             closeTailProxyError(PROXY_CONNECT_USER_ERROR);
+                        } else {
+                            proxyState = ProxyState.PN_PROXY_CONNECTED;
                         }
                         break;
                     }
 
                     final Map<String, List<String>> headers = connectResponse.getHeaders();
-                    final Set<ProxyAuthenticationType> supportedTypes = getAuthenticationTypes(headers);
-
-                    // The proxy did not successfully connect, user has specified that they want a particular
-                    // authentication method, but it is not in list of supported authentication methods.
-                    if (proxyConfiguration != null && !supportedTypes.contains(proxyConfiguration.authentication())) {
-                        if (LOGGER.isErrorEnabled()) {
-                            LOGGER.error("Proxy authentication required. User configured: '{}', but supported proxy authentication methods are: {}",
-                                proxyConfiguration.authentication(),
-                                supportedTypes.stream().map(type -> type.toString()).collect(Collectors.joining(",")));
-                        }
-                        closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED
-                                + connectResponse);
-                        break;
-                    }
-
                     final List<String> challenges = headers.getOrDefault(PROXY_AUTHENTICATE, new ArrayList<>());
-                    final ProxyChallengeProcessor processor = proxyConfiguration != null
+                    final ProxyChallengeProcessor processor;
+                    if (proxyConfiguration != null && proxyConfiguration.getAuthenticator() != null) {
+                        final boolean is407 = connectResponse.getStatus().getStatusCode() == 407;
+                        if (!is407) {
+                            closeTailProxyError(PROXY_CONNECT_FAILED + connectResponse);
+                            break;
+                        }
+                        if (challenges.isEmpty()) {
+                            closeTailProxyError("'407 Proxy Authentication Required' received without " + PROXY_AUTHENTICATE
+                                + "header or authentication schemes." + connectResponse);
+                            break;
+                        }
+                        processor = new DelegatedProxyChallengeProcessor(headers, proxyConfiguration.getAuthenticator());
+                    } else {
+                        final Set<ProxyAuthenticationType> supportedTypes = getAuthenticationTypes(headers);
+                        // The proxy did not successfully connect, user has specified that they want a particular
+                        // authentication method, but it is not in list of supported authentication methods.
+                        if (proxyConfiguration != null && !supportedTypes.contains(proxyConfiguration.authentication())) {
+                            if (LOGGER.isErrorEnabled()) {
+                                LOGGER.error(
+                                    "Proxy authentication required. User configured: '{}', but supported proxy authentication methods are: {}",
+                                    proxyConfiguration.authentication(),
+                                    supportedTypes.stream().map(type -> type.toString()).collect(Collectors.joining(",")));
+                            }
+                            closeTailProxyError(PROXY_CONNECT_USER_ERROR + PROXY_CONNECT_FAILED
+                                + connectResponse);
+                            break;
+                        }
+                        processor = proxyConfiguration != null
                             ? getChallengeProcessor(host, challenges, proxyConfiguration.authentication())
                             : getChallengeProcessor(host, challenges, supportedTypes);
+                    }
 
                     if (processor != null) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
                         ProxyImpl.this.headers = processor.getHeader();
+                        if (proxyConfiguration != null
+                            && proxyConfiguration.getAuthenticator() != null && !testAuthorizeHeader(challenges, ProxyImpl.this.headers)) {
+                            closeTailProxyError("User error: ProxyAuthenticator did not provide a valid authorization header.");
+                        }
                     } else {
                         LOGGER.warn("Could not get ProxyChallengeProcessor for challenges.");
                         closeTailProxyError(PROXY_CONNECT_FAILED + String.join(";", challenges));
@@ -578,5 +600,40 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
             return proxyResponse.get();
         }
+    }
+
+    private static final class DelegatedProxyChallengeProcessor implements ProxyChallengeProcessor {
+        private final Map<String, List<String>> headers;
+        private final com.microsoft.azure.proton.transport.proxy.ProxyAuthenticator authenticator;
+
+        DelegatedProxyChallengeProcessor(Map<String, List<String>> headers,
+            com.microsoft.azure.proton.transport.proxy.ProxyAuthenticator authenticator) {
+            this.headers = Objects.requireNonNull(headers, "'headers' cannot be null.");
+            this.authenticator = Objects.requireNonNull(authenticator, "'authenticator' cannot be null.");
+        }
+
+        @Override
+        public Map<String, String> getHeader() {
+            // the call site ensured that the 'headers' contain 'Proxy-Authenticate' header with the authentication schemes.
+            final String authorizedHeader = authenticator.authenticate(ChallengeResponseAccessHelper.internalCreate(headers));
+            final Map<String, String> headers = new HashMap<>(1);
+            headers.put(Constants.PROXY_AUTHORIZATION, authorizedHeader);
+            return headers;
+        }
+    }
+
+    private boolean testAuthorizeHeader(List<String> challenges, Map<String, String> headers) {
+        assert !challenges.isEmpty();
+        final String authorizeHeader = headers.get(Constants.PROXY_AUTHORIZATION);
+        if (authorizeHeader == null || authorizeHeader.trim().isEmpty()) {
+            return false;
+        }
+        final String value = authorizeHeader.toLowerCase(Locale.ROOT);
+        for (String scheme : challenges) {
+            if (value.startsWith(scheme.toLowerCase(Locale.ROOT) + " ")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
