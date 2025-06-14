@@ -35,6 +35,13 @@ public class ProxyHandlerImpl implements ProxyHandler {
     private final Logger logger = LoggerFactory.getLogger(ProxyHandlerImpl.class);
 
     /**
+     * Creates a new instance of ProxyHandlerImpl.
+     */
+    public ProxyHandlerImpl() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

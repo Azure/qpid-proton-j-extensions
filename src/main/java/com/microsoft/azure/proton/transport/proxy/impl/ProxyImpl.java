@@ -3,7 +3,6 @@
 
 package com.microsoft.azure.proton.transport.proxy.impl;
 
-import com.microsoft.azure.proton.transport.proxy.HttpStatusLine;
 import com.microsoft.azure.proton.transport.proxy.Proxy;
 import com.microsoft.azure.proton.transport.proxy.ProxyAuthenticationType;
 import com.microsoft.azure.proton.transport.proxy.ProxyChallengeProcessor;
@@ -292,37 +291,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
             }
         }
 
-        private void logProxyResponse(String message, ProxyResponse proxyResponse) {
-            final HttpStatusLine statusLine = proxyResponse.getStatus();
-            final StringBuffer buffer = new StringBuffer();
-            buffer.append("State: ").append(proxyState);
-            buffer.append(System.lineSeparator());
-            buffer.append("Protocol_Version: ");
-            buffer.append(statusLine.getProtocolVersion());
-            buffer.append(", ");
-            buffer.append("Status_Code: ");
-            buffer.append(statusLine.getStatusCode());
-            buffer.append(", ");
-            buffer.append("Reason: ");
-            buffer.append(statusLine.getReason());
-            buffer.append(System.lineSeparator());
-            final Map<String, List<String>> headers = proxyResponse.getHeaders();
-
-            buffer.append("Headers: ");
-            buffer.append(System.lineSeparator());
-            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                buffer.append("  " + entry.getKey());
-                buffer.append(": ");
-                buffer.append(entry.getValue());
-                buffer.append(System.lineSeparator());
-            }
-            final Set<ProxyAuthenticationType> supportedTypes = getAuthenticationTypes(headers);
-            buffer.append("Supported_Authentication_Types: ");
-            buffer.append(supportedTypes);
-            buffer.append(System.lineSeparator());
-            LOGGER.info(message + ": {}", buffer);
-        }
-
         @Override
         public void process() throws TransportException {
             if (!getIsHandshakeInProgress()) {
@@ -343,8 +311,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
 
                     // Clean up response to prepare for challenge
                     proxyResponse.set(null);
-
-                    logProxyResponse("Connect response", connectResponse);
 
                     final boolean isSuccess = proxyHandler.validateProxyResponse(connectResponse);
                     // When connecting to proxy, it does not challenge us for authentication. If the user has specified
@@ -387,7 +353,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
                         ProxyImpl.this.headers = processor.getHeader();
                         if (connectResponse.hasConnectionCloseHeader()) {
-                            // Review this flag usage, anyway to avoid this?
                             ProxyImpl.this.respondToChallengeOnNewConnection = true;
                             LOGGER.info("Proxy server closed the connection, attempting challenge response on new connection.");
                             closeTailProxyError("Proxy server closed the connection.");
@@ -409,8 +374,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     }
                     //Clean up
                     proxyResponse.set(null);
-
-                    logProxyResponse("Challenge response", challengeResponse);
 
                     final boolean result = proxyHandler.validateProxyResponse(challengeResponse);
 
@@ -651,7 +614,6 @@ public class ProxyImpl implements Proxy, TransportLayer {
         }
     }
 
-
     private static final class State {
         final Map<String, String> headers;
         final ProxyState proxyState;
@@ -660,6 +622,12 @@ public class ProxyImpl implements Proxy, TransportLayer {
             return new State(new HashMap<>(fromProxy.headers), fromProxy.proxyState);
         }
 
+        /**
+         * Constructs a new State, used only from {@link State#from(ProxyImpl)} factory method.
+         *
+         * @param headers
+         * @param proxyState
+         */
         private State(Map<String, String> headers, ProxyState proxyState) {
             this.headers = headers;
             this.proxyState = proxyState;

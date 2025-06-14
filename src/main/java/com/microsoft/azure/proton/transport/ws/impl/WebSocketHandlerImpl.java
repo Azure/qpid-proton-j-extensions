@@ -18,6 +18,13 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
     private WebSocketUpgrade webSocketUpgrade = null;
 
     /**
+     * Creates a new instance of WebSocketHandlerImpl.
+     */
+    public WebSocketHandlerImpl() {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

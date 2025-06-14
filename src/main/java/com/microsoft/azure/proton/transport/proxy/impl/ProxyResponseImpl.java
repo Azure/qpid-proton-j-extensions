@@ -58,9 +58,6 @@ public final class ProxyResponseImpl implements ProxyResponse {
         buffer.get(responseBytes);
 
         final String response = new String(responseBytes, StandardCharsets.UTF_8);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.info("{} Raw response: '{}' {}", System.lineSeparator(), response, System.lineSeparator());
-        }
         final String[] lines = response.split(StringUtils.NEW_LINE);
         final Map<String, List<String>> headers = new HashMap<>();
 
@@ -197,10 +194,11 @@ public final class ProxyResponseImpl implements ProxyResponse {
     }
 
     /**
-     * Checks if the HTTP response has a "Connection: close" header.
+     * Checks if the HTTP response for CONNECT has a "Connection: close" header.
      *
      * @return {@code true} if the HTTP response has a "Connection: close" header, and {@code false} otherwise.
      */
+    @Override
     public boolean hasConnectionCloseHeader() {
         final String headerKey = headers.containsKey("Connection") ? "Connection" : "connection";
         if (headers.containsKey(headerKey)) {

@@ -54,9 +54,8 @@ public interface ProxyResponse {
      */
     void addContent(ByteBuffer contents);
 
-
     /**
-     * Checks if the HTTP response has a "Connection: close" header.
+     *  Checks if the HTTP response for CONNECT has a "Connection: close" header.
      *
      * @return {@code true} if the HTTP response has a "Connection: close" header, and {@code false} otherwise.
      */
