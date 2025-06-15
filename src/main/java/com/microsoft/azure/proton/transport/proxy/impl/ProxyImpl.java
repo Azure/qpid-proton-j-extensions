@@ -147,7 +147,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
      */
     public void transferState(ProxyImpl fromProxy) {
         if (fromProxy.respondToChallengeOnNewConnection) {
-            LOGGER.info("Transferring state from proxy {} {} {}", this.hashCode(), System.lineSeparator(), fromProxy.headers);
+            LOGGER.debug("Transferring state from proxy {} {} {}", this.hashCode(), System.lineSeparator(), fromProxy.headers);
             this.fromState.set(State.from(fromProxy));
         }
     }
