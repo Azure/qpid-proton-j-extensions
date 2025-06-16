@@ -193,4 +193,24 @@ public final class ProxyResponseImpl implements ProxyResponse {
         this.contents.put(responseBytes);
     }
 
+    /**
+     * Checks if the HTTP response for CONNECT has a "Connection: close" header.
+     *
+     * @return {@code true} if the HTTP response has a "Connection: close" header, and {@code false} otherwise.
+     */
+    @Override
+    public boolean hasConnectionCloseHeader() {
+        final String headerKey = headers.containsKey("Connection") ? "Connection" : "connection";
+        if (headers.containsKey(headerKey)) {
+            final List<String> connectionHeaders = headers.get(headerKey);
+            if (connectionHeaders != null && !connectionHeaders.isEmpty()) {
+                for (String header : connectionHeaders) {
+                    if (header.equalsIgnoreCase("close")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

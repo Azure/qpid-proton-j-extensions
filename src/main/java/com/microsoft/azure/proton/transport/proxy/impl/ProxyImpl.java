@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -56,12 +57,14 @@ public class ProxyImpl implements Proxy, TransportLayer {
     private boolean tailClosed = false;
     private boolean headClosed = false;
     private String host = "";
-    private Map<String, String> headers = null;
+    private volatile Map<String, String> headers = null;
     private TransportImpl underlyingTransport;
     private ProxyHandler proxyHandler;
 
     private volatile boolean isProxyConfigured;
-    private volatile ProxyState proxyState = ProxyState.PN_PROXY_NOT_STARTED;
+    private volatile ProxyState proxyState;
+    private volatile boolean respondToChallengeOnNewConnection = false;
+    private final AtomicReference<State> fromState = new AtomicReference<>(null);
 
     /**
      * Create proxy transport layer - which, after configuring using the {@link #configure(String, Map, ProxyHandler,
@@ -114,7 +117,15 @@ public class ProxyImpl implements Proxy, TransportLayer {
             ProxyHandler proxyHandler,
             Transport underlyingTransport) {
         this.host = host;
-        this.headers = headers;
+        final State source = this.fromState.get();
+        if (source != null) {
+            // restore the state from the previous proxy to resume.
+            this.headers = source.headers;
+            this.proxyState = source.proxyState;
+        } else {
+            this.headers = headers;
+            this.proxyState = ProxyState.PN_PROXY_NOT_STARTED;
+        }
         this.proxyHandler = proxyHandler;
         this.underlyingTransport = (TransportImpl) underlyingTransport;
         isProxyConfigured = true;
@@ -127,6 +138,18 @@ public class ProxyImpl implements Proxy, TransportLayer {
      */
     public Map<String, String> getProxyRequestHeaders() {
         return this.headers;
+    }
+
+    /**
+     * transfers the state from the given proxy {@code fromProxy} to this proxy.
+     *
+     * @param fromProxy Proxy to transfer state from.
+     */
+    public void transferState(ProxyImpl fromProxy) {
+        if (fromProxy.respondToChallengeOnNewConnection) {
+            LOGGER.debug("Transferring state from proxy {} {} {}", this.hashCode(), System.lineSeparator(), fromProxy.headers);
+            this.fromState.set(State.from(fromProxy));
+        }
     }
 
     /**
@@ -181,9 +204,7 @@ public class ProxyImpl implements Proxy, TransportLayer {
         outputBuffer.clear();
         final String request = proxyHandler.createProxyRequest(host, headers);
 
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Writing proxy request:{}{}", System.lineSeparator(), request);
-        }
+        LOGGER.info("Writing proxy request:{} {}{}{}", this.hashCode(), "State: " + proxyState, System.lineSeparator(), request);
 
         //TODO (conniey): HTTP headers are encoded using StandardCharsets.ISO_8859_1. update proxyHandler.createProxyRequest to return bytes instead
         // of String because encoding is not UTF-16. https://stackoverflow.com/a/655948/4220757
@@ -331,10 +352,17 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     if (processor != null) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE;
                         ProxyImpl.this.headers = processor.getHeader();
+                        if (connectResponse.hasConnectionCloseHeader()) {
+                            ProxyImpl.this.respondToChallengeOnNewConnection = true;
+                            LOGGER.info("Proxy server closed the connection, attempting challenge response on new connection.");
+                            closeTailProxyError("Proxy server closed the connection.");
+                            break;
+                        }
                     } else {
                         LOGGER.warn("Could not get ProxyChallengeProcessor for challenges.");
                         closeTailProxyError(PROXY_CONNECT_FAILED + String.join(";", challenges));
                     }
+
                     break;
                 case PN_PROXY_CHALLENGE_RESPONDED:
                     inputBuffer.flip();
@@ -392,6 +420,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
                         return outputBuffer.position();
                     }
                 case PN_PROXY_CHALLENGE:
+                    if (respondToChallengeOnNewConnection) {
+                        return Transport.END_OF_STREAM;
+                    }
                     if (outputBuffer.position() == 0) {
                         proxyState = ProxyState.PN_PROXY_CHALLENGE_RESPONDED;
                         writeProxyRequest();
@@ -408,6 +439,9 @@ public class ProxyImpl implements Proxy, TransportLayer {
                     }
                 case PN_PROXY_CHALLENGE_RESPONDED:
                 case PN_PROXY_CONNECTING:
+                    if (respondToChallengeOnNewConnection) {
+                        return Transport.END_OF_STREAM;
+                    }
                     if (headClosed && (outputBuffer.position() == 0)) {
                         proxyState = ProxyState.PN_PROXY_FAILED;
                         return Transport.END_OF_STREAM;
@@ -577,6 +611,26 @@ public class ProxyImpl implements Proxy, TransportLayer {
             buffer.compact();
 
             return proxyResponse.get();
+        }
+    }
+
+    private static final class State {
+        final Map<String, String> headers;
+        final ProxyState proxyState;
+
+        static State from(ProxyImpl fromProxy) {
+            return new State(new HashMap<>(fromProxy.headers), fromProxy.proxyState);
+        }
+
+        /**
+         * Constructs a new State, used only from {@link State#from(ProxyImpl)} factory method.
+         *
+         * @param headers
+         * @param proxyState
+         */
+        private State(Map<String, String> headers, ProxyState proxyState) {
+            this.headers = headers;
+            this.proxyState = proxyState;
         }
     }
 }

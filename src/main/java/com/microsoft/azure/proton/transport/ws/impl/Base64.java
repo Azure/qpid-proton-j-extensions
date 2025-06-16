@@ -295,4 +295,8 @@ public final class Base64 {
 
         return encodedResult;
     }
+
+    private Base64() {
+        // Private constructor to prevent instantiation
+    }
 }
