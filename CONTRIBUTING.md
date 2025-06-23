@@ -35,6 +35,14 @@ To update pom.xml dependencies, we leverage the Azure SDKs for Java's update scr
 3. From the root of the `azure-sdk-for-java` repository, execute:
     * `python ./eng/versioning/update_versions.py --ut external_dependency --bt client --tf ${PATH_TO_QPID_PROTON_J_EXTENSIONS_POM.XML}`
 
+### Releasing to Maven
+
+1. Update [pom.xml](./pom.xml) with release version version.
+2. Create PR and merge PR into master.
+3. Manually queue build pipeline: `java - qpid-proton-j-extensions`
+4. When completed successfully, go to: https://aka.ms/azsdk/partner-release-pipeline and queue Partner Release Pipeline with BlobPath from the pipeline output in Step 3.
+
+
 ## Filing issues
 
 You can find the issues that have been filed in the [Issues](https://github.com/Azure/qpid-proton-j-extensions/issues)
