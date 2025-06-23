@@ -200,8 +200,8 @@ extends:
                   azurePowerShellVersion: LatestVersion 
                   pwsh: true
                   Inline: |
-                    $folderName = "azsdk/java/qpid-proton-j-extensions/${{ parameters.ReleaseVersion }}"
-                    azcopy copy "$(System.ArtifactsDirectory)/*" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/$folderName/" --recursive=true
-                    Write-output "Files uploaded. BlobPath: $folderName"
+                    $blobPath = "azsdk/java/qpid-proton-j-extensions/${{ parameters.ReleaseVersion }}"
+                    azcopy copy "$(System.ArtifactsDirectory)/*" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/$blobPath/" --recursive=true
+                    Write-output "Files uploaded. BlobPath: $blobPath"
                 env: 
                   AZCOPY_AUTO_LOGIN_TYPE: 'PSCRED'
