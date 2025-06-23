@@ -195,12 +195,12 @@ extends:
               - task: AzurePowerShell@5
                 displayName: 'Upload files to partner drop folder'
                 inputs:
-                  azureSubscription: 'azuresdkpartnerdrops'
+                  azureSubscription: 'azuresdkpartnerdrops - Storage Partner Drops'
                   ScriptType: 'InlineScript'
                   azurePowerShellVersion: LatestVersion 
                   pwsh: true
                   Inline: |
-                    $folderName = "java/qpid-proton-j-extensions/$(parameters.ReleaseVersion)"
-                    azcopy copy "$(System.ArtifactsDirectory)/*" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/azsdk/java/qpid-proton-j-extensions/$(folderName)/" --recursive=true
+                    $folderName = "azsdk/java/qpid-proton-j-extensions/${{ parameters.ReleaseVersion }}"
+                    azcopy copy "$(System.ArtifactsDirectory)/*" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/$folderName/" --recursive=true
                 env: 
                   AZCOPY_AUTO_LOGIN_TYPE: 'PSCRED'
