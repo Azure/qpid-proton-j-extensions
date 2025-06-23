@@ -1,11 +1,12 @@
 # relies on variable settings set from calling previous build steps
 steps:
-  - task: Maven@3
+  - task: Maven@4
     displayName: 'Run Tests'
     inputs:
       mavenPomFile: 'pom.xml'
       options: '$(DefaultOptions) $(ProfileFlag) --settings eng/settings.xml'
       mavenOptions: '-Xmx3072m $(LoggingOptions)'
+      mavenVersionOption: 'Default'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: $(JavaVersion)
       jdkArchitectureOption: 'x64'

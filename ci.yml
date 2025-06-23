@@ -1,3 +1,8 @@
+parameters:
+- name: ReleaseVersion
+  type: string
+  default: ''
+
 trigger:
   branches:
     include:
@@ -47,24 +52,26 @@ extends:
                   JavaVersion: '1.11'
 
             steps:
-              - task: Maven@3
+              - task: Maven@4
                 displayName: 'Build and Package'
                 inputs:
                   mavenPomFile: 'pom.xml'
                   goals: 'deploy'
                   options: '$(DefaultOptions) $(ProfileFlag) -T 1C -DskipTests -Dgpg.skip -Dcheckstyle.skip=true -Dspotbugs.skip=true --settings eng/settings.xml -DaltDeploymentRepository="local::default::file:///${project.basedir}/output"'
                   mavenOptions: '$(LoggingOptions) $(MemoryOptions)'
+                  mavenVersionOption: 'Default'
                   javaHomeOption: 'JDKVersion'
                   jdkVersionOption: $(JavaVersion)
                   jdkArchitectureOption: 'x64'
                   publishJUnitResults: false
 
-              - task: Maven@3
+              - task: Maven@4
                 displayName: 'Run SpotBugs, Checkstyle, and Javadoc'
                 inputs:
                     mavenPomFile: pom.xml
                     options: '$(DefaultOptions) --no-transfer-progress -DskipTests -Dgpg.skip'
                     mavenOptions: '$(MemoryOptions)'
+                    mavenVersionOption: 'Default'
                     javaHomeOption: 'JDKVersion'
                     jdkVersionOption: $(JavaVersion)
                     jdkArchitectureOption: 'x64'
@@ -151,3 +158,50 @@ extends:
 
             steps:
               - template: /eng/templates/test-steps.yml
+
+      - stage: Publish
+        dependsOn: Build
+        condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne('${{ parameters.ReleaseVersion }}', ''))
+        variables:
+          - name: DefaultOptions
+            value: '--batch-mode --fail-at-end -Dmaven.wagon.http.pool=false'
+          - name: LoggingOptions
+            value: '-Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
+          - name: MemoryOptions
+            value: '-Xmx3072m'
+          - template: /eng/templates/image.yml
+        jobs:
+          - job: 'Publish'
+            pool:
+              name:  $(LINUXPOOL)
+              image: $(LINUXVMIMAGE)
+              os: linux
+
+            steps:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download "packages" artifact'
+                inputs:
+                  source: 'current'
+                  artifactName: 'packages'
+                  path: '$(System.ArtifactsDirectory)'
+              - pwsh: |
+                  $artifactName = "$(System.ArtifactsDirectory)"
+                  Write-Output "Contents of artifact: $artifactName"
+                  $files = Get-ChildItem -Path $artifactName -Recurse
+                  foreach ($file in $files) {
+                      Write-Output "$($file.FullName)"
+                  }
+                displayName: 'Print out artifact contents'
+              - task: AzurePowerShell@5
+                displayName: 'Upload files to partner drop folder'
+                inputs:
+                  azureSubscription: 'azuresdkpartnerdrops - Storage Partner Drops'
+                  ScriptType: 'InlineScript'
+                  azurePowerShellVersion: LatestVersion 
+                  pwsh: true
+                  Inline: |
+                    $blobPath = "azsdk/java/qpid-proton-j-extensions/${{ parameters.ReleaseVersion }}"
+                    azcopy copy "$(System.ArtifactsDirectory)/*" "https://azuresdkpartnerdrops.blob.core.windows.net/drops/$blobPath/" --recursive=true
+                    Write-output "Files uploaded. BlobPath: $blobPath"
+                env: 
+                  AZCOPY_AUTO_LOGIN_TYPE: 'PSCRED'
