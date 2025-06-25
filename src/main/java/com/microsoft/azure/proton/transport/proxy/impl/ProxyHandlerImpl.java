@@ -46,6 +46,18 @@ public class ProxyHandlerImpl implements ProxyHandler {
      */
     @Override
     public String createProxyRequest(String hostName, Map<String, String> additionalHeaders) {
+        return getConnectionRequest(hostName, additionalHeaders);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public byte[] createProxyRequestStream(String hostName, Map<String, String> additionalHeaders) {
+        return getConnectionRequest(hostName, additionalHeaders).getBytes(StandardCharsets.ISO_8859_1);
+    }
+
+    private String getConnectionRequest(String hostName, Map<String, String> additionalHeaders) {
         final StringBuilder connectRequestBuilder = new StringBuilder();
         connectRequestBuilder.append(
                 String.format(Locale.ROOT, CONNECT_REQUEST, hostName, NEW_LINE));
