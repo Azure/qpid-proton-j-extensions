@@ -1182,7 +1182,19 @@ public class WebSocketHandlerImplTest {
         ByteBuffer srcBuffer = ByteBuffer.allocate(messageLength);
         srcBuffer.flip();
 
-        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN, spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
+        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK, spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
+    }
+
+    @Test
+    public void testUnwrapBufferSrcBufferHeaderOnly() {
+        WebSocketHandlerImpl webSocketHandler = new WebSocketHandlerImpl();
+        WebSocketHandlerImpl spyWebSocketHandler = spy(webSocketHandler);
+
+        byte[] data = new byte[]{0, 0, 0, 0, 0, 0, 0, -126, 126};
+        ByteBuffer srcBuffer = ByteBuffer.wrap(data);
+        srcBuffer.position(data.length - 2);
+
+        assertEquals(WebSocketHandler.WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK, spyWebSocketHandler.unwrapBuffer(srcBuffer).getType());
     }
 
     @Test

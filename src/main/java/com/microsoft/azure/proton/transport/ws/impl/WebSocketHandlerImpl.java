@@ -178,7 +178,8 @@ public class WebSocketHandlerImpl implements WebSocketHandler {
      */
     @Override
     public WebsocketTuple unwrapBuffer(ByteBuffer srcBuffer) {
-        WebsocketTuple result = new WebsocketTuple(0, WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_UNKNOWN);
+        // Default to HEADER_CHUNK, if there are enough bytes in buffer, it will be updated.
+        WebsocketTuple result = new WebsocketTuple(0, WebSocketMessageType.WEB_SOCKET_MESSAGE_TYPE_HEADER_CHUNK);
 
         if (srcBuffer == null) {
             throw new IllegalArgumentException("input parameter is null");
