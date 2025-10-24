@@ -1,5 +1,19 @@
 # Release History
 
+## 1.2.7 (2025-10-24)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+* Fixes WebSocket transport stuck issue. ([#73](https://github.com/Azure/qpid-proton-j-extensions/pull/73/))
+
+### Other Changes
+
+#### Dependency Updates
+
 ## 1.2.6 (2025-06-16)
 
 ### Features Added
